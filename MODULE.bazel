@@ -1,0 +1,17 @@
+module(name = "asl")
+
+bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
+git_override(
+    module_name = "hedron_compile_commands",
+    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
+    commit = "a14ad3a64e7bf398ab48105aaa0348e032ac87f8",
+)
+
+register_execution_platforms(
+    "//:x64_windows-clang-cl"
+)
+
+register_toolchains(
+    "@@local_config_cc//:cc-toolchain-x64_windows-clang-cl",
+)
+

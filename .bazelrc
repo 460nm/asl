@@ -1,0 +1,5 @@
+build --cxxopt=-Xclang=-std=c++20
+build --cxxopt=-Wall
+build --cxxopt=-Wno-c++98-compat
+build --cxxopt=-Wno-c++98-compat-pedantic
+build --cxxopt=-Wno-pre-c++17-compat
