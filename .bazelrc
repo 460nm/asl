@@ -3,3 +3,5 @@ build --cxxopt=-Wall
 build --cxxopt=-Wno-c++98-compat
 build --cxxopt=-Wno-c++98-compat-pedantic
 build --cxxopt=-Wno-pre-c++17-compat
+build --cxxopt=-Wno-c++20-compat
+build --cxxopt=-Wno-unused-macros

@@ -2,15 +2,15 @@
 
 using namespace asl;
 
-static_assert(referenceable<int>);
-static_assert(referenceable<int&>);
-static_assert(referenceable<int&&>);
-static_assert(!referenceable<void>);
-static_assert(referenceable<void*>);
-static_assert(referenceable<void()>);
-static_assert(referenceable<void(*)()>);
-static_assert(!referenceable<void() const>);
-static_assert(!referenceable<void() &>);
-static_assert(!referenceable<void() const &&>);
+static_assert(is_referenceable<int>);
+static_assert(is_referenceable<int&>);
+static_assert(is_referenceable<int&&>);
+static_assert(!is_referenceable<void>);
+static_assert(is_referenceable<void*>);
+static_assert(is_referenceable<void()>);
+static_assert(is_referenceable<void(*)()>);
+static_assert(!is_referenceable<void() const>);
+static_assert(!is_referenceable<void() &>);
+static_assert(!is_referenceable<void() const &&>);
 
 int main() { return 0; }
