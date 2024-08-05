@@ -1,0 +1,18 @@
+cc_library(
+    name = "asl",
+    hdrs = [
+        "integers.hpp",
+        "meta.hpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":asl",
+    ],
+) for name in ["integers", "meta"]]

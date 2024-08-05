@@ -1,4 +1,4 @@
-#include "asl/base/integers.hpp"
+#include "asl/integers.hpp"
 
 static_assert(sizeof(int8_t)  == 1);
 static_assert(sizeof(int16_t) == 2);
