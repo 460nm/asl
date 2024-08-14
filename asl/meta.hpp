@@ -8,6 +8,11 @@ template<bool B> using bool_constant = integral_constant<bool, B>;
 using true_type  = bool_constant<true>;
 using false_type = bool_constant<false>;
 
+template<bool kSelect, typename U, typename V> struct _select_helper             { using type = V; };
+template<typename U, typename V>               struct _select_helper<true, U, V> { using type = U; };
+
+template<bool kSelect, typename U, typename V> using select_t = _select_helper<kSelect, U, V>::type;
+
 using nullptr_t = decltype(nullptr);
 
 template<typename T> struct un_ref      { using type = T; };
@@ -84,6 +89,50 @@ template<typename T> concept is_member_object_ptr = is_member_ptr<T> && !is_memb
 template<typename T> concept is_fundamental = is_arithmetic<T> || is_void<T> || is_nullptr<T>;
 template<typename T> concept is_compound    = !is_fundamental<T>;
 template<typename T> concept is_scalar      = (is_fundamental<T> && !is_void<T>) || is_enum<T> || is_ptr<T> || is_member_ptr<T>;
-template<typename T> concept is_object      = is_scalar<T> || is_array<T> || is_class<T> || is_union<T>;
+template<typename T> concept is_object      = is_scalar<T> || is_class<T> || is_union<T>;
+
+template<typename T> concept is_empty = is_void<T> || __is_empty(T);
+
+struct empty {};
+
+template<typename T> using devoid_t = select_t<is_void<T>, empty, T>;
+
+template<typename F> struct _tame_helper { using type = F; };
+
+#define ASL_TAME_IMPL(SUFFIX) \
+    template<typename Ret, typename... Args> \
+    struct _tame_helper<Ret(Args...) SUFFIX> { using type = Ret(Args...); }
+
+ASL_TAME_IMPL();
+ASL_TAME_IMPL(const);
+ASL_TAME_IMPL(volatile);
+ASL_TAME_IMPL(volatile const);
+ASL_TAME_IMPL(&&);
+ASL_TAME_IMPL(const &&);
+ASL_TAME_IMPL(volatile &&);
+ASL_TAME_IMPL(volatile const &&);
+ASL_TAME_IMPL(&);
+ASL_TAME_IMPL(const &);
+ASL_TAME_IMPL(volatile &);
+ASL_TAME_IMPL(volatile const &);
+ASL_TAME_IMPL(noexcept);
+ASL_TAME_IMPL(const noexcept);
+ASL_TAME_IMPL(volatile noexcept);
+ASL_TAME_IMPL(volatile const noexcept);
+ASL_TAME_IMPL(&& noexcept);
+ASL_TAME_IMPL(const && noexcept);
+ASL_TAME_IMPL(volatile && noexcept);
+ASL_TAME_IMPL(volatile const && noexcept);
+ASL_TAME_IMPL(& noexcept);
+ASL_TAME_IMPL(const & noexcept);
+ASL_TAME_IMPL(volatile & noexcept);
+ASL_TAME_IMPL(volatile const & noexcept);
+
+#undef ASL_TAME_IMPL
+
+template<typename T> using tame_t = _tame_helper<T>::type;
+
+template<typename T> using as_raw_ptr_t = un_ref_t<tame_t<T>>*;
+
 
 } // namespace asl

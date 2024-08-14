@@ -1,5 +1,6 @@
 #include "asl/meta.hpp"
 
+struct EmptyStruct {};
 struct Struct { int b: 4; };
 union Union {};
 
@@ -550,15 +551,15 @@ static_assert(asl::is_object<int Struct::*>);
 static_assert(asl::is_object<int (Struct::*)()>);
 static_assert(!asl::is_object<int&>);
 static_assert(!asl::is_object<int&&>);
-static_assert(asl::is_object<int[25]>);
-static_assert(asl::is_object<int[]>);
-static_assert(asl::is_object<int*[]>);
+static_assert(!asl::is_object<int[25]>);
+static_assert(!asl::is_object<int[]>);
+static_assert(!asl::is_object<int*[]>);
 static_assert(!asl::is_object<int(&)[]>);
 static_assert(asl::is_object<int(*)[]>);
-static_assert(asl::is_object<int[]>);
-static_assert(asl::is_object<Struct[4]>);
-static_assert(asl::is_object<Union[]>);
-static_assert(asl::is_object<Enum[]>);
+static_assert(!asl::is_object<int[]>);
+static_assert(!asl::is_object<Struct[4]>);
+static_assert(!asl::is_object<Union[]>);
+static_assert(!asl::is_object<Enum[]>);
 static_assert(!asl::is_object<int()>);
 static_assert(asl::is_object<Struct>);
 static_assert(asl::is_object<const Struct>);
@@ -568,5 +569,29 @@ static_assert(asl::is_object<Union>);
 static_assert(asl::is_object<Enum>);
 static_assert(asl::is_object<EnumClass>);
 
-int main() { return 0; }
+static_assert(asl::is_empty<void>);
+static_assert(!asl::is_empty<int>);
+static_assert(asl::is_empty<EmptyStruct>);
+static_assert(!asl::is_empty<Union>);
+static_assert(asl::is_empty<asl::empty>);
 
+static_assert(asl::is_same<asl::select_t<false, int, float>, float>);
+static_assert(asl::is_same<asl::select_t<true, int, float>, int>);
+
+static_assert(asl::is_same<asl::devoid_t<int>, int>);
+static_assert(asl::is_same<asl::devoid_t<void>, asl::empty>);
+static_assert(asl::is_same<asl::devoid_t<const void>, asl::empty>);
+
+static_assert(asl::is_same<asl::tame_t<int(float)>, int(float)>);
+static_assert(asl::is_same<asl::tame_t<int(float) &>, int(float)>);
+static_assert(asl::is_same<asl::tame_t<int(float) const &&>, int(float)>);
+static_assert(asl::is_same<asl::tame_t<int(float) volatile noexcept>, int(float)>);
+static_assert(asl::is_same<asl::tame_t<int(float) const>, int(float)>);
+static_assert(asl::is_same<asl::tame_t<int(float) const volatile & noexcept>, int(float)>);
+
+static_assert(asl::is_same<asl::as_raw_ptr_t<int>, int*>);
+static_assert(asl::is_same<asl::as_raw_ptr_t<const int>, const int*>);
+static_assert(asl::is_same<asl::as_raw_ptr_t<int(float)>, int(*)(float)>);
+static_assert(asl::is_same<asl::as_raw_ptr_t<int&>, int*>);
+
+int main() { return 0; }
