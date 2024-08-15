@@ -12,6 +12,15 @@ class object final
     ASL_NO_UNIQUE_ADDRESS wrapped m_value;
     
 public:
+    object() requires default_constructible<wrapped> = default;
+
+    object(const object&) = default;
+    object(object&&) = default;
+
+    object& operator=(const object&) = default;
+    object& operator=(object&&) = default;
+
+    ~object() = default;
 };
 
 } // namespace asl

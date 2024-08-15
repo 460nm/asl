@@ -2,6 +2,8 @@
 
 namespace asl {
 
+template<typename T> struct id { using type = T; };
+
 template<typename T, T kValue> struct integral_constant { static constexpr T value = kValue; };
 template<bool B> using bool_constant = integral_constant<bool, B>;
 
@@ -12,6 +14,39 @@ template<bool kSelect, typename U, typename V> struct _select_helper            
 template<typename U, typename V>               struct _select_helper<true, U, V> { using type = U; };
 
 template<bool kSelect, typename U, typename V> using select_t = _select_helper<kSelect, U, V>::type;
+
+template<typename T> auto _as_lref_helper(int) -> id<T&>;
+template<typename T> auto _as_lref_helper(...) -> id<T>;
+
+template<typename T> auto _as_rref_helper(int) -> id<T&&>;
+template<typename T> auto _as_rref_helper(...) -> id<T>;
+
+template<typename T> using as_lref_t = decltype(_as_lref_helper<T>(0))::type;
+template<typename T> using as_rref_t = decltype(_as_rref_helper<T>(0))::type;
+
+template<typename T, typename... Args> concept constructible = __is_constructible(T, Args...);
+
+template<typename T> concept default_constructible = constructible<T>;
+template<typename T> concept copy_constructible    = constructible<T, as_lref_t<const T>>;
+template<typename T> concept move_constructible    = constructible<T, as_rref_t<T>>;
+
+template<typename T, typename... Args> concept trivially_constructible = __is_trivially_constructible(T, Args...);
+
+template<typename T> concept trivially_default_constructible = trivially_constructible<T>;
+template<typename T> concept trivially_copy_constructible    = trivially_constructible<T, as_lref_t<const T>>;
+template<typename T> concept trivially_move_constructible    = trivially_constructible<T, as_rref_t<T>>;
+
+template<typename T, typename... Args> concept assignable = __is_assignable(T, Args...);
+
+template<typename T> concept copy_assignable = assignable<as_lref_t<T>, as_lref_t<const T>>;
+template<typename T> concept move_assignable = assignable<as_lref_t<T>, as_rref_t<T>>;
+
+template<typename T, typename... Args> concept trivially_assignable = __is_trivially_assignable(T, Args...);
+
+template<typename T> concept trivially_copy_assignable = trivially_assignable<as_lref_t<T>, as_lref_t<const T>>;
+template<typename T> concept trivially_move_assignable = trivially_assignable<as_lref_t<T>, as_rref_t<T>>;
+
+template<typename T> concept trivially_destructible = __is_trivially_destructible(T);
 
 using nullptr_t = decltype(nullptr);
 

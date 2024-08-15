@@ -14,6 +14,7 @@ cc_library(
     name = "%s_tests" % name,
     srcs = [
         "%s_tests.cpp" % name,
+        "test_types.hpp",
     ],
     deps = [
         ":asl",

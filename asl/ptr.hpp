@@ -6,6 +6,8 @@
 
 namespace asl {
 
+constexpr auto addr(auto&& ref) { return __builtin_addressof(ref); }
+
 namespace ptr_internal {
 
 template<is_object T>

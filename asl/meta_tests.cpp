@@ -1,4 +1,5 @@
 #include "asl/meta.hpp"
+#include "asl/test_types.hpp"
 
 struct EmptyStruct {};
 struct Struct { int b: 4; };
@@ -593,5 +594,69 @@ static_assert(asl::is_same<asl::as_raw_ptr_t<int>, int*>);
 static_assert(asl::is_same<asl::as_raw_ptr_t<const int>, const int*>);
 static_assert(asl::is_same<asl::as_raw_ptr_t<int(float)>, int(*)(float)>);
 static_assert(asl::is_same<asl::as_raw_ptr_t<int&>, int*>);
+
+static_assert(asl::default_constructible<int>);
+static_assert(asl::default_constructible<TriviallyDefaultConstructible>);
+static_assert(asl::default_constructible<DefaultConstructible>);
+static_assert(!asl::default_constructible<NonDefaultConstructible>);
+
+static_assert(asl::trivially_default_constructible<int>);
+static_assert(asl::trivially_default_constructible<TriviallyDefaultConstructible>);
+static_assert(!asl::trivially_default_constructible<DefaultConstructible>);
+static_assert(!asl::trivially_default_constructible<NonDefaultConstructible>);
+
+static_assert(asl::copy_constructible<int>);
+static_assert(asl::copy_constructible<TriviallyCopyConstructible>);
+static_assert(asl::copy_constructible<CopyConstructible>);
+static_assert(!asl::copy_constructible<NonCopyConstructible>);
+
+static_assert(asl::trivially_copy_constructible<int>);
+static_assert(asl::trivially_copy_constructible<TriviallyCopyConstructible>);
+static_assert(!asl::trivially_copy_constructible<CopyConstructible>);
+static_assert(!asl::trivially_copy_constructible<NonCopyConstructible>);
+
+static_assert(asl::move_constructible<int>);
+static_assert(asl::move_constructible<TriviallyMoveConstructible>);
+static_assert(asl::move_constructible<MoveConstructible>);
+static_assert(!asl::move_constructible<NonMoveConstructible>);
+
+static_assert(asl::trivially_move_constructible<int>);
+static_assert(asl::trivially_move_constructible<TriviallyMoveConstructible>);
+static_assert(!asl::trivially_move_constructible<MoveConstructible>);
+static_assert(!asl::trivially_move_constructible<NonMoveConstructible>);
+
+static_assert(asl::copy_assignable<int>);
+static_assert(asl::copy_assignable<CopyAssignable>);
+static_assert(asl::copy_assignable<TriviallyCopyAssignable>);
+static_assert(!asl::copy_assignable<NoCopyAssignable>);
+
+static_assert(asl::trivially_copy_assignable<int>);
+static_assert(!asl::trivially_copy_assignable<CopyAssignable>);
+static_assert(asl::trivially_copy_assignable<TriviallyCopyAssignable>);
+static_assert(!asl::trivially_copy_assignable<NoCopyAssignable>);
+
+static_assert(asl::move_assignable<int>);
+static_assert(asl::move_assignable<MoveAssignable>);
+static_assert(asl::move_assignable<TriviallyMoveAssignable>);
+static_assert(!asl::move_assignable<NoMoveAssignable>);
+
+static_assert(asl::trivially_move_assignable<int>);
+static_assert(!asl::trivially_move_assignable<MoveAssignable>);
+static_assert(asl::trivially_move_assignable<TriviallyMoveAssignable>);
+static_assert(!asl::trivially_move_assignable<NoMoveAssignable>);
+
+static_assert(asl::trivially_destructible<int>);
+static_assert(asl::trivially_destructible<TriviallyDestructible>);
+static_assert(!asl::trivially_destructible<HasDestructor>);
+
+static_assert(asl::is_same<asl::as_lref_t<int>, int&>);
+static_assert(asl::is_same<asl::as_lref_t<int&>, int&>);
+static_assert(asl::is_same<asl::as_lref_t<int&&>, int&>);
+static_assert(asl::is_same<asl::as_lref_t<const void>, const void>);
+
+static_assert(asl::is_same<asl::as_rref_t<int>, int&&>);
+static_assert(asl::is_same<asl::as_rref_t<int&>, int&>);
+static_assert(asl::is_same<asl::as_rref_t<int&&>, int&&>);
+static_assert(asl::is_same<asl::as_rref_t<const void>, const void>);
 
 int main() { return 0; }
