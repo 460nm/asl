@@ -85,9 +85,9 @@ template<typename T> concept is_integral       = __is_integral(T);
 template<typename T> concept is_floating_point = __is_floating_point(T);
 template<typename T> concept is_arithmetic     = is_integral<T> || is_floating_point<T>;
 
-template<typename T>           struct _is_array_helper       : false_type {};
-template<typename T>           struct _is_array_helper<T[]>  : true_type  {};
-template<typename T, size_t N> struct _is_array_helper<T[N]> : true_type  {};
+template<typename T>            struct _is_array_helper       : false_type {};
+template<typename T>            struct _is_array_helper<T[]>  : true_type  {};
+template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
 
 template<typename T> concept is_array = _is_array_helper<T>::value;
 
