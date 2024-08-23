@@ -3,6 +3,7 @@ cc_library(
     hdrs = [
         "integers.hpp",
         "meta.hpp",
+        "ptr.hpp",
         "utility.hpp",
     ],
     visibility = ["//visibility:public"],
@@ -17,4 +18,4 @@ cc_library(
     deps = [
         ":asl",
     ],
-) for name in ["integers", "meta"]]
+) for name in ["integers", "meta", "ptr"]]

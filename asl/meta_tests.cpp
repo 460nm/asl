@@ -145,4 +145,12 @@ static_assert(!asl::is_array<void>);
 static_assert(!asl::is_array<void(int)>);
 static_assert(!asl::is_array<int(float) const && noexcept>);
 
+static_assert(asl::is_same<int, asl::devoid_t<int>>);
+static_assert(asl::is_same<asl::empty, asl::devoid_t<void>>);
+
+static_assert(asl::is_same<int, asl::un_ref_t<int>>);
+static_assert(asl::is_same<int, asl::un_ref_t<int&>>);
+static_assert(asl::is_same<int, asl::un_ref_t<int&&>>);
+static_assert(asl::is_same<int() &, asl::un_ref_t<int() &>>);
+
 int main() { return 0; }

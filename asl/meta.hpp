@@ -2,6 +2,10 @@
 
 namespace asl {
 
+template<typename... Args> struct types {};
+
+struct empty {};
+
 template<typename T> struct id { using type = T; };
 
 template<typename T, T kValue> struct integral_constant { static constexpr T value = kValue; };
@@ -28,6 +32,12 @@ template<typename T> auto _as_rref_helper(...) -> id<T>;
 
 template<typename T> using as_lref_t = decltype(_as_lref_helper<T>(0))::type;
 template<typename T> using as_rref_t = decltype(_as_rref_helper<T>(0))::type;
+
+template<typename T> struct _un_ref_t      { using type = T; };
+template<typename T> struct _un_ref_t<T&>  { using type = T; };
+template<typename T> struct _un_ref_t<T&&> { using type = T; };
+
+template<typename T> using un_ref_t = _un_ref_t<T>::type;
 
 template<typename T, typename... Args> concept constructible = __is_constructible(T, Args...);
 
@@ -122,5 +132,14 @@ template<typename T>        struct _is_array_helper<T[]>  : true_type  {};
 template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
 
 template<typename T> concept is_array = _is_array_helper<T>::value;
+
+template<typename T>
+auto _devoid_helper()
+{
+    if constexpr (is_void<T>) return id<empty>{};
+    else return id<T>{};
+}
+
+template<typename T> using devoid_t = decltype(_devoid_helper<T>())::type;
 
 } // namespace asl
