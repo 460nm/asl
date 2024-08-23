@@ -117,4 +117,10 @@ template<typename T> concept is_func = _is_func_helper<tame_t<T>>::value;
 
 template<typename T> concept is_object = !is_void<T> && !is_ref<T> && !is_func<T>;
 
+template<typename T>        struct _is_array_helper       : false_type {};
+template<typename T>        struct _is_array_helper<T[]>  : true_type  {};
+template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
+
+template<typename T> concept is_array = _is_array_helper<T>::value;
+
 } // namespace asl

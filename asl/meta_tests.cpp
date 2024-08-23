@@ -132,4 +132,17 @@ static_assert(!asl::is_object<void>);
 static_assert(!asl::is_object<void(int)>);
 static_assert(!asl::is_object<int(float) const && noexcept>);
 
+static_assert(!asl::is_array<Struct>);
+static_assert(!asl::is_array<int>);
+static_assert(!asl::is_array<int*>);
+static_assert(!asl::is_array<int Struct::*>);
+static_assert(!asl::is_array<int (Struct::*)(float)>);
+static_assert(asl::is_array<int[]>);
+static_assert(asl::is_array<int[45]>);
+static_assert(!asl::is_array<Enum>);
+static_assert(!asl::is_array<int&>);
+static_assert(!asl::is_array<void>);
+static_assert(!asl::is_array<void(int)>);
+static_assert(!asl::is_array<int(float) const && noexcept>);
+
 int main() { return 0; }
