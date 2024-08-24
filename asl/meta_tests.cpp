@@ -99,6 +99,14 @@ static_assert(!asl::is_ref<void>);
 static_assert(!asl::is_ref<void()>);
 static_assert(!asl::is_ref<void() const &&>);
 
+static_assert(asl::is_ptr<int*>);
+static_assert(asl::is_ptr<const int* const>);
+static_assert(asl::is_ptr<const volatile int*>);
+static_assert(!asl::is_ptr<int>);
+static_assert(!asl::is_ptr<void>);
+static_assert(!asl::is_ptr<void()>);
+static_assert(!asl::is_ptr<void() const &&>);
+
 static_assert(asl::is_same<int, asl::tame_t<int>>);
 static_assert(asl::is_same<int(), asl::tame_t<int()>>);
 static_assert(asl::is_same<int(float), asl::tame_t<int(float)>>);

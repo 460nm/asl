@@ -85,6 +85,11 @@ template<typename T> struct _is_ref_helper<T&&> { static constexpr bool l = fals
 
 template<typename T> concept is_ref = _is_ref_helper<T>::l || _is_ref_helper<T>::r;
 
+template<typename T> struct _is_ptr_helper     : false_type {};
+template<typename T> struct _is_ptr_helper<T*> : true_type {};
+
+template<typename T> concept is_ptr = _is_ptr_helper<un_cv_t<T>>::value;
+
 template<typename T> struct _tame_helper { using type = T; };
 
 #define TAME_HELPER_IMPL(TRAILING)                                  \
