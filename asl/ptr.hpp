@@ -11,16 +11,16 @@ namespace asl
 template<is_object T, isize_t kLen>
 struct span
 {
-    static constexpr bool kDynamic = kLen < 0;
+    static constexpr bool kIsDynamic = kLen < 0;
 
-    using size_type = select_t<kDynamic, isize_t, empty>;
+    using size_type = select_t<kIsDynamic, isize_t, empty>;
 
-    constexpr span(T* begin, isize_t len) requires kDynamic
+    constexpr span(T* begin, isize_t len) requires kIsDynamic
         : m_begin{begin}
         , m_len{len}
     {}
 
-    constexpr span(T* begin) requires (!kDynamic)
+    constexpr span(T* begin) requires (!kIsDynamic)
         : m_begin{begin}
         , m_len{}
     {}
@@ -79,32 +79,26 @@ struct object_metadata
     constexpr auto deref(pointee* ptr) { return ptr; }
 };
 
-template<is_func T>
-struct func_metadata
+template<typename T>
+struct ptr_like_metadata
 {
     using metadata = empty;
-    using pointee = tame_t<T>* const;
+    using pointee = un_ref_t<tame_t<T>>* const;
 
     constexpr auto deref(pointee* ptr) { return *ptr; }
 };
-
-template<is_ref T>
-struct ref_metadata
-{
-    using metadata = empty;
-    using pointee = un_ref_t<T>* const;
-
-    constexpr auto deref(pointee* ptr) { return *ptr; }
-};
-
-template<is_void   T> void_metadata<T>   select_ptr_metadata(types<T>);
-template<is_array  T> array_metadata<T>  select_ptr_metadata(types<T>);
-template<is_object T> object_metadata<T> select_ptr_metadata(types<T>) requires (!is_array<T>);
-template<is_func   T> func_metadata<T>   select_ptr_metadata(types<T>);
-template<is_ref    T> ref_metadata<T>    select_ptr_metadata(types<T>);
 
 template<typename T>
-using metadata = decltype(select_ptr_metadata(types<T>{}));
+constexpr auto select_ptr_metadata()
+{
+    if constexpr (is_void<T>) return id<void_metadata<T>>{};
+    else if constexpr (is_array<T>) return id<array_metadata<T>>{};
+    else if constexpr (is_object<T>) return id<object_metadata<T>>{};
+    else return id<ptr_like_metadata<T>>{};
+}
+
+template<typename T>
+using metadata = decltype(select_ptr_metadata<T>())::type;
 
 } // namespace ptr_internal
 

@@ -2,8 +2,6 @@
 
 namespace asl {
 
-template<typename... Args> struct types {};
-
 struct empty {};
 
 template<typename T> struct id { using type = T; };

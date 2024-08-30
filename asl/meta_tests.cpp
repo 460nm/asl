@@ -161,4 +161,7 @@ static_assert(asl::is_same<int, asl::un_ref_t<int&>>);
 static_assert(asl::is_same<int, asl::un_ref_t<int&&>>);
 static_assert(asl::is_same<int() &, asl::un_ref_t<int() &>>);
 
+using F = void(int) const &;
+using Fr = asl::tame_t<F>&;
+
 int main() { return 0; }
