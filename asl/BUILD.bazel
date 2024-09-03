@@ -1,9 +1,10 @@
 cc_library(
     name = "asl",
     hdrs = [
+        "annotations.hpp",
         "integers.hpp",
         "meta.hpp",
-        "ptr.hpp",
+        "option.hpp",
         "utility.hpp",
     ],
     visibility = ["//visibility:public"],
@@ -18,4 +19,4 @@ cc_library(
     deps = [
         ":asl",
     ],
-) for name in ["integers", "meta", "ptr"]]
+) for name in ["integers", "meta", "option", "utility"]]

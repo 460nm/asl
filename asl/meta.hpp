@@ -136,13 +136,4 @@ template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
 
 template<typename T> concept is_array = _is_array_helper<T>::value;
 
-template<typename T>
-auto _devoid_helper()
-{
-    if constexpr (is_void<T>) return id<empty>{};
-    else return id<T>{};
-}
-
-template<typename T> using devoid_t = decltype(_devoid_helper<T>())::type;
-
 } // namespace asl
