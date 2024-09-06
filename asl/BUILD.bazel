@@ -3,6 +3,9 @@ cc_library(
     hdrs = [
         "annotations.hpp",
         "integers.hpp",
+        "layout.hpp",
+        "maybe_uninit.hpp",
+        "memory.hpp",
         "meta.hpp",
         "option.hpp",
         "utility.hpp",
@@ -19,4 +22,4 @@ cc_library(
     deps = [
         ":asl",
     ],
-) for name in ["integers", "meta", "option", "utility"]]
+) for name in ["integers", "maybe_uninit", "meta", "option", "utility"]]
