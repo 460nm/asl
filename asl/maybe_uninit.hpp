@@ -1,42 +1,61 @@
 #pragma once
 
-#include "asl/annotations.hpp"
 #include "asl/layout.hpp"
 #include "asl/memory.hpp"
 #include "asl/meta.hpp"
+#include "asl/utility.hpp"
 
 namespace asl
 {
 
 template<is_object T>
-class alignas(align_of<T>) maybe_uninit
+class maybe_uninit
 {
-    char m_storage[size_of<T>];
+    union
+    {
+        alignas(align_of<T>) char m_storage[size_of<T>];
+        T m_value;
+    };
 
 public:
-    constexpr void* uninit_ptr() const { return m_storage; }
+    constexpr maybe_uninit() {} // NOLINT(*-member-init)
+    
+    maybe_uninit(const maybe_uninit&) = delete;
+    maybe_uninit(maybe_uninit&&) = delete;
+
+    maybe_uninit& operator=(const maybe_uninit&) = delete;
+    maybe_uninit& operator=(maybe_uninit&&) = delete;
+    
+    constexpr ~maybe_uninit() = default;
+    constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {}
+    
+    constexpr void*       uninit_ptr() && = delete;
+    constexpr const void* uninit_ptr() const& { return m_storage; }
+    constexpr void*       uninit_ptr() &      { return m_storage; }
 
     // @Safety Pointer must only be accessed when in initialized state.
-    constexpr const T* init_ptr(unsafe) const { return reinterpret_cast<const T*>(m_storage); }
-    constexpr       T* init_ptr(unsafe)       { return reinterpret_cast<      T*>(m_storage); }
+    constexpr       T* init_ptr_unsafe() && = delete;
+    constexpr const T* init_ptr_unsafe() const& { return &m_value; }
+    constexpr       T* init_ptr_unsafe() &      { return &m_value; }
 
     // @Safety Reference must only be accessed when in initialized state.
-    constexpr const T& as_init(unsafe) const { return *reinterpret_cast<const T*>(m_storage); }
-    constexpr       T& as_init(unsafe)       { return *reinterpret_cast<      T*>(m_storage); }
+    constexpr       T& as_init_unsafe() && = delete;
+    constexpr const T& as_init_unsafe() const& { return m_value; }
+    constexpr       T& as_init_unsafe() &      { return m_value; }
 
     // @Safety Must be called only when in uninitialized state.
     template<typename... Args>
-    inline void init(unsafe, Args&&... args)
+    constexpr void init_unsafe(Args&&... args) &
     {
         new(uninit_ptr()) T(ASL_FWD(args)...);
     }
 
     // @Safety Must be called only when in initialized state.
-    inline void uninit(unsafe)
+    constexpr void uninit_unsafe() &
     {
         if constexpr (!trivially_destructible<T>)
         {
-            init_ptr(unsafe("Caller has checked init state"))->~T();
+            init_ptr_unsafe()->~T();
         }
     }
 };

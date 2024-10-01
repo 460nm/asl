@@ -9,15 +9,3 @@
 #else
     #define ASL_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #endif
-
-namespace asl
-{
-
-struct unsafe
-{
-    unsafe() = delete;
-    explicit unsafe(auto&&) {}
-};
-
-} // namespace asl
-
