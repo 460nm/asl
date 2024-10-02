@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asl/assert.hpp"
 #include "asl/meta.hpp"
 #include "asl/maybe_uninit.hpp"
 
@@ -9,11 +10,31 @@ namespace asl
 struct nullopt_t {};
 static constexpr nullopt_t nullopt{};
 
+// @Todo(option) Niche
+// @Todo(option) Reference
+// @Todo(option) Function
+// @Todo(option) Arrays
+
 template<is_object T>
 class option
 {
     maybe_uninit<T> m_payload;
     bool            m_has_value = false;
+
+    template<typename... Args>
+    constexpr void construct(Args&&... args) &
+    {
+        ASL_ASSERT(!m_has_value);
+        m_payload.init_unsafe(ASL_FWD(args)...);
+        m_has_value = true;
+    }
+
+    template<typename Arg>
+    constexpr void assign(Arg&& arg) &
+    {
+        ASL_ASSERT(m_has_value);
+        m_payload.as_init_unsafe() = ASL_FWD(arg);
+    }
 
 public:
     constexpr option() = default;
@@ -23,8 +44,7 @@ public:
     {
         if (other.m_has_value)
         {
-            m_payload.init_unsafe(other.m_payload.as_init_unsafe());
-            m_has_value = true;
+            construct(other.m_payload.as_init_unsafe());
         }
     }
 
@@ -32,8 +52,7 @@ public:
     {
         if (other.m_has_value)
         {
-            m_payload.init_unsafe(ASL_MOVE(other.m_payload.as_init_unsafe()));
-            m_has_value = true;
+            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
         }
     }
 
@@ -45,12 +64,11 @@ public:
         {
             if (m_has_value)
             {
-                m_payload.as_init_unsafe() = other.m_payload.as_init_unsafe();
+                assign(other.m_payload.as_init_unsafe());
             }
             else
             {
-                m_payload.init_unsafe(other.m_payload.as_init_unsafe());
-                m_has_value = true;
+                construct(other.m_payload.as_init_unsafe());
             }
         }
         else if (m_has_value)
@@ -69,12 +87,11 @@ public:
         {
             if (m_has_value)
             {
-                m_payload.as_init_unsafe() = ASL_MOVE(other.m_payload.as_init_unsafe());
+                assign(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
             else
             {
-                m_payload.init_unsafe(ASL_MOVE(other.m_payload.as_init_unsafe()));
-                m_has_value = true;
+                construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
         }
         else if (m_has_value)

@@ -13,3 +13,4 @@ build --cxxopt=-Wno-pre-c++17-compat
 build --cxxopt=-Wno-c++20-compat
 build --cxxopt=-Wno-unused-macros
 build --cxxopt=-Wno-documentation-unknown-command
+build --cxxopt=-Wno-extra-semi-stmt

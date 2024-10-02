@@ -2,6 +2,7 @@ cc_library(
     name = "asl",
     hdrs = [
         "annotations.hpp",
+        "assert.hpp",
         "integers.hpp",
         "layout.hpp",
         "maybe_uninit.hpp",
