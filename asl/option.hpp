@@ -116,7 +116,6 @@ public:
             m_has_value = false;
         }
     }
-    
 };
 
 } // namespace asl

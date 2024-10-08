@@ -158,4 +158,9 @@ static_assert(asl::is_same<int, asl::un_ref_t<int&>>);
 static_assert(asl::is_same<int, asl::un_ref_t<int&&>>);
 static_assert(asl::is_same<int() &, asl::un_ref_t<int() &>>);
 
+static_assert(asl::types_count<int, float> == 2);
+static_assert(asl::types_count<int, int> == 2);
+static_assert(asl::types_count<int> == 1);
+static_assert(asl::types_count<> == 0);
+
 int main() { return 0; }

@@ -1,10 +1,14 @@
 #pragma once
 
+#include "asl/integers.hpp"
+
 namespace asl {
 
 struct empty {};
 
 template<typename T> struct id { using type = T; };
+
+template<typename... Args> static constexpr int64_t types_count = sizeof...(Args);
 
 template<typename T, T kValue> struct integral_constant { static constexpr T value = kValue; };
 template<bool B> using bool_constant = integral_constant<bool, B>;

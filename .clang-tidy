@@ -28,4 +28,3 @@ Checks:
   - "-*-no-array-decay"
   - "-*-signed-bitwise"
   - "-readability-use-anyofallof"
-

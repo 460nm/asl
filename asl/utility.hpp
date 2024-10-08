@@ -17,4 +17,16 @@ T exchange(T& obj, U&& new_value)
     return old_value;
 }
 
+#define ASL_DELETE_COPY(T)                         \
+    T(const T&) = delete;                          \
+    T& operator=(const T&) = delete;
+
+#define ASL_DELETE_MOVE(T)                         \
+    T(T&&) = delete;                               \
+    T& operator=(T&&) = delete;
+
+#define ASL_DELETE_COPY_MOVE(T)                    \
+    ASL_DELETE_COPY(T)                             \
+    ASL_DELETE_MOVE(T)
+
 } // namespace asl

@@ -3,6 +3,7 @@ cc_library(
     hdrs = [
         "annotations.hpp",
         "assert.hpp",
+        "format.hpp",
         "integers.hpp",
         "layout.hpp",
         "maybe_uninit.hpp",
@@ -10,6 +11,9 @@ cc_library(
         "meta.hpp",
         "option.hpp",
         "utility.hpp",
+    ],
+    srcs = [
+        "format.cpp",
     ],
     visibility = ["//visibility:public"],
 )
@@ -23,4 +27,11 @@ cc_library(
     deps = [
         ":asl",
     ],
-) for name in ["integers", "maybe_uninit", "meta", "option", "utility"]]
+) for name in [
+    "format",
+    "integers",
+    "maybe_uninit",
+    "meta",
+    "option",
+    "utility",
+]]
