@@ -15,3 +15,5 @@ build --cxxopt=-Wno-unused-macros
 build --cxxopt=-Wno-documentation-unknown-command
 build --cxxopt=-Wno-extra-semi-stmt
 build --cxxopt=-Wno-extra-semi
+
+test --test_output=errors

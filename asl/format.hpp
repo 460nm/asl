@@ -51,7 +51,7 @@ struct type_erased_arg
 // @Todo Use span
 void format(writer*, const char* fmt, const type_erased_arg* args, int64_t arg_count);
 
-} // internals
+} // namespace internals
 
 class formatter
 {
@@ -73,12 +73,24 @@ public:
 template<typename... Args>
 void format(writer* w, const char* fmt, const Args&... args)
 {
-    auto type_erased_args[] = {
+    format_internals::type_erased_arg type_erased_args[] = {
         format_internals::type_erased_arg(args)...
     };
 
     // @Todo Use array extent
     format_internals::format(w, fmt, type_erased_args, types_count<Args...>);
+}
+
+// @Todo Use string_view
+inline void format(writer* w, const char* fmt)
+{
+    format_internals::format(w, fmt, nullptr, 0);
+}
+
+template<int64_t N>
+void AslFormat(formatter& f, const char (&str)[N])
+{
+    f.write(str, N - 1);
 }
 
 } // namespace asl
