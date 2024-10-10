@@ -65,6 +65,8 @@ template<typename T> concept trivially_move_assignable = trivially_assignable<as
 
 template<typename T> concept trivially_destructible = __is_trivially_destructible(T);
 
+template<typename T> concept trivially_copyable = __is_trivially_copyable(T);
+
 using nullptr_t = decltype(nullptr);
 
 template<typename T> struct _un_const_helper          { using type = T; };

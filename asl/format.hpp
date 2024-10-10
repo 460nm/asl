@@ -93,4 +93,17 @@ void AslFormat(formatter& f, const char (&str)[N])
     f.write(str, N - 1);
 }
 
+void AslFormat(formatter& f, float);
+void AslFormat(formatter& f, double);
+
+void AslFormat(formatter& f, uint8_t);
+void AslFormat(formatter& f, uint16_t);
+void AslFormat(formatter& f, uint32_t);
+void AslFormat(formatter& f, uint64_t);
+
+void AslFormat(formatter& f, int8_t);
+void AslFormat(formatter& f, int16_t);
+void AslFormat(formatter& f, int32_t);
+void AslFormat(formatter& f, int64_t);
+
 } // namespace asl

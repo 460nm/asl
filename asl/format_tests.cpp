@@ -78,5 +78,25 @@ int main()
     asl::format(&sink, "{{{}}} }", "CHEESE");
     assert(strcmp(sink.cstr(), "{CHEESE} }") == 0);
 
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 0, 1, 2);
+    assert(strcmp(sink.cstr(), "0 1 2") == 0);
+
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 10, 11, 12);
+    assert(strcmp(sink.cstr(), "10 11 12") == 0);
+
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 100, 101, 102);
+    assert(strcmp(sink.cstr(), "100 101 102") == 0);
+
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 1000, 1001, 1002);
+    assert(strcmp(sink.cstr(), "1000 1001 1002") == 0);
+
+    sink.reset();
+    asl::format(&sink, "{} {} {} {}", -1, -23, -456, -7890);
+    assert(strcmp(sink.cstr(), "-1 -23 -456 -7890") == 0);
+
     return 0;
 }

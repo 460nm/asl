@@ -163,4 +163,10 @@ static_assert(asl::types_count<int, int> == 2);
 static_assert(asl::types_count<int> == 1);
 static_assert(asl::types_count<> == 0);
 
+static_assert(asl::trivially_copyable<int>);
+static_assert(!asl::trivially_copyable<HasDestructor>);
+static_assert(!asl::trivially_copyable<CopyAssignable>);
+static_assert(asl::trivially_copyable<DefaultConstructible>);
+static_assert(asl::trivially_copyable<TriviallyDefaultConstructible>);
+
 int main() { return 0; }
