@@ -5,15 +5,18 @@ cc_library(
         "assert.hpp",
         "format.hpp",
         "integers.hpp",
+        "io.hpp",
         "layout.hpp",
         "maybe_uninit.hpp",
         "memory.hpp",
         "meta.hpp",
         "option.hpp",
+        "print.hpp",
         "utility.hpp",
     ],
     srcs = [
         "format.cpp",
+        "print_win32.cpp",
     ],
     visibility = ["//visibility:public"],
 )

@@ -98,5 +98,9 @@ int main()
     asl::format(&sink, "{} {} {} {}", -1, -23, -456, -7890);
     assert(strcmp(sink.cstr(), "-1 -23 -456 -7890") == 0);
 
+    sink.reset();
+    asl::format(&sink, "{} {}", true, false);
+    assert(strcmp(sink.cstr(), "true false") == 0);
+
     return 0;
 }

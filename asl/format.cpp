@@ -80,6 +80,18 @@ void asl::AslFormat(formatter& f, double)
     f.write("<DOUBLE>", 8); // @Todo Float formatting
 }
 
+void asl::AslFormat(formatter& f, bool v)
+{
+    if (v)
+    {
+        f.write("true", 4);
+    }
+    else
+    {
+        f.write("false", 5);
+    }
+}
+
 void asl::AslFormat(formatter& f, uint8_t v)
 {
     AslFormat(f, static_cast<uint64_t>(v));

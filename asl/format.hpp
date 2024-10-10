@@ -2,22 +2,10 @@
 
 #include "asl/integers.hpp"
 #include "asl/meta.hpp"
-#include "asl/utility.hpp"
+#include "asl/io.hpp"
 
 namespace asl
 {
-
-// @Todo Move this to io
-class writer
-{
-public:
-    writer() = default;
-    ASL_DELETE_COPY_MOVE(writer);
-    virtual ~writer() = default;
-    
-    // @Todo Use string view, or span of bytes?
-    virtual void write(const char* str, int64_t len) = 0;
-};
 
 class formatter;
 
@@ -70,21 +58,21 @@ public:
 };
 
 // @Todo Use string_view
-template<typename... Args>
+template<formattable... Args>
 void format(writer* w, const char* fmt, const Args&... args)
 {
-    format_internals::type_erased_arg type_erased_args[] = {
-        format_internals::type_erased_arg(args)...
-    };
+    if constexpr (types_count<Args...> > 0)
+    {
+        format_internals::type_erased_arg type_erased_args[] = {
+            format_internals::type_erased_arg(args)...
+        };
 
-    // @Todo Use array extent
-    format_internals::format(w, fmt, type_erased_args, types_count<Args...>);
-}
-
-// @Todo Use string_view
-inline void format(writer* w, const char* fmt)
-{
-    format_internals::format(w, fmt, nullptr, 0);
+        format_internals::format(w, fmt, type_erased_args, types_count<Args...>);
+    }
+    else
+    {
+        format_internals::format(w, fmt, nullptr, 0);
+    }
 }
 
 template<int64_t N>
@@ -95,6 +83,8 @@ void AslFormat(formatter& f, const char (&str)[N])
 
 void AslFormat(formatter& f, float);
 void AslFormat(formatter& f, double);
+
+void AslFormat(formatter& f, bool);
 
 void AslFormat(formatter& f, uint8_t);
 void AslFormat(formatter& f, uint16_t);
