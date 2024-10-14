@@ -16,7 +16,7 @@ cc_library(
     ],
     srcs = [
         "format.cpp",
-        "print_win32.cpp",
+        "print.cpp",
     ],
     visibility = ["//visibility:public"],
 )
