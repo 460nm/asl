@@ -33,7 +33,7 @@ public:
     }
 };
 
-int main()
+int main2()
 {
     StringSink sink;
 

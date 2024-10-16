@@ -1,5 +1,5 @@
 #include "asl/meta.hpp"
-#include "asl/test_types.hpp"
+#include "asl/tests/test_types.hpp"
 
 struct Struct {};
 union Union {};
@@ -168,5 +168,3 @@ static_assert(!asl::trivially_copyable<HasDestructor>);
 static_assert(!asl::trivially_copyable<CopyAssignable>);
 static_assert(asl::trivially_copyable<DefaultConstructible>);
 static_assert(asl::trivially_copyable<TriviallyDefaultConstructible>);
-
-int main() { return 0; }

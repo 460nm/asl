@@ -1,5 +1,6 @@
 #include "asl/option.hpp"
-#include "asl/test_types.hpp"
+#include "asl/tests/test_types.hpp"
+#include <asl/testing/testing.hpp>
 
 static_assert(asl::trivially_destructible<asl::option<TriviallyDestructible>>);
 static_assert(!asl::trivially_destructible<asl::option<HasDestructor>>);
@@ -23,12 +24,10 @@ static_assert(asl::move_assignable<asl::option<int>>);
 static_assert(asl::move_assignable<asl::option<CopyAssignable>>);
 static_assert(!asl::move_assignable<asl::option<NonMoveAssignable>>);
 
-int main()
+ASL_TEST(Option, cheese)
 {
     asl::option<int> a;
     asl::option<int> b;
 
     a = ASL_MOVE(b);
-    
-    return 0;
 }

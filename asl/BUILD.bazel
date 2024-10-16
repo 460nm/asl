@@ -24,11 +24,12 @@ cc_library(
 [cc_test(
     name = "%s_tests" % name,
     srcs = [
-        "%s_tests.cpp" % name,
-        "test_types.hpp",
+        "tests/%s_tests.cpp" % name,
+        "tests/test_types.hpp",
     ],
     deps = [
         ":asl",
+        "//asl/testing",
     ],
 ) for name in [
     "format",
