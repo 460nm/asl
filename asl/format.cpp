@@ -70,6 +70,11 @@ void asl::format_internals::format(
     f.write(begin, fmt - begin);
 }
 
+void asl::AslFormat(formatter& f, const char* str)
+{
+    f.write(str, static_cast<int64_t>(__builtin_strlen(str)));
+}
+
 void asl::AslFormat(formatter& f, float)
 {
     f.write("<FLOAT>", 7); // @Todo Float formatting

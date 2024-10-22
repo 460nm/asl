@@ -81,6 +81,8 @@ void AslFormat(formatter& f, const char (&str)[N])
     f.write(str, N - 1);
 }
 
+void AslFormat(formatter& f, const char* str);
+
 void AslFormat(formatter& f, float);
 void AslFormat(formatter& f, double);
 

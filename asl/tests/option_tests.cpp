@@ -24,7 +24,32 @@ static_assert(asl::move_assignable<asl::option<int>>);
 static_assert(asl::move_assignable<asl::option<CopyAssignable>>);
 static_assert(!asl::move_assignable<asl::option<NonMoveAssignable>>);
 
-ASL_TEST(Option, cheese)
+ASL_TEST(Option_cheese)
+{
+    asl::option<int> a;
+    asl::option<int> b;
+
+    a = ASL_MOVE(b);
+}
+
+ASL_TEST(Option_cheese2)
+{
+    asl::option<int> a;
+    asl::option<int> b;
+
+    a = ASL_MOVE(b);
+}
+
+ASL_TEST(Option_cheese3)
+{
+    asl::option<int> a;
+    asl::option<int> b;
+
+    a = ASL_MOVE(b);
+    asl::testing::report_failure("OH NO", __FILE__, __LINE__);
+}
+
+ASL_TEST(Option_cheese4)
 {
     asl::option<int> a;
     asl::option<int> b;

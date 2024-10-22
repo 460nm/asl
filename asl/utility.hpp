@@ -14,7 +14,7 @@ template<typename T, typename U>
 T exchange(T& obj, U&& new_value)
 {
     T old_value = ASL_MOVE(obj);
-    obj = ASL_FORWARD(new_value);
+    obj = ASL_FWD(new_value);
     return old_value;
 }
 

@@ -17,4 +17,4 @@ build --cxxopt=-Wno-extra-semi-stmt
 build --cxxopt=-Wno-extra-semi
 build --cxxopt=-Wno-global-constructors
 
-test --test_output=errors
+test --test_output=all
