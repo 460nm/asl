@@ -1,11 +1,10 @@
 #pragma once
 
-#ifndef __clang__
-    #error Not a valid environment
-#endif
+#include "asl/config.hpp"
 
-#ifdef _MSC_VER
+
+#if ASL_COMPILER_CLANG_CL
     #define ASL_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
-#else
+#elif ASL_COMPILER_CLANG
     #define ASL_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #endif

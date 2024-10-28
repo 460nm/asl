@@ -1,16 +1,24 @@
 #pragma once
 
+#include "asl/config.hpp"
+
 using int8_t  = signed char;
 using int16_t = signed short;
 using int32_t = signed int;
-using int64_t = signed long;
-
-// @Todo Proper type definition for Windows/Linux
+#if ASL_OS_WINDOWS
+    using int64_t = signed long long;
+#elif ASL_OS_LINUX
+    using int64_t = signed long;
+#endif
 
 using uint8_t  = unsigned char;
 using uint16_t = unsigned short;
 using uint32_t = unsigned int;
-using uint64_t = unsigned long;
+#if ASL_OS_WINDOWS
+    using uint64_t = unsigned long long;
+#elif ASL_OS_LINUX
+    using uint64_t = unsigned long;
+#endif
 
 using size_t  = uint64_t;
 using isize_t = int64_t;

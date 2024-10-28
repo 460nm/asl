@@ -3,6 +3,7 @@ cc_library(
     hdrs = [
         "annotations.hpp",
         "assert.hpp",
+        "config.hpp",
         "format.hpp",
         "integers.hpp",
         "io.hpp",
