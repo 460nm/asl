@@ -5,7 +5,7 @@
 #if ASL_COMPILER_CLANG_CL
     #define ASL_DEBUG_BREAK() __debugbreak()
 #elif ASL_COMPILER_CLANG
-    #define ASL_DEBUG_BREAK() __builtin_debug_trap()
+    #define ASL_DEBUG_BREAK() __builtin_debugtrap()
 #endif
 
 #define ASL_ASSERT(...)                                                 \
