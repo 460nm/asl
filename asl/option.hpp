@@ -40,6 +40,13 @@ public:
     constexpr option() = default;
     constexpr option(nullopt_t) {} // NOLINT(*-explicit-conversions)
 
+    template<typename U>
+    // NOLINTNEXTLINE(*-explicit-conversions)
+    constexpr option(U&& value) requires constructible<T, U>
+    {
+        construct(ASL_FWD(value));
+    }
+
     constexpr option(const option& other) requires copy_constructible<T>
     {
         if (other.m_has_value)
@@ -116,6 +123,30 @@ public:
             m_has_value = false;
         }
     }
+
+    constexpr bool has_value() const { return m_has_value; }
+
+    // @Todo Do we want this on rvalues? Or maybe some kind of unwrap?
+    constexpr T&& value() &&
+    {
+        ASL_ASSERT(m_has_value); // @Todo Release assert
+        return ASL_MOVE(m_payload).as_init_unsafe();
+    }
+
+    constexpr T& value() &
+    {
+        ASL_ASSERT(m_has_value); // @Todo Release assert
+        return m_payload.as_init_unsafe();
+    }
+
+    constexpr const T& value() const&
+    {
+        ASL_ASSERT(m_has_value); // @Todo Release assert
+        return m_payload.as_init_unsafe();
+    }
 };
+
+template<typename T>
+option(T) -> option<T>;
 
 } // namespace asl

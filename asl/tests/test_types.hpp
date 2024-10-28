@@ -1,5 +1,7 @@
 #pragma once
 
+#include "asl/utility.hpp"
+
 struct DefaultConstructible { DefaultConstructible() {} };
 struct TriviallyDefaultConstructible { TriviallyDefaultConstructible() = default; };
 struct NonDefaultConstructible { NonDefaultConstructible() = delete; };
@@ -22,4 +24,32 @@ struct NonMoveAssignable { NonMoveAssignable& operator=(NonMoveAssignable&&) = d
 
 struct TriviallyDestructible { ~TriviallyDestructible() = default; };
 struct HasDestructor { ~HasDestructor() {} };
+
+struct DestructorObserver
+{
+    bool* destroyed;
+
+    explicit DestructorObserver(bool* destroyed_) : destroyed{destroyed_} {}
+
+    DestructorObserver(DestructorObserver&& other)
+        : destroyed{asl::exchange(other.destroyed, nullptr)}
+    {}
+
+    DestructorObserver& operator=(DestructorObserver&& other)
+    {
+        if (this != &other)
+        {
+            destroyed = asl::exchange(other.destroyed, nullptr);
+        }
+        return *this;
+    }
+
+    ~DestructorObserver()
+    {
+        if (destroyed != nullptr)
+        {
+            *destroyed = true;
+        }
+    }
+};
 

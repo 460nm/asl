@@ -25,14 +25,14 @@ void asl::testing::report_failure(const char* msg, const char* file, int line)
 {
     asl::eprint("--------------------------------------------------------------\n");
     asl::eprint("Test assertion failed at {}, line {}:\n", file, line);
-    asl::eprint("    {}:\n", msg);
+    asl::eprint("    {}\n", msg);
     asl::eprint("--------------------------------------------------------------\n");
     g_current_test_fail = true;
 }
 
 #define RESET "\x1b[0m"
-#define RED "\x1b[0;31m"
-#define GREEN "\x1b[0;32m"
+#define RED(S) "\x1b[0;31m" S RESET
+#define GREEN(S) "\x1b[0;32m" S RESET
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
@@ -41,33 +41,33 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     
     for (auto* it = g_head; it != nullptr; it = it->m_next)
     {
-        asl::eprint(GREEN "[ RUN      ]" RESET " {}\n", it->m_case_name);
+        asl::eprint(GREEN("[ RUN      ]") " {}\n", it->m_case_name);
         
         g_current_test_fail = false;
         it->m_fn();
         
         if (!g_current_test_fail)
         {
-            asl::eprint(GREEN "[       OK ]" RESET " {}\n", it->m_case_name);
+            asl::eprint(GREEN("[       OK ]") " {}\n", it->m_case_name);
             pass += 1;
         }
         else
         {
-            asl::eprint(RED "[  FAILED  ]" RESET " {}\n", it->m_case_name);
+            asl::eprint(RED("[  FAILED  ]") " {}\n", it->m_case_name);
             fail += 1;
         }
     }
     
-    asl::eprint(GREEN "[----------]" RESET " {} test(s) run\n", fail + pass);
+    asl::eprint(GREEN("[----------]") " {} test(s) run\n", fail + pass);
     
     if (fail == 0)
     {
-        asl::eprint(GREEN "[  PASSED  ]" RESET " Good job!\n");
+        asl::eprint(GREEN("[  PASSED  ]") " Good job!\n");
     }
     else
     {
-        asl::eprint(RED "[  FAILED  ]" RESET " {} test(s) failed\n", fail);
+        asl::eprint(RED("[  FAILED  ]") " {} test(s) failed\n", fail);
     }
     
-    return 0;
+    return fail;
 }

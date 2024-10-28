@@ -36,3 +36,11 @@ struct Test
         #CASE,                                      \
         asl_test_fn_##CASE);                        \
     void asl_test_fn_##CASE()
+
+#define ASL_TEST_ASSERT(EXPR) \
+    if (EXPR) {}              \
+    else { ::asl::testing::report_failure(#EXPR, __FILE__, __LINE__); return; }
+
+#define ASL_TEST_EXPECT(EXPR) \
+    if (EXPR) {}              \
+    else { ::asl::testing::report_failure(#EXPR, __FILE__, __LINE__); }

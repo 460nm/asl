@@ -39,9 +39,9 @@ public:
     constexpr       T* init_ptr_unsafe() &      { return &m_value; }
 
     // @Safety Reference must only be accessed when in initialized state.
-    constexpr       T& as_init_unsafe() && = delete;
-    constexpr const T& as_init_unsafe() const& { return m_value; }
-    constexpr       T& as_init_unsafe() &      { return m_value; }
+    constexpr       T&& as_init_unsafe() &&     { return ASL_MOVE(m_value); }
+    constexpr const T&  as_init_unsafe() const& { return m_value; }
+    constexpr       T&  as_init_unsafe() &      { return m_value; }
 
     // @Safety Must be called only when in uninitialized state.
     template<typename... Args>
