@@ -2,7 +2,7 @@
 
 #include "asl/integers.hpp"
 
-constexpr void* operator new(uint64_t, void* ptr)
+constexpr void* operator new(size_t, void* ptr)
 {
     return ptr;
 }
