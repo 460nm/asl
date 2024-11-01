@@ -2,6 +2,13 @@
 #include "asl/tests/test_types.hpp"
 #include "asl/testing/testing.hpp"
 
+class Base {};
+class Derived : public Base {};
+
+static_assert(!asl::is_option<int>);
+static_assert(asl::is_option<asl::option<int>>);
+static_assert(asl::is_option<const asl::option<int>>);
+
 static_assert(asl::trivially_destructible<asl::option<TriviallyDestructible>>);
 static_assert(!asl::trivially_destructible<asl::option<HasDestructor>>);
 
@@ -22,7 +29,38 @@ static_assert(!asl::copy_assignable<asl::option<NonMoveAssignable>>);
 
 static_assert(asl::move_assignable<asl::option<int>>);
 static_assert(asl::move_assignable<asl::option<CopyAssignable>>);
+static_assert(asl::move_assignable<asl::option<MoveAssignable>>);
 static_assert(!asl::move_assignable<asl::option<NonMoveAssignable>>);
+
+static_assert(asl::assignable<asl::option<Base*>&, asl::option<Derived*>>);
+static_assert(!asl::assignable<asl::option<Derived*>&, asl::option<Base*>>);
+
+static_assert(!asl::convertible<asl::option<Base*>, asl::option<Derived*>>);
+static_assert(asl::convertible<asl::option<Derived*>, asl::option<Base*>>);
+
+class ExplicitConversion { public: explicit ExplicitConversion(int) {} };
+class ImplicitConversion { public: ImplicitConversion(int) {} }; // NOLINT
+
+static_assert(!asl::convertible<int, ExplicitConversion>);
+static_assert(asl::convertible<int, ImplicitConversion>);
+
+static_assert(!asl::convertible<int, asl::option<ExplicitConversion>>);
+static_assert(asl::convertible<int, asl::option<ImplicitConversion>>);
+
+static_assert(!asl::convertible<asl::option<int>, asl::option<ExplicitConversion>>);
+static_assert(asl::convertible<asl::option<int>, asl::option<ImplicitConversion>>);
+
+static_assert(asl::trivially_copy_constructible<asl::option<int>>);
+static_assert(!asl::trivially_copy_constructible<asl::option<CopyConstructible>>);
+
+static_assert(asl::trivially_move_constructible<asl::option<int>>);
+static_assert(!asl::trivially_move_constructible<asl::option<MoveConstructible>>);
+
+static_assert(asl::trivially_copy_assignable<asl::option<int>>);
+static_assert(!asl::trivially_copy_assignable<asl::option<CopyAssignable>>);
+
+static_assert(asl::trivially_move_assignable<asl::option<int>>);
+static_assert(!asl::trivially_move_assignable<asl::option<MoveAssignable>>);
 
 ASL_TEST(make_null)
 {
@@ -110,4 +148,44 @@ ASL_TEST(deduction_guide)
 {
     asl::option opt(45);
     ASL_TEST_EXPECT(opt.value() == 45);
+}
+
+ASL_TEST(convert_copy)
+{
+    asl::option<uint8_t> opt8 = uint8_t{8};
+    asl::option<uint16_t> opt16 = opt8;
+    
+    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_EXPECT(opt16.value() == 8);
+
+    opt8 = uint8_t{10};
+    ASL_TEST_EXPECT(opt8.has_value());
+    ASL_TEST_EXPECT(opt8.value() == 10);
+    
+    opt16 = asl::nullopt;
+    ASL_TEST_EXPECT(!opt16.has_value());
+    
+    opt16 = opt8;
+    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_EXPECT(opt16.value() == 10);
+}
+
+ASL_TEST(convert_move)
+{
+    asl::option<uint8_t> opt8 = uint8_t{8};
+    asl::option<uint16_t> opt16 = ASL_MOVE(opt8);
+    
+    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_EXPECT(opt16.value() == 8);
+
+    opt8 = ASL_MOVE(uint8_t{10});
+    ASL_TEST_EXPECT(opt8.has_value());
+    ASL_TEST_EXPECT(opt8.value() == 10);
+    
+    opt16 = asl::nullopt;
+    ASL_TEST_EXPECT(!opt16.has_value());
+    
+    opt16 = ASL_MOVE(opt8);
+    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_EXPECT(opt16.value() == 10);
 }

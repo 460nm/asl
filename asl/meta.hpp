@@ -67,6 +67,9 @@ template<typename T> concept trivially_destructible = __is_trivially_destructibl
 
 template<typename T> concept trivially_copyable = __is_trivially_copyable(T);
 
+template<typename From, typename To>
+concept convertible = __is_convertible(From, To);
+
 using nullptr_t = decltype(nullptr);
 
 template<typename T> struct _un_const_helper          { using type = T; };
@@ -80,6 +83,8 @@ template<typename T> struct _un_volatile_helper<volatile T> { using type = T; };
 template<typename T> using un_volatile_t = _un_volatile_helper<T>::type;
 
 template<typename T> using un_cv_t = un_volatile_t<un_const_t<T>>;
+
+template<typename T> using un_cvref_t = un_ref_t<un_cv_t<T>>;
 
 template<typename T> concept is_void = is_same<void, un_cv_t<T>>;
 

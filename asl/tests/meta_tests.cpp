@@ -168,3 +168,15 @@ static_assert(!asl::trivially_copyable<HasDestructor>);
 static_assert(!asl::trivially_copyable<CopyAssignable>);
 static_assert(asl::trivially_copyable<DefaultConstructible>);
 static_assert(asl::trivially_copyable<TriviallyDefaultConstructible>);
+
+class Base {};
+class Derived : public Base {};
+class C {};
+class D { public: operator C() { return c; } C c; };
+class E { public: template<class T> E(T&&) {} };
+
+static_assert(asl::convertible<Derived*, Base*>);
+static_assert(!asl::convertible<Base*, Derived*>);
+static_assert(asl::convertible<D, C>);
+static_assert(!asl::convertible<Derived*, C*>);
+static_assert(asl::convertible<Base, E>);
