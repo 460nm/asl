@@ -1,5 +1,6 @@
 #include "asl/meta.hpp"
 #include "asl/tests/test_types.hpp"
+#include "asl/testing/testing.hpp"
 
 struct Struct {};
 union Union {};
@@ -180,3 +181,12 @@ static_assert(!asl::convertible<Base*, Derived*>);
 static_assert(asl::convertible<D, C>);
 static_assert(!asl::convertible<Derived*, C*>);
 static_assert(asl::convertible<Base, E>);
+
+static_assert(asl::derived_from<Derived, Base>);
+static_assert(!asl::derived_from<Base, Derived>);
+static_assert(!asl::derived_from<D, C>);
+static_assert(!asl::derived_from<C, D>);
+static_assert(!asl::derived_from<uint8_t, uint16_t>);
+static_assert(!asl::derived_from<uint16_t, uint8_t>);
+static_assert(!asl::derived_from<int, int>);
+

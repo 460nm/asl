@@ -5,6 +5,7 @@ cc_library(
         "assert.hpp",
         "config.hpp",
         "format.hpp",
+        "functional.hpp",
         "integers.hpp",
         "io.hpp",
         "layout.hpp",
@@ -34,6 +35,7 @@ cc_library(
     ],
 ) for name in [
     "format",
+    "functional",
     "integers",
     "maybe_uninit",
     "meta",

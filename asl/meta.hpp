@@ -35,6 +35,8 @@ template<typename T> auto _as_rref_helper(...) -> id<T>;
 template<typename T> using as_lref_t = decltype(_as_lref_helper<T>(0))::type;
 template<typename T> using as_rref_t = decltype(_as_rref_helper<T>(0))::type;
 
+template<typename T> consteval as_rref_t<T> declval() {}
+
 template<typename T> struct _un_ref_t      { using type = T; };
 template<typename T> struct _un_ref_t<T&>  { using type = T; };
 template<typename T> struct _un_ref_t<T&&> { using type = T; };
@@ -67,8 +69,12 @@ template<typename T> concept trivially_destructible = __is_trivially_destructibl
 
 template<typename T> concept trivially_copyable = __is_trivially_copyable(T);
 
+// @Todo Rename concepts (_from)
 template<typename From, typename To>
 concept convertible = __is_convertible(From, To);
+
+template<typename Derived, class Base>
+concept derived_from = __is_class(Derived) && __is_class(Base) && convertible<const volatile Derived*, const volatile Base*>;
 
 using nullptr_t = decltype(nullptr);
 
