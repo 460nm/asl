@@ -198,3 +198,29 @@ ASL_TEST(value_or)
     ASL_TEST_EXPECT(a.value_or(5) == 5);
     ASL_TEST_EXPECT(b.value_or(5) == 2);
 }
+
+ASL_TEST(emplace)
+{
+    asl::option<int> a = asl::nullopt;
+
+    a.emplace(42);
+    ASL_TEST_EXPECT(a.has_value());
+    ASL_TEST_EXPECT(a.value() == 42);
+}
+
+ASL_TEST(emplace_destroys_previous)
+{
+    bool b1 = false;
+    bool b2 = false;
+    
+    {
+        asl::option<DestructorObserver> a{&b1};
+        ASL_TEST_EXPECT(!b1);
+
+        a.emplace(&b2);
+        ASL_TEST_EXPECT(b1);
+        ASL_TEST_EXPECT(!b2);
+    }
+    
+    ASL_TEST_EXPECT(b2);
+}

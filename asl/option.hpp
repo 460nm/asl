@@ -387,6 +387,15 @@ public:
     {
         return has_value() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
     }
+
+    template<typename... Args>
+    T& emplace(Args&&... args) &
+        requires constructible<T, Args&&...>
+    {
+        if (m_has_value) { reset(); }
+        construct(ASL_FWD(args)...);
+        return value();
+    }
 };
 
 template<typename T>
