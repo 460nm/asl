@@ -373,6 +373,20 @@ public:
             return m_payload.as_init_unsafe();
         }
     }
+
+    template<typename U>
+    constexpr T value_or(U&& other_value) const&
+        requires copy_constructible<T> && convertible<U&&, T>
+    {
+        return has_value() ? value() : static_cast<T>(ASL_FWD(other_value));
+    }
+
+    template<typename U>
+    constexpr T value_or(U&& other_value) &&
+        requires move_constructible<T> && convertible<U&&, T>
+    {
+        return has_value() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
+    }
 };
 
 template<typename T>

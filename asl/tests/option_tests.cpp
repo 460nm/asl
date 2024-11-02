@@ -189,3 +189,12 @@ ASL_TEST(convert_move)
     ASL_TEST_EXPECT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 10);
 }
+
+ASL_TEST(value_or)
+{
+    asl::option<int> a = asl::nullopt;
+    asl::option<int> b = 2;
+
+    ASL_TEST_EXPECT(a.value_or(5) == 5);
+    ASL_TEST_EXPECT(b.value_or(5) == 2);
+}
