@@ -155,18 +155,18 @@ ASL_TEST(convert_copy)
     asl::option<uint8_t> opt8 = uint8_t{8};
     asl::option<uint16_t> opt16 = opt8;
     
-    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 8);
 
     opt8 = uint8_t{10};
-    ASL_TEST_EXPECT(opt8.has_value());
+    ASL_TEST_ASSERT(opt8.has_value());
     ASL_TEST_EXPECT(opt8.value() == 10);
     
     opt16 = asl::nullopt;
     ASL_TEST_EXPECT(!opt16.has_value());
     
     opt16 = opt8;
-    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 10);
 }
 
@@ -175,18 +175,18 @@ ASL_TEST(convert_move)
     asl::option<uint8_t> opt8 = uint8_t{8};
     asl::option<uint16_t> opt16 = ASL_MOVE(opt8);
     
-    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 8);
 
     opt8 = ASL_MOVE(uint8_t{10});
-    ASL_TEST_EXPECT(opt8.has_value());
+    ASL_TEST_ASSERT(opt8.has_value());
     ASL_TEST_EXPECT(opt8.value() == 10);
     
     opt16 = asl::nullopt;
     ASL_TEST_EXPECT(!opt16.has_value());
     
     opt16 = ASL_MOVE(opt8);
-    ASL_TEST_EXPECT(opt16.has_value());
+    ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 10);
 }
 
@@ -204,7 +204,7 @@ ASL_TEST(emplace)
     asl::option<int> a = asl::nullopt;
 
     a.emplace(42);
-    ASL_TEST_EXPECT(a.has_value());
+    ASL_TEST_ASSERT(a.has_value());
     ASL_TEST_EXPECT(a.value() == 42);
 }
 
@@ -223,4 +223,21 @@ ASL_TEST(emplace_destroys_previous)
     }
     
     ASL_TEST_EXPECT(b2);
+}
+
+ASL_TEST(and_then)
+{
+    asl::option<int> a = 5;
+    asl::option<int> b;
+
+    auto fn = [](int x) -> asl::option<float> { return static_cast<float>(x) + 0.5F; };
+
+    auto a2 = a.and_then(fn);
+    static_assert(asl::is_same<decltype(a2), asl::option<float>>);
+    ASL_TEST_ASSERT(a2.has_value());
+    ASL_TEST_EXPECT(a2.value() == 5.5F);
+
+    auto b2 = b.and_then(fn);
+    static_assert(asl::is_same<decltype(b2), asl::option<float>>);
+    ASL_TEST_ASSERT(!b2.has_value());
 }

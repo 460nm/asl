@@ -3,6 +3,7 @@
 #include "asl/assert.hpp"
 #include "asl/meta.hpp"
 #include "asl/maybe_uninit.hpp"
+#include "asl/functional.hpp"
 
 namespace asl
 {
@@ -334,7 +335,6 @@ public:
 
     constexpr bool has_value() const { return m_has_value; }
 
-    // @Todo Do we want this on rvalues? Or maybe some kind of unwrap?
     constexpr T&& value() &&
     {
         ASL_ASSERT(m_has_value); // @Todo Release assert
@@ -389,12 +389,45 @@ public:
     }
 
     template<typename... Args>
-    T& emplace(Args&&... args) &
+    constexpr T& emplace(Args&&... args) &
         requires constructible<T, Args&&...>
     {
         if (m_has_value) { reset(); }
         construct(ASL_FWD(args)...);
         return value();
+    }
+
+    template<typename F>
+    constexpr auto and_then(F&& f) &
+        requires is_option<result_of_t<F(T&)>>
+    {
+        if (has_value())
+        {
+            return invoke(ASL_FWD(f), value());
+        }
+        return un_cvref_t<result_of_t<F(T&)>>{};
+    }
+
+    template<typename F>
+    constexpr auto and_then(F&& f) const&
+        requires is_option<result_of_t<F(const T&)>>
+    {
+        if (has_value())
+        {
+            return invoke(ASL_FWD(f), value());
+        }
+        return un_cvref_t<result_of_t<F(const T&)>>{};
+    }
+
+    template<typename F>
+    constexpr auto and_then(F&& f) &&
+        requires is_option<result_of_t<F(T)>>
+    {
+        if (has_value())
+        {
+            return invoke(ASL_FWD(f), ASL_MOVE(value()));
+        }
+        return un_cvref_t<result_of_t<F(T)>>{};
     }
 };
 
