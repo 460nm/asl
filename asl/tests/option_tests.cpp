@@ -241,3 +241,38 @@ ASL_TEST(and_then)
     static_assert(asl::is_same<decltype(b2), asl::option<float>>);
     ASL_TEST_ASSERT(!b2.has_value());
 }
+
+ASL_TEST(transform)
+{
+    asl::option<int> a = 5;
+    asl::option<int> b;
+
+    auto fn = [](int x) -> float { return static_cast<float>(x) + 0.5F; };
+
+    auto a2 = a.transform(fn);
+    static_assert(asl::is_same<decltype(a2), asl::option<float>>);
+    ASL_TEST_ASSERT(a2.has_value());
+    ASL_TEST_EXPECT(a2.value() == 5.5F);
+
+    auto b2 = b.transform(fn);
+    static_assert(asl::is_same<decltype(b2), asl::option<float>>);
+    ASL_TEST_ASSERT(!b2.has_value());
+}
+
+ASL_TEST(or_else)
+{
+    asl::option<int> a = 5;
+    asl::option<int> b;
+
+    auto fn = []() -> asl::option<int> { return 12; };
+
+    auto a2 = a.or_else(fn);
+    static_assert(asl::is_same<decltype(a2), asl::option<int>>);
+    ASL_TEST_ASSERT(a2.has_value());
+    ASL_TEST_EXPECT(a2.value() == 5);
+
+    auto b2 = b.or_else(fn);
+    static_assert(asl::is_same<decltype(b2), asl::option<int>>);
+    ASL_TEST_ASSERT(b2.has_value());
+    ASL_TEST_EXPECT(b2.value() == 12);
+}

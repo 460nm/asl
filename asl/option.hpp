@@ -429,6 +429,53 @@ public:
         }
         return un_cvref_t<result_of_t<F(T)>>{};
     }
+
+    template<typename F>
+    constexpr auto transform(F&& f) &
+    {
+        using U = un_cvref_t<result_of_t<F(T&)>>;
+        if (has_value())
+        {
+            return option<U>{ invoke(ASL_FWD(f), value()) };
+        }
+        return option<U>{};
+    }
+
+    template<typename F>
+    constexpr auto transform(F&& f) const&
+    {
+        using U = un_cvref_t<result_of_t<F(const T&)>>;
+        if (has_value())
+        {
+            return option<U>{ invoke(ASL_FWD(f), value()) };
+        }
+        return option<U>{};
+    }
+
+    template<typename F>
+    constexpr auto transform(F&& f) &&
+    {
+        using U = un_cvref_t<result_of_t<F(T)>>;
+        if (has_value())
+        {
+            return option<U>{ invoke(ASL_FWD(f), ASL_MOVE(value())) };
+        }
+        return option<U>{};
+    }
+
+    template<typename F>
+    constexpr option or_else(F&& f) const&
+        requires is_same<un_cvref_t<result_of_t<F()>>, option>
+    {
+        return has_value() ? *this : invoke(ASL_FWD(f));
+    }
+
+    template<typename F>
+    constexpr option or_else(F&& f) &&
+        requires is_same<un_cvref_t<result_of_t<F()>>, option>
+    {
+        return has_value() ? ASL_MOVE(*this) : invoke(ASL_FWD(f));
+    }
 };
 
 template<typename T>
