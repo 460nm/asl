@@ -21,14 +21,14 @@ struct Functor
 
 static int some_func0() { return 1; }
 static int some_func1(int x) { return x + 1; }
-static float some_func1(float x) { return x + 1; }
+[[maybe_unused]] static float some_func1(float x) { return x + 1; }
 static int some_func2(int x, int b) { return x + b; }
 
-static_assert(asl::is_same<asl::result_of_t<Functor()>, int64_t>);
-static_assert(asl::is_same<asl::result_of_t<Functor(int)>, int>);
-static_assert(asl::is_same<asl::result_of_t<decltype(static_cast<float(*)(float)>(some_func1))(float)>, float>);
-static_assert(asl::is_same<asl::result_of_t<decltype(&HasFunction::do_something)(HasFunction, int, float)>, void>);
-static_assert(asl::is_same<asl::result_of_t<decltype(&HasMember::member)(HasMember)>, int>);
+static_assert(asl::same_as<asl::result_of_t<Functor()>, int64_t>);
+static_assert(asl::same_as<asl::result_of_t<Functor(int)>, int>);
+static_assert(asl::same_as<asl::result_of_t<decltype(static_cast<float(*)(float)>(some_func1))(float)>, float>);
+static_assert(asl::same_as<asl::result_of_t<decltype(&HasFunction::do_something)(HasFunction, int, float)>, void>);
+static_assert(asl::same_as<asl::result_of_t<decltype(&HasMember::member)(HasMember)>, int>);
 
 ASL_TEST(invoke_member_function)
 {

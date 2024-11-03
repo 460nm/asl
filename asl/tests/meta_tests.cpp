@@ -1,17 +1,16 @@
 #include "asl/meta.hpp"
 #include "asl/tests/test_types.hpp"
-#include "asl/testing/testing.hpp"
 
 struct Struct {};
 union Union {};
-enum Enum { EnumVariant = 0, };
-enum class EnumClass { Variant = 0, };
+enum Enum : uint8_t { EnumVariant = 0, };
+enum class EnumClass : uint8_t { Variant = 0, };
 
-static_assert(!asl::is_same<long, short>);
-static_assert(asl::is_same<int, int>);
+static_assert(!asl::same_as<long, short>);
+static_assert(asl::same_as<int, int>);
 
-static_assert(asl::is_same<asl::select_t<false, int, float>, float>);
-static_assert(asl::is_same<asl::select_t<true, int, float>, int>);
+static_assert(asl::same_as<asl::select_t<false, int, float>, float>);
+static_assert(asl::same_as<asl::select_t<true, int, float>, int>);
 
 static_assert(asl::default_constructible<int>);
 static_assert(asl::default_constructible<TriviallyDefaultConstructible>);
@@ -67,18 +66,18 @@ static_assert(asl::trivially_destructible<int>);
 static_assert(asl::trivially_destructible<TriviallyDestructible>);
 static_assert(!asl::trivially_destructible<HasDestructor>);
 
-static_assert(asl::is_same<int, asl::un_const_t<int>>);
-static_assert(asl::is_same<int, asl::un_const_t<const int>>);
-static_assert(asl::is_same<const int&, asl::un_const_t<const int&>>);
+static_assert(asl::same_as<int, asl::un_const_t<int>>);
+static_assert(asl::same_as<int, asl::un_const_t<const int>>);
+static_assert(asl::same_as<const int&, asl::un_const_t<const int&>>);
 
-static_assert(asl::is_same<int, asl::un_volatile_t<int>>);
-static_assert(asl::is_same<int, asl::un_volatile_t<volatile int>>);
-static_assert(asl::is_same<volatile int&, asl::un_volatile_t<volatile int&>>);
+static_assert(asl::same_as<int, asl::un_volatile_t<int>>);
+static_assert(asl::same_as<int, asl::un_volatile_t<volatile int>>);
+static_assert(asl::same_as<volatile int&, asl::un_volatile_t<volatile int&>>);
 
-static_assert(asl::is_same<int, asl::un_cv_t<int>>);
-static_assert(asl::is_same<int, asl::un_cv_t<const int>>);
-static_assert(asl::is_same<int, asl::un_cv_t<const volatile int>>);
-static_assert(asl::is_same<int, asl::un_cv_t<volatile int>>);
+static_assert(asl::same_as<int, asl::un_cv_t<int>>);
+static_assert(asl::same_as<int, asl::un_cv_t<const int>>);
+static_assert(asl::same_as<int, asl::un_cv_t<const volatile int>>);
+static_assert(asl::same_as<int, asl::un_cv_t<volatile int>>);
 
 static_assert(asl::is_void<void>);
 static_assert(asl::is_void<const void>);
@@ -108,14 +107,14 @@ static_assert(!asl::is_ptr<void>);
 static_assert(!asl::is_ptr<void()>);
 static_assert(!asl::is_ptr<void() const &&>);
 
-static_assert(asl::is_same<int, asl::tame_t<int>>);
-static_assert(asl::is_same<int(), asl::tame_t<int()>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float)>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float) &>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float) const &&>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float) volatile noexcept>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float) && noexcept>>);
-static_assert(asl::is_same<int(float), asl::tame_t<int(float) const>>);
+static_assert(asl::same_as<int, asl::tame_t<int>>);
+static_assert(asl::same_as<int(), asl::tame_t<int()>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float)>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float) &>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float) const &&>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float) volatile noexcept>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float) && noexcept>>);
+static_assert(asl::same_as<int(float), asl::tame_t<int(float) const>>);
 
 static_assert(asl::is_func<void()>);
 static_assert(asl::is_func<void(int)>);
@@ -154,10 +153,10 @@ static_assert(!asl::is_array<void>);
 static_assert(!asl::is_array<void(int)>);
 static_assert(!asl::is_array<int(float) const && noexcept>);
 
-static_assert(asl::is_same<int, asl::un_ref_t<int>>);
-static_assert(asl::is_same<int, asl::un_ref_t<int&>>);
-static_assert(asl::is_same<int, asl::un_ref_t<int&&>>);
-static_assert(asl::is_same<int() &, asl::un_ref_t<int() &>>);
+static_assert(asl::same_as<int, asl::un_ref_t<int>>);
+static_assert(asl::same_as<int, asl::un_ref_t<int&>>);
+static_assert(asl::same_as<int, asl::un_ref_t<int&&>>);
+static_assert(asl::same_as<int() &, asl::un_ref_t<int() &>>);
 
 static_assert(asl::types_count<int, float> == 2);
 static_assert(asl::types_count<int, int> == 2);
@@ -173,14 +172,14 @@ static_assert(asl::trivially_copyable<TriviallyDefaultConstructible>);
 class Base {};
 class Derived : public Base {};
 class C {};
-class D { public: operator C() { return c; } C c; };
-class E { public: template<class T> E(T&&) {} };
+class D { public: operator C() { return c; } C c; }; // NOLINT
+class E { public: template<class T> E(T&&) {} }; // NOLINT
 
-static_assert(asl::convertible<Derived*, Base*>);
-static_assert(!asl::convertible<Base*, Derived*>);
-static_assert(asl::convertible<D, C>);
-static_assert(!asl::convertible<Derived*, C*>);
-static_assert(asl::convertible<Base, E>);
+static_assert(asl::convertible_from<Base*, Derived*>);
+static_assert(!asl::convertible_from<Derived*, Base*>);
+static_assert(asl::convertible_from<C, D>);
+static_assert(!asl::convertible_from<C*, Derived*>);
+static_assert(asl::convertible_from<E, Base>);
 
 static_assert(asl::derived_from<Derived, Base>);
 static_assert(!asl::derived_from<Base, Derived>);

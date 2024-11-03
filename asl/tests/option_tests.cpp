@@ -32,23 +32,23 @@ static_assert(asl::move_assignable<asl::option<CopyAssignable>>);
 static_assert(asl::move_assignable<asl::option<MoveAssignable>>);
 static_assert(!asl::move_assignable<asl::option<NonMoveAssignable>>);
 
-static_assert(asl::assignable<asl::option<Base*>&, asl::option<Derived*>>);
-static_assert(!asl::assignable<asl::option<Derived*>&, asl::option<Base*>>);
+static_assert(asl::assignable_from<asl::option<Base*>&, asl::option<Derived*>>);
+static_assert(!asl::assignable_from<asl::option<Derived*>&, asl::option<Base*>>);
 
-static_assert(!asl::convertible<asl::option<Base*>, asl::option<Derived*>>);
-static_assert(asl::convertible<asl::option<Derived*>, asl::option<Base*>>);
+static_assert(asl::convertible_from<asl::option<Base*>, asl::option<Derived*>>);
+static_assert(!asl::convertible_from<asl::option<Derived*>, asl::option<Base*>>);
 
 class ExplicitConversion { public: explicit ExplicitConversion(int) {} };
 class ImplicitConversion { public: ImplicitConversion(int) {} }; // NOLINT
 
-static_assert(!asl::convertible<int, ExplicitConversion>);
-static_assert(asl::convertible<int, ImplicitConversion>);
+static_assert(!asl::convertible_from<ExplicitConversion, int>);
+static_assert(asl::convertible_from<ImplicitConversion, int>);
 
-static_assert(!asl::convertible<int, asl::option<ExplicitConversion>>);
-static_assert(asl::convertible<int, asl::option<ImplicitConversion>>);
+static_assert(!asl::convertible_from<asl::option<ExplicitConversion>, int>);
+static_assert(asl::convertible_from<asl::option<ImplicitConversion>, int>);
 
-static_assert(!asl::convertible<asl::option<int>, asl::option<ExplicitConversion>>);
-static_assert(asl::convertible<asl::option<int>, asl::option<ImplicitConversion>>);
+static_assert(!asl::convertible_from<asl::option<ExplicitConversion>, asl::option<int>>);
+static_assert(asl::convertible_from<asl::option<ImplicitConversion>, asl::option<int>>);
 
 static_assert(asl::trivially_copy_constructible<asl::option<int>>);
 static_assert(!asl::trivially_copy_constructible<asl::option<CopyConstructible>>);
@@ -233,12 +233,12 @@ ASL_TEST(and_then)
     auto fn = [](int x) -> asl::option<float> { return static_cast<float>(x) + 0.5F; };
 
     auto a2 = a.and_then(fn);
-    static_assert(asl::is_same<decltype(a2), asl::option<float>>);
+    static_assert(asl::same_as<decltype(a2), asl::option<float>>);
     ASL_TEST_ASSERT(a2.has_value());
     ASL_TEST_EXPECT(a2.value() == 5.5F);
 
     auto b2 = b.and_then(fn);
-    static_assert(asl::is_same<decltype(b2), asl::option<float>>);
+    static_assert(asl::same_as<decltype(b2), asl::option<float>>);
     ASL_TEST_ASSERT(!b2.has_value());
 }
 
@@ -250,12 +250,12 @@ ASL_TEST(transform)
     auto fn = [](int x) -> float { return static_cast<float>(x) + 0.5F; };
 
     auto a2 = a.transform(fn);
-    static_assert(asl::is_same<decltype(a2), asl::option<float>>);
+    static_assert(asl::same_as<decltype(a2), asl::option<float>>);
     ASL_TEST_ASSERT(a2.has_value());
     ASL_TEST_EXPECT(a2.value() == 5.5F);
 
     auto b2 = b.transform(fn);
-    static_assert(asl::is_same<decltype(b2), asl::option<float>>);
+    static_assert(asl::same_as<decltype(b2), asl::option<float>>);
     ASL_TEST_ASSERT(!b2.has_value());
 }
 
@@ -267,12 +267,12 @@ ASL_TEST(or_else)
     auto fn = []() -> asl::option<int> { return 12; };
 
     auto a2 = a.or_else(fn);
-    static_assert(asl::is_same<decltype(a2), asl::option<int>>);
+    static_assert(asl::same_as<decltype(a2), asl::option<int>>);
     ASL_TEST_ASSERT(a2.has_value());
     ASL_TEST_EXPECT(a2.value() == 5);
 
     auto b2 = b.or_else(fn);
-    static_assert(asl::is_same<decltype(b2), asl::option<int>>);
+    static_assert(asl::same_as<decltype(b2), asl::option<int>>);
     ASL_TEST_ASSERT(b2.has_value());
     ASL_TEST_EXPECT(b2.value() == 12);
 }

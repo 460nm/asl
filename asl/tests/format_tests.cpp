@@ -34,7 +34,7 @@ public:
     }
 };
 
-ASL_TEST(Format)
+ASL_TEST(format_args)
 {
     StringSink sink;
 
@@ -79,7 +79,12 @@ ASL_TEST(Format)
     sink.reset();
     asl::format(&sink, "{{{}}} }", "CHEESE");
     ASL_TEST_ASSERT(strcmp(sink.cstr(), "{CHEESE} }") == 0);
+}
 
+ASL_TEST(format_integers)
+{
+    StringSink sink;
+    
     sink.reset();
     asl::format(&sink, "{} {} {}", 0, 1, 2);
     ASL_TEST_ASSERT(strcmp(sink.cstr(), "0 1 2") == 0);
@@ -99,7 +104,12 @@ ASL_TEST(Format)
     sink.reset();
     asl::format(&sink, "{} {} {} {}", -1, -23, -456, -7890);
     ASL_TEST_ASSERT(strcmp(sink.cstr(), "-1 -23 -456 -7890") == 0);
+}
 
+ASL_TEST(format_boolean)
+{
+    StringSink sink;
+    
     sink.reset();
     asl::format(&sink, "{} {}", true, false);
     ASL_TEST_ASSERT(strcmp(sink.cstr(), "true false") == 0);

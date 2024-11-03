@@ -23,24 +23,24 @@ namespace option_internal
 
 template<typename T, typename U>
 concept convertible_from_option =
-    convertible<option<U>&, T> &&
-    convertible<const option<U>&, T> &&
-    convertible<option<U>&&, T> &&
-    convertible<const option<U>&&, T>;
+    convertible_from<T, option<U>&> &&
+    convertible_from<T, const option<U>&> &&
+    convertible_from<T, option<U>&&> &&
+    convertible_from<T, const option<U>&&>;
 
 template<typename T, typename U>
 concept constructible_from_option = 
-    constructible<T, option<U>&> &&
-    constructible<T, const option<U>&> &&
-    constructible<T, option<U>&&> &&
-    constructible<T, const option<U>&&>;
+    constructible_from<T, option<U>&> &&
+    constructible_from<T, const option<U>&> &&
+    constructible_from<T, option<U>&&> &&
+    constructible_from<T, const option<U>&&>;
 
 template<typename T, typename U>
 concept assignable_from_option = 
-    assignable<T&, option<U>&> &&
-    assignable<T&, const option<U>&> &&
-    assignable<T&, option<U>&&> &&
-    assignable<T&, const option<U>&&>;
+    assignable_from<T&, option<U>&> &&
+    assignable_from<T&, const option<U>&> &&
+    assignable_from<T&, option<U>&&> &&
+    assignable_from<T&, const option<U>&&>;
 
 template<typename T, typename U>
 concept convertible_constructible_from_option = 
@@ -57,7 +57,7 @@ template<typename T>
 concept is_option = requires
 {
     typename T::type;
-    requires is_same<un_cvref_t<T>, option<typename T::type>>;
+    requires same_as<un_cvref_t<T>, option<typename T::type>>;
 };
 
 template<is_object T>
@@ -112,11 +112,11 @@ public:
     constexpr option(nullopt_t) {} // NOLINT(*-explicit-conversions)
 
     template<typename U = T>
-    constexpr explicit (!convertible<U&&, T>)
+    constexpr explicit (!convertible_from<T, U&&>)
     option(U&& value)
         requires (
-            constructible<T, U> &&
-            !is_same<un_cvref_t<U>, option>
+            constructible_from<T, U> &&
+            !same_as<un_cvref_t<U>, option>
         )
     {
         construct(ASL_FWD(value));
@@ -150,10 +150,10 @@ public:
     }
 
     template<typename U>
-    constexpr explicit (!convertible<const U&, T>)
+    constexpr explicit (!convertible_from<T, const U&>)
     option(const option<U>& other)
         requires (
-            constructible<T, const U&> && 
+            constructible_from<T, const U&> && 
             !option_internal::convertible_constructible_from_option<T, U>
         )
     {
@@ -164,10 +164,10 @@ public:
     }
 
     template<typename U>
-    constexpr explicit (!convertible<U&&, T>)
+    constexpr explicit (!convertible_from<T, U&&>)
     option(option<U>&& other)
         requires (
-            constructible<T, U&&> &&
+            constructible_from<T, U&&> &&
             !option_internal::convertible_constructible_from_option<T, U>
         )
     {
@@ -186,9 +186,9 @@ public:
     template<typename U = T>
     constexpr option& operator=(U&& value) &
         requires (
-            assignable<T&, U> &&
-            constructible<T, U> && 
-            !is_same<un_cvref_t<U>, option>
+            assignable_from<T&, U> &&
+            constructible_from<T, U> && 
+            !same_as<un_cvref_t<U>, option>
         )
     {
         if (m_has_value)
@@ -263,8 +263,8 @@ public:
     template<typename U = T>
     constexpr option& operator=(const option<U>& other) &
         requires (
-            constructible<T, const U&> &&
-            assignable<T&, const U&> &&
+            constructible_from<T, const U&> &&
+            assignable_from<T&, const U&> &&
             !option_internal::convertible_constructible_assignable_from_option<T, U>
         )
     {
@@ -290,8 +290,8 @@ public:
     template<typename U = T>
     constexpr option& operator=(option<U>&& other) &
         requires (
-            constructible<T, U> &&
-            assignable<T&, U> &&
+            constructible_from<T, U> &&
+            assignable_from<T&, U> &&
             !option_internal::convertible_constructible_assignable_from_option<T, U>
         )
     {
@@ -337,7 +337,7 @@ public:
 
     constexpr T&& value() &&
     {
-        ASL_ASSERT(m_has_value); // @Todo Release assert
+        ASL_ASSERT_RELEASE(m_has_value);
         if constexpr (kIsTrivial)
         {
             return ASL_MOVE(m_payload);
@@ -350,7 +350,7 @@ public:
 
     constexpr T& value() &
     {
-        ASL_ASSERT(m_has_value); // @Todo Release assert
+        ASL_ASSERT_RELEASE(m_has_value);
         if constexpr (kIsTrivial)
         {
             return m_payload;
@@ -363,7 +363,7 @@ public:
 
     constexpr const T& value() const&
     {
-        ASL_ASSERT(m_has_value); // @Todo Release assert
+        ASL_ASSERT_RELEASE(m_has_value);
         if constexpr (kIsTrivial)
         {
             return m_payload;
@@ -376,21 +376,21 @@ public:
 
     template<typename U>
     constexpr T value_or(U&& other_value) const&
-        requires copy_constructible<T> && convertible<U&&, T>
+        requires copy_constructible<T> && convertible_from<T, U&&>
     {
         return has_value() ? value() : static_cast<T>(ASL_FWD(other_value));
     }
 
     template<typename U>
     constexpr T value_or(U&& other_value) &&
-        requires move_constructible<T> && convertible<U&&, T>
+        requires move_constructible<T> && convertible_from<T, U&&>
     {
         return has_value() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
     }
 
     template<typename... Args>
     constexpr T& emplace(Args&&... args) &
-        requires constructible<T, Args&&...>
+        requires constructible_from<T, Args&&...>
     {
         if (m_has_value) { reset(); }
         construct(ASL_FWD(args)...);
@@ -465,14 +465,14 @@ public:
 
     template<typename F>
     constexpr option or_else(F&& f) const&
-        requires is_same<un_cvref_t<result_of_t<F()>>, option>
+        requires same_as<un_cvref_t<result_of_t<F()>>, option>
     {
         return has_value() ? *this : invoke(ASL_FWD(f));
     }
 
     template<typename F>
     constexpr option or_else(F&& f) &&
-        requires is_same<un_cvref_t<result_of_t<F()>>, option>
+        requires same_as<un_cvref_t<result_of_t<F()>>, option>
     {
         return has_value() ? ASL_MOVE(*this) : invoke(ASL_FWD(f));
     }

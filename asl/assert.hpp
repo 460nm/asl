@@ -11,3 +11,7 @@
 #define ASL_ASSERT(...)                                                 \
     if (__VA_ARGS__) {}                                                 \
     else { ASL_DEBUG_BREAK(); }
+
+#define ASL_ASSERT_RELEASE(...)                                         \
+    if (__VA_ARGS__) {}                                                 \
+    else { ASL_DEBUG_BREAK(); }

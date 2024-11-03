@@ -24,7 +24,7 @@ template<bool kSelect, typename U, typename V> using select_t = _select_helper<k
 template<typename U, typename V> struct _is_same_helper       : false_type {};
 template<typename T>             struct _is_same_helper<T, T> : true_type {};
 
-template<typename U, typename V> concept is_same = _is_same_helper<U, V>::value && _is_same_helper<V, U>::value;
+template<typename U, typename V> concept same_as = _is_same_helper<U, V>::value && _is_same_helper<V, U>::value;
 
 template<typename T> auto _as_lref_helper(int) -> id<T&>;
 template<typename T> auto _as_lref_helper(...) -> id<T>;
@@ -43,38 +43,37 @@ template<typename T> struct _un_ref_t<T&&> { using type = T; };
 
 template<typename T> using un_ref_t = _un_ref_t<T>::type;
 
-template<typename T, typename... Args> concept constructible = __is_constructible(T, Args...);
+template<typename T, typename... Args> concept constructible_from = __is_constructible(T, Args...);
 
-template<typename T> concept default_constructible = constructible<T>;
-template<typename T> concept copy_constructible    = constructible<T, as_lref_t<const T>>;
-template<typename T> concept move_constructible    = constructible<T, as_rref_t<T>>;
+template<typename T> concept default_constructible = constructible_from<T>;
+template<typename T> concept copy_constructible    = constructible_from<T, as_lref_t<const T>>;
+template<typename T> concept move_constructible    = constructible_from<T, as_rref_t<T>>;
 
-template<typename T, typename... Args> concept trivially_constructible = __is_trivially_constructible(T, Args...);
+template<typename T, typename... Args> concept trivially_constructible_from = __is_trivially_constructible(T, Args...);
 
-template<typename T> concept trivially_default_constructible = trivially_constructible<T>;
-template<typename T> concept trivially_copy_constructible    = trivially_constructible<T, as_lref_t<const T>>;
-template<typename T> concept trivially_move_constructible    = trivially_constructible<T, as_rref_t<T>>;
+template<typename T> concept trivially_default_constructible = trivially_constructible_from<T>;
+template<typename T> concept trivially_copy_constructible    = trivially_constructible_from<T, as_lref_t<const T>>;
+template<typename T> concept trivially_move_constructible    = trivially_constructible_from<T, as_rref_t<T>>;
 
-template<typename T, typename... Args> concept assignable = __is_assignable(T, Args...);
+template<typename T, typename... Args> concept assignable_from = __is_assignable(T, Args...);
 
-template<typename T> concept copy_assignable = assignable<as_lref_t<T>, as_lref_t<const T>>;
-template<typename T> concept move_assignable = assignable<as_lref_t<T>, as_rref_t<T>>;
+template<typename T> concept copy_assignable = assignable_from<as_lref_t<T>, as_lref_t<const T>>;
+template<typename T> concept move_assignable = assignable_from<as_lref_t<T>, as_rref_t<T>>;
 
-template<typename T, typename... Args> concept trivially_assignable = __is_trivially_assignable(T, Args...);
+template<typename T, typename... Args> concept trivially_assignable_from = __is_trivially_assignable(T, Args...);
 
-template<typename T> concept trivially_copy_assignable = trivially_assignable<as_lref_t<T>, as_lref_t<const T>>;
-template<typename T> concept trivially_move_assignable = trivially_assignable<as_lref_t<T>, as_rref_t<T>>;
+template<typename T> concept trivially_copy_assignable = trivially_assignable_from<as_lref_t<T>, as_lref_t<const T>>;
+template<typename T> concept trivially_move_assignable = trivially_assignable_from<as_lref_t<T>, as_rref_t<T>>;
 
 template<typename T> concept trivially_destructible = __is_trivially_destructible(T);
 
 template<typename T> concept trivially_copyable = __is_trivially_copyable(T);
 
-// @Todo Rename concepts (_from)
-template<typename From, typename To>
-concept convertible = __is_convertible(From, To);
+template<typename To, typename From>
+concept convertible_from = __is_convertible(From, To);
 
 template<typename Derived, class Base>
-concept derived_from = __is_class(Derived) && __is_class(Base) && convertible<const volatile Derived*, const volatile Base*>;
+concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_from<const volatile Base*, const volatile Derived*>;
 
 using nullptr_t = decltype(nullptr);
 
@@ -92,7 +91,7 @@ template<typename T> using un_cv_t = un_volatile_t<un_const_t<T>>;
 
 template<typename T> using un_cvref_t = un_ref_t<un_cv_t<T>>;
 
-template<typename T> concept is_void = is_same<void, un_cv_t<T>>;
+template<typename T> concept is_void = same_as<void, un_cv_t<T>>;
 
 template<typename T> struct _is_ref_helper      { static constexpr bool l = false; static constexpr bool r = false; };
 template<typename T> struct _is_ref_helper<T&>  { static constexpr bool l = true;  static constexpr bool r = false; };
