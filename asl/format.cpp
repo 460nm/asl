@@ -5,14 +5,13 @@
 void asl::format_internals::format(
     writer* writer,
     const char* fmt,
-    const type_erased_arg* args,
-    int64_t arg_count)
+    span<const type_erased_arg> args)
 {
     formatter f(writer);
 
-
-    int64_t arg = 0;
-
+    const auto* arg_it = args.begin();
+    const auto* arg_end = args.end();
+    
     const char* begin = fmt;
     while (*fmt != '\0')
     {
@@ -20,14 +19,14 @@ void asl::format_internals::format(
         {
             if (fmt[1] == '}')
             {
-                if (arg < arg_count)
+                if (arg_it < arg_end)
                 {
                     f.write(begin, fmt - begin);
                     fmt += 2;
                     begin = fmt;
 
-                    args[arg].fn(f, args[arg].data);
-                    arg += 1;
+                    arg_it->fn(f, arg_it->data);
+                    arg_it++; // NOLINT(*-pointer-arithmetic)
                 }
                 else
                 {
@@ -168,7 +167,7 @@ void asl::AslFormat(formatter& f, uint64_t v)
     else if (v > 0 || cursor == kMaxDigits)
     {
         ASL_ASSERT(v < 10);
-        write_one('0' + (char)v);
+        write_one('0' + static_cast<char>(v));
     }
 
     f.write(buffer + cursor, kMaxDigits - cursor);

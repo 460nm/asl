@@ -3,6 +3,7 @@
 #include "asl/integers.hpp"
 #include "asl/meta.hpp"
 #include "asl/io.hpp"
+#include "asl/span.hpp"
 
 namespace asl
 {
@@ -37,7 +38,7 @@ struct type_erased_arg
 };
 
 // @Todo Use span
-void format(writer*, const char* fmt, const type_erased_arg* args, int64_t arg_count);
+void format(writer*, const char* fmt, span<const type_erased_arg> args);
 
 } // namespace internals
 
@@ -67,11 +68,11 @@ void format(writer* w, const char* fmt, const Args&... args)
             format_internals::type_erased_arg(args)...
         };
 
-        format_internals::format(w, fmt, type_erased_args, types_count<Args...>);
+        format_internals::format(w, fmt, type_erased_args);
     }
     else
     {
-        format_internals::format(w, fmt, nullptr, 0);
+        format_internals::format(w, fmt, {});
     }
 }
 
