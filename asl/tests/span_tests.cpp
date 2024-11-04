@@ -38,6 +38,10 @@ ASL_TEST(from_array_dynamic)
     ASL_TEST_EXPECT(span[2] == 3);
 }
 
+static_assert(asl::default_constructible<asl::span<int>>);
+static_assert(asl::default_constructible<asl::span<int, 0>>);
+static_assert(!asl::default_constructible<asl::span<int, 8>>);
+
 static_assert(asl::constructible_from<asl::span<int32_t>, int32_t(&)[8]>);
 static_assert(!asl::constructible_from<asl::span<int32_t>, const int32_t(&)[8]>);
 static_assert(asl::constructible_from<asl::span<const int32_t>, int32_t(&)[8]>);
@@ -88,4 +92,126 @@ ASL_TEST(conversion)
     ASL_TEST_EXPECT(span4[0] == 1);
     ASL_TEST_EXPECT(span4[1] == 2);
     ASL_TEST_EXPECT(span4[2] == 3);
+}
+
+template<typename Span, int64_t kOffset, int64_t kSize = asl::dynamic_size>
+[[maybe_unused]] static auto try_static_subspan(int)
+    -> decltype(asl::declval<Span>().template subspan<kOffset, kSize>());
+
+template<typename, int64_t, int64_t>
+[[maybe_unused]] static auto try_static_subspan(...) -> asl::empty;
+
+template<typename Span, int64_t kOffset, int64_t kSize = asl::dynamic_size>
+concept invalid_subspan = asl::same_as<decltype(try_static_subspan<Span, kOffset, kSize>(0)), asl::empty>;
+
+static_assert(asl::same_as<asl::span<int, 4>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<0>())>);
+
+static_assert(asl::same_as<asl::span<int, 3>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<1>())>);
+
+static_assert(asl::same_as<asl::span<int, 2>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<2>())>);
+
+static_assert(asl::same_as<asl::span<int, 1>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<3>())>);
+
+static_assert(asl::same_as<asl::span<int, 0>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<4>())>);
+
+static_assert(invalid_subspan<asl::span<int, 4>, 5>);
+
+static_assert(asl::same_as<asl::span<int>,
+     decltype(asl::declval<asl::span<int>>().subspan<0>())>);
+
+static_assert(asl::same_as<asl::span<int, 4>,
+     decltype(asl::declval<asl::span<int>>().subspan<0, 4>())>);
+
+static_assert(asl::same_as<asl::span<int, 4>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<0, 4>())>);
+
+static_assert(asl::same_as<asl::span<int, 2>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<1, 2>())>);
+
+static_assert(asl::same_as<asl::span<int, 2>,
+     decltype(asl::declval<asl::span<int, 4>>().subspan<2, 2>())>);
+
+static_assert(invalid_subspan<asl::span<int, 4>, 2, 3>);
+
+ASL_TEST(subspan_static_from_static)
+{
+    int array[] = {1, 2, 3, 4};
+    asl::span<int, 4> span{array};
+
+    auto s1 = span.subspan<0>();
+    ASL_TEST_EXPECT(s1.size() == 4);
+    ASL_TEST_ASSERT(s1[0] == 1);
+    ASL_TEST_ASSERT(s1[1] == 2);
+    ASL_TEST_ASSERT(s1[2] == 3);
+    ASL_TEST_ASSERT(s1[3] == 4);
+
+    auto s2 = span.subspan<2>();
+    ASL_TEST_EXPECT(s2.size() == 2);
+    ASL_TEST_ASSERT(s2[0] == 3);
+    ASL_TEST_ASSERT(s2[1] == 4);
+
+    auto s3 = span.subspan<4>();
+    ASL_TEST_EXPECT(s3.size() == 0);
+
+    auto s4 = span.subspan<1, 2>();
+    ASL_TEST_EXPECT(s4.size() == 2);
+    ASL_TEST_ASSERT(s4[0] == 2);
+    ASL_TEST_ASSERT(s4[1] == 3);
+}
+
+ASL_TEST(subspan_static_from_dynamic)
+{
+    int array[] = {1, 2, 3, 4};
+    asl::span<int> span{array};
+
+    auto s1 = span.subspan<0>();
+    ASL_TEST_EXPECT(s1.size() == 4);
+    ASL_TEST_ASSERT(s1[0] == 1);
+    ASL_TEST_ASSERT(s1[1] == 2);
+    ASL_TEST_ASSERT(s1[2] == 3);
+    ASL_TEST_ASSERT(s1[3] == 4);
+
+    auto s2 = span.subspan<2>();
+    ASL_TEST_EXPECT(s2.size() == 2);
+    ASL_TEST_ASSERT(s2[0] == 3);
+    ASL_TEST_ASSERT(s2[1] == 4);
+
+    auto s3 = span.subspan<4>();
+    ASL_TEST_EXPECT(s3.size() == 0);
+
+    auto s4 = span.subspan<1, 2>();
+    ASL_TEST_EXPECT(s4.size() == 2);
+    ASL_TEST_ASSERT(s4[0] == 2);
+    ASL_TEST_ASSERT(s4[1] == 3);
+}
+
+ASL_TEST(subspan_dynamic)
+{
+    int array[] = {1, 2, 3, 4};
+    asl::span<int> span{array};
+
+    auto s1 = span.subspan(0);
+    ASL_TEST_EXPECT(s1.size() == 4);
+    ASL_TEST_ASSERT(s1[0] == 1);
+    ASL_TEST_ASSERT(s1[1] == 2);
+    ASL_TEST_ASSERT(s1[2] == 3);
+    ASL_TEST_ASSERT(s1[3] == 4);
+
+    auto s2 = span.subspan(2);
+    ASL_TEST_EXPECT(s2.size() == 2);
+    ASL_TEST_ASSERT(s2[0] == 3);
+    ASL_TEST_ASSERT(s2[1] == 4);
+
+    auto s3 = span.subspan(4);
+    ASL_TEST_EXPECT(s3.size() == 0);
+
+    auto s4 = span.subspan(1, 2);
+    ASL_TEST_EXPECT(s4.size() == 2);
+    ASL_TEST_ASSERT(s4[0] == 2);
+    ASL_TEST_ASSERT(s4[1] == 3);
 }
