@@ -181,6 +181,14 @@ static_assert(asl::convertible_from<C, D>);
 static_assert(!asl::convertible_from<C*, Derived*>);
 static_assert(asl::convertible_from<E, Base>);
 
+static_assert(!asl::convertible_from<int16_t(&)[], int32_t(&)[]>);
+static_assert(asl::convertible_from<const int16_t(&)[], int16_t(&)[]>);
+static_assert(asl::convertible_from<const int16_t(&)[], const int16_t(&)[]>);
+static_assert(asl::convertible_from<int16_t(&)[], int16_t(&)[]>);
+static_assert(!asl::convertible_from<int32_t(&)[], int16_t(&)[]>);
+static_assert(!asl::convertible_from<int16_t(&)[], const int16_t(&)[]>);
+static_assert(!asl::convertible_from<C(&)[], D(&)[]>);
+
 static_assert(asl::derived_from<Derived, Base>);
 static_assert(!asl::derived_from<Base, Derived>);
 static_assert(!asl::derived_from<D, C>);
