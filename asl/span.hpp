@@ -97,9 +97,6 @@ public:
         return m_data[i]; // NOLINT(*-pointer-arithmetic)
     }
 
-    // @Todo first, last
-    // @Todo as_(mutable_)bytes
-
     template<int64_t kOffset, int64_t kSubSize = dynamic_size>
     constexpr auto subspan() const
         requires (
@@ -140,6 +137,42 @@ public:
         ASL_ASSERT(sub_size <= size() - offset);
         return span<T>{ data() + offset, sub_size };
     }
+
+    template<int64_t kSubSize>
+    constexpr auto first() const
+        requires (
+            kSubSize >= 0 &&
+            (kIsDynamic || kSubSize <= kSize)
+        )
+    {
+        ASL_ASSERT(kSubSize <= size());
+        return span<T, kSubSize>{ data(), kSubSize };
+    }
+
+    constexpr span<T> first(int64_t sub_size) const
+    {
+        ASL_ASSERT(sub_size >= 0 && sub_size <= size());
+        return span<T>{ data(), sub_size };
+    }
+
+    template<int64_t kSubSize>
+    constexpr auto last() const
+        requires (
+            kSubSize >= 0 &&
+            (kIsDynamic || kSubSize <= kSize)
+        )
+    {
+        ASL_ASSERT(kSubSize <= size());
+        return span<T, kSubSize>{ data() + size() - kSubSize, kSubSize };
+    }
+
+    constexpr span<T> last(int64_t sub_size) const
+    {
+        ASL_ASSERT(sub_size >= 0 && sub_size <= size());
+        return span<T>{ data() + size() - sub_size, sub_size };
+    }
+    
+    // @Todo as_(mutable_)bytes
 };
 
 } // namespace asl
