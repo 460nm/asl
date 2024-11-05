@@ -15,6 +15,7 @@ cc_library(
         "option.hpp",
         "print.hpp",
         "span.hpp",
+        "string_view.hpp",
         "utility.hpp",
     ],
     srcs = [
@@ -42,5 +43,6 @@ cc_library(
     "meta",
     "option",
     "span",
+    "string_view",
     "utility",
 ]]
