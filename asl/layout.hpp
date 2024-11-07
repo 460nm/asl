@@ -7,15 +7,15 @@ namespace asl
 {
 
 template<typename T>
-inline constexpr int64_t size_of = static_cast<int64_t>(sizeof(T));
+inline constexpr isize_t size_of = static_cast<isize_t>(sizeof(T));
 
 template<typename T>
-inline constexpr int64_t align_of = static_cast<int64_t>(alignof(T));
+inline constexpr isize_t align_of = static_cast<isize_t>(alignof(T));
 
 struct layout
 {
-    int64_t size;
-    int64_t align;
+    isize_t size;
+    isize_t align;
 
     constexpr bool operator==(const layout&) const = default;
 

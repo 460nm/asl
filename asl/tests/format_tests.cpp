@@ -12,11 +12,11 @@ static_assert(asl::formattable<decltype("Hello")>);
 
 class StringSink : public asl::writer
 {
-    int64_t m_current_len{};
+    isize_t m_current_len{};
     char*   m_data{};
     
 public:
-    void write(const char* str, int64_t len) override
+    void write(const char* str, isize_t len) override
     {
         m_data = (char*)realloc(m_data, (size_t)(m_current_len + len + 1));
         memcpy(m_data + m_current_len, str, (size_t)len);

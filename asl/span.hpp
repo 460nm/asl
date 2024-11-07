@@ -8,19 +8,19 @@
 namespace asl
 {
 
-static constexpr int64_t dynamic_size = -1;
+static constexpr isize_t dynamic_size = -1;
 
-template<is_object T, int64_t kSize = dynamic_size>
+template<is_object T, isize_t kSize = dynamic_size>
 class span
 {
-    static constexpr bool is_dynamic(int64_t size)
+    static constexpr bool is_dynamic(isize_t size)
     {
         return size < 0;
     }
     
     static constexpr bool kIsDynamic = is_dynamic(kSize);
 
-    using SizeType = select_t<kIsDynamic, int64_t, empty>;
+    using SizeType = select_t<kIsDynamic, isize_t, empty>;
 
     T* m_data{};
     ASL_NO_UNIQUE_ADDRESS SizeType m_size{};
@@ -28,33 +28,33 @@ class span
 public:
     constexpr span() requires (kIsDynamic || kSize == 0) = default;
 
-    constexpr span(T* data, int64_t size)
+    constexpr span(T* data, isize_t size)
         requires kIsDynamic
         : m_data{data}
         , m_size{size}
     {}
 
-    constexpr explicit span(T* data, int64_t size)
+    constexpr explicit span(T* data, isize_t size)
         requires (!kIsDynamic)
         : m_data{data}
     {
         ASL_ASSERT(size == kSize);
     }
 
-    template<int64_t N>
+    template<isize_t N>
     constexpr span(T (&array)[N]) // NOLINT(*-explicit-conversions)
         requires (kIsDynamic)
         : m_data{array}
         , m_size{N}
     {}
 
-    template<int64_t N>
+    template<isize_t N>
     constexpr span(T (&array)[N]) // NOLINT(*-explicit-conversions)
         requires (!kIsDynamic) && (N == kSize)
         : m_data{array}
     {}
 
-    template<is_object U, int64_t kOtherSize>
+    template<is_object U, isize_t kOtherSize>
     constexpr explicit(!kIsDynamic)
     span(const span<U, kOtherSize>& other) // NOLINT(*-explicit-conversions)
         requires (
@@ -76,13 +76,13 @@ public:
 
     ~span() = default;
 
-    constexpr int64_t size() const
+    constexpr isize_t size() const
     {
         if constexpr (kIsDynamic) { return m_size; }
         else { return kSize; }
     }
 
-    constexpr int64_t size_bytes() const { return size() * size_of<T>; }
+    constexpr isize_t size_bytes() const { return size() * size_of<T>; }
 
     constexpr bool is_empty() const { return size() == 0; }
 
@@ -91,13 +91,13 @@ public:
     constexpr T* begin() const { return m_data; }
     constexpr T* end() const { return m_data + size(); }
 
-    constexpr T& operator[](int64_t i) const
+    constexpr T& operator[](isize_t i) const
     {
         ASL_ASSERT(i >= 0 && i < size());
         return m_data[i]; // NOLINT(*-pointer-arithmetic)
     }
 
-    template<int64_t kOffset, int64_t kSubSize = dynamic_size>
+    template<isize_t kOffset, isize_t kSubSize = dynamic_size>
     constexpr auto subspan() const
         requires (
             kOffset >= 0 &&
@@ -125,7 +125,7 @@ public:
         }
     }
 
-    constexpr span<T> subspan(int64_t offset, int64_t sub_size = dynamic_size) const
+    constexpr span<T> subspan(isize_t offset, isize_t sub_size = dynamic_size) const
     {
         ASL_ASSERT(offset <= size());
         
@@ -138,7 +138,7 @@ public:
         return span<T>{ data() + offset, sub_size };
     }
 
-    template<int64_t kSubSize>
+    template<isize_t kSubSize>
     constexpr auto first() const
         requires (
             kSubSize >= 0 &&
@@ -149,13 +149,13 @@ public:
         return span<T, kSubSize>{ data(), kSubSize };
     }
 
-    constexpr span<T> first(int64_t sub_size) const
+    constexpr span<T> first(isize_t sub_size) const
     {
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data(), sub_size };
     }
 
-    template<int64_t kSubSize>
+    template<isize_t kSubSize>
     constexpr auto last() const
         requires (
             kSubSize >= 0 &&
@@ -166,7 +166,7 @@ public:
         return span<T, kSubSize>{ data() + size() - kSubSize, kSubSize };
     }
 
-    constexpr span<T> last(int64_t sub_size) const
+    constexpr span<T> last(isize_t sub_size) const
     {
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data() + size() - sub_size, sub_size };

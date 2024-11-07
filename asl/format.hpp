@@ -52,7 +52,7 @@ public:
     {}
 
     // @Todo Use string_view
-    constexpr void write(const char* s, int64_t len)
+    constexpr void write(const char* s, isize_t len)
     {
         m_writer->write(s, len);
     }
@@ -76,7 +76,7 @@ void format(writer* w, const char* fmt, const Args&... args)
     }
 }
 
-template<int64_t N>
+template<isize_t N>
 void AslFormat(formatter& f, const char (&str)[N])
 {
     f.write(str, N - 1);

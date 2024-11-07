@@ -12,7 +12,7 @@ public:
         : m_handle{handle}
     {}
     
-    void write(const char* str, int64_t len) override
+    void write(const char* str, isize_t len) override
     {
         fwrite(str, 1, static_cast<size_t>(len), m_handle);
     }

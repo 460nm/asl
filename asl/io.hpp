@@ -14,7 +14,7 @@ public:
     virtual ~writer() = default;
     
     // @Todo Use string view, or span of bytes?
-    virtual void write(const char* str, int64_t len) = 0;
+    virtual void write(const char* str, isize_t len) = 0;
 };
 
 } // namespace asl

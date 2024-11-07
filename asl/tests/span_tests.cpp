@@ -94,14 +94,14 @@ ASL_TEST(conversion)
     ASL_TEST_EXPECT(span4[2] == 3);
 }
 
-template<typename Span, int64_t kOffset, int64_t kSize = asl::dynamic_size>
+template<typename Span, isize_t kOffset, isize_t kSize = asl::dynamic_size>
 [[maybe_unused]] static auto try_static_subspan(int)
     -> decltype(asl::declval<Span>().template subspan<kOffset, kSize>());
 
-template<typename, int64_t, int64_t>
+template<typename, isize_t, isize_t>
 [[maybe_unused]] static auto try_static_subspan(...) -> asl::empty;
 
-template<typename Span, int64_t kOffset, int64_t kSize = asl::dynamic_size>
+template<typename Span, isize_t kOffset, isize_t kSize = asl::dynamic_size>
 concept invalid_subspan = asl::same_as<decltype(try_static_subspan<Span, kOffset, kSize>(0)), asl::empty>;
 
 static_assert(asl::same_as<asl::span<int, 4>,
@@ -216,14 +216,14 @@ ASL_TEST(subspan_dynamic)
     ASL_TEST_EXPECT(s4[1] == 3);
 }
 
-template<typename Span, int64_t kSize>
+template<typename Span, isize_t kSize>
 [[maybe_unused]] static auto try_static_first(int)
     -> decltype(asl::declval<Span>().template first<kSize>());
 
-template<typename, int64_t>
+template<typename, isize_t>
 [[maybe_unused]] static auto try_static_first(...) -> asl::empty;
 
-template<typename Span, int64_t kSize>
+template<typename Span, isize_t kSize>
 concept invalid_first = asl::same_as<decltype(try_static_first<Span, kSize>(0)), asl::empty>;
 
 static_assert(asl::same_as<asl::span<int, 0>,
@@ -320,14 +320,14 @@ ASL_TEST(first_dynamic)
     ASL_TEST_EXPECT(s3[3] == 4);
 }
 
-template<typename Span, int64_t kSize>
+template<typename Span, isize_t kSize>
 [[maybe_unused]] static auto try_static_last(int)
     -> decltype(asl::declval<Span>().template last<kSize>());
 
-template<typename, int64_t>
+template<typename, isize_t>
 [[maybe_unused]] static auto try_static_last(...) -> asl::empty;
 
-template<typename Span, int64_t kSize>
+template<typename Span, isize_t kSize>
 concept invalid_last = asl::same_as<decltype(try_static_last<Span, kSize>(0)), asl::empty>;
 
 static_assert(asl::same_as<asl::span<int, 0>,
