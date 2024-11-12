@@ -451,3 +451,20 @@ ASL_TEST(as_bytes)
      ASL_TEST_ASSERT(static_cast<int>(s2[6]) == 0x06);
      ASL_TEST_ASSERT(static_cast<int>(s2[7]) == 0x05);
 }
+
+ASL_TEST(as_mutable_bytes)
+{
+     uint32_t data[] = {0x01020304, 0x05060708};
+     asl::span s1(data);
+     asl::span s2 = asl::as_mutable_bytes(s1);
+
+     ASL_TEST_ASSERT(s2.size() == 8);
+     ASL_TEST_ASSERT(static_cast<int>(s2[0]) == 0x04);
+     ASL_TEST_ASSERT(static_cast<int>(s2[1]) == 0x03);
+     ASL_TEST_ASSERT(static_cast<int>(s2[2]) == 0x02);
+     ASL_TEST_ASSERT(static_cast<int>(s2[3]) == 0x01);
+     ASL_TEST_ASSERT(static_cast<int>(s2[4]) == 0x08);
+     ASL_TEST_ASSERT(static_cast<int>(s2[5]) == 0x07);
+     ASL_TEST_ASSERT(static_cast<int>(s2[6]) == 0x06);
+     ASL_TEST_ASSERT(static_cast<int>(s2[7]) == 0x05);
+}
