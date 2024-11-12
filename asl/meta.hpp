@@ -82,6 +82,11 @@ template<typename T> struct _un_const_helper<const T> { using type = T; };
 
 template<typename T> using un_const_t = _un_const_helper<T>::type;
 
+template<typename T> struct _is_const_helper          : false_type {};
+template<typename T> struct _is_const_helper<const T> : true_type {};
+
+template<typename T> concept is_const = _is_const_helper<T>::value;
+
 template<typename T> struct _un_volatile_helper             { using type = T; };
 template<typename T> struct _un_volatile_helper<volatile T> { using type = T; };
 

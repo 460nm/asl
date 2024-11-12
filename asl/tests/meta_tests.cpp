@@ -197,3 +197,8 @@ static_assert(!asl::derived_from<uint8_t, uint16_t>);
 static_assert(!asl::derived_from<uint16_t, uint8_t>);
 static_assert(!asl::derived_from<int, int>);
 
+static_assert(!asl::is_const<int>);
+static_assert(asl::is_const<const int>);
+static_assert(!asl::is_const<const int*>);
+static_assert(asl::is_const<int* const>);
+

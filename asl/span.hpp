@@ -171,8 +171,26 @@ public:
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data() + size() - sub_size, sub_size };
     }
-    
-    // @Todo as_(mutable_)bytes
 };
+
+template<is_object T, isize_t kSize>
+inline span<const byte> as_bytes(span<T, kSize> s)
+{
+    return span<const byte>(
+        reinterpret_cast<const byte*>(s.data()),
+        s.size_bytes());
+}
+
+template<is_object T, isize_t kSize>
+inline span<byte> as_mutable_bytes(span<T, kSize> s)
+    requires (!is_const<T>)
+{
+    return span<byte>(
+        reinterpret_cast<byte*>(s.data()),
+        s.size_bytes());
+}
+
+template<is_object T, isize_t kSize>
+span(T (&)[kSize]) -> span<T, kSize>;
 
 } // namespace asl

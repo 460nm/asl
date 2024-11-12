@@ -12,9 +12,9 @@ public:
         : m_handle{handle}
     {}
     
-    void write(const char* str, isize_t len) override
+    void write(asl::span<const asl::byte> s) override
     {
-        fwrite(str, 1, static_cast<size_t>(len), m_handle);
+        fwrite(s.data(), 1, static_cast<size_t>(s.size()), m_handle);
     }
 };
 

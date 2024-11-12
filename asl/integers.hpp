@@ -23,3 +23,10 @@ using uint32_t = unsigned int;
 using size_t  = uint64_t;
 using isize_t = int64_t;
 
+namespace asl
+{
+    
+enum class byte : uint8_t {};
+
+} // namespace asl
+

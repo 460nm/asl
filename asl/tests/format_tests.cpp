@@ -16,11 +16,11 @@ class StringSink : public asl::writer
     char*   m_data{};
     
 public:
-    void write(const char* str, isize_t len) override
+    void write(asl::span<const asl::byte> str) override
     {
-        m_data = (char*)realloc(m_data, (size_t)(m_current_len + len + 1));
-        memcpy(m_data + m_current_len, str, (size_t)len);
-        m_current_len += len;
+        m_data = (char*)realloc(m_data, (size_t)(m_current_len + str.size() + 1));
+        memcpy(m_data + m_current_len, str.data(), (size_t)str.size());
+        m_current_len += str.size();
         m_data[m_current_len] = '\0';
     }
 

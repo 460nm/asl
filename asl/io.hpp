@@ -2,6 +2,7 @@
 
 #include "asl/integers.hpp"
 #include "asl/utility.hpp"
+#include "asl/span.hpp"
 
 namespace asl
 {
@@ -13,8 +14,7 @@ public:
     ASL_DELETE_COPY_MOVE(writer);
     virtual ~writer() = default;
     
-    // @Todo Use string view, or span of bytes?
-    virtual void write(const char* str, isize_t len) = 0;
+    virtual void write(span<const byte>) = 0;
 };
 
 } // namespace asl

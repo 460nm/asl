@@ -37,7 +37,6 @@ struct type_erased_arg
     {}
 };
 
-// @Todo Use span
 void format(writer*, const char* fmt, span<const type_erased_arg> args);
 
 } // namespace internals
@@ -54,7 +53,7 @@ public:
     // @Todo Use string_view
     constexpr void write(const char* s, isize_t len)
     {
-        m_writer->write(s, len);
+        m_writer->write(as_bytes(span<const char>(s, len)));
     }
 };
 

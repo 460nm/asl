@@ -423,3 +423,31 @@ ASL_TEST(last_dynamic)
     ASL_TEST_EXPECT(s3[2] == 3);
     ASL_TEST_EXPECT(s3[3] == 4);
 }
+
+template<typename T>
+concept HasAsMutableBytes = requires(asl::span<T> s)
+{
+     asl::as_mutable_bytes(s);
+};
+
+static_assert(HasAsMutableBytes<int>);
+static_assert(!HasAsMutableBytes<const int>);
+static_assert(!HasAsMutableBytes<int* const>);
+static_assert(HasAsMutableBytes<const int*>);
+
+ASL_TEST(as_bytes)
+{
+     uint32_t data[] = {0x01020304, 0x05060708};
+     asl::span s1(data);
+     asl::span s2 = asl::as_bytes(s1);
+
+     ASL_TEST_ASSERT(s2.size() == 8);
+     ASL_TEST_ASSERT(static_cast<int>(s2[0]) == 0x04);
+     ASL_TEST_ASSERT(static_cast<int>(s2[1]) == 0x03);
+     ASL_TEST_ASSERT(static_cast<int>(s2[2]) == 0x02);
+     ASL_TEST_ASSERT(static_cast<int>(s2[3]) == 0x01);
+     ASL_TEST_ASSERT(static_cast<int>(s2[4]) == 0x08);
+     ASL_TEST_ASSERT(static_cast<int>(s2[5]) == 0x07);
+     ASL_TEST_ASSERT(static_cast<int>(s2[6]) == 0x06);
+     ASL_TEST_ASSERT(static_cast<int>(s2[7]) == 0x05);
+}
