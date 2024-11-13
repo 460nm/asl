@@ -4,6 +4,7 @@
 #include "asl/meta.hpp"
 #include "asl/io.hpp"
 #include "asl/span.hpp"
+#include "asl/string_view.hpp"
 
 namespace asl
 {
@@ -37,7 +38,7 @@ struct type_erased_arg
     {}
 };
 
-void format(writer*, const char* fmt, span<const type_erased_arg> args);
+void format(writer*, string_view fmt, span<const type_erased_arg> args);
 
 } // namespace internals
 
@@ -50,16 +51,14 @@ public:
         : m_writer{writer}
     {}
 
-    // @Todo Use string_view
-    constexpr void write(const char* s, isize_t len)
+    constexpr void write(string_view s)
     {
-        m_writer->write(as_bytes(span<const char>(s, len)));
+        m_writer->write(as_bytes(s.as_span()));
     }
 };
 
-// @Todo Use string_view
 template<formattable... Args>
-void format(writer* w, const char* fmt, const Args&... args)
+void format(writer* w, string_view fmt, const Args&... args)
 {
     if constexpr (types_count<Args...> > 0)
     {

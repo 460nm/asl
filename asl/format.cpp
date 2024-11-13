@@ -4,7 +4,7 @@
 
 void asl::format_internals::format(
     writer* writer,
-    const char* fmt,
+    string_view fmt,
     span<const type_erased_arg> args)
 {
     formatter f(writer);
@@ -12,87 +12,91 @@ void asl::format_internals::format(
     const auto* arg_it = args.begin();
     const auto* arg_end = args.end();
     
-    const char* begin = fmt;
-    while (*fmt != '\0')
+    isize_t i = 0;
+    while (i < fmt.size())
     {
-        if (fmt[0] == '{')
+        if (fmt[i] == '{')
         {
-            if (fmt[1] == '}')
+            if (i + 1 < fmt.size())
             {
-                if (arg_it < arg_end)
+                if (fmt[i + 1] == '}')
                 {
-                    f.write(begin, fmt - begin);
-                    fmt += 2;
-                    begin = fmt;
+                    if (arg_it >= arg_end)
+                    {
+                        f.write(fmt.substr(0, i));
+                        fmt = fmt.substr(i + 2);
+                        i = 0;
+
+                        f.write("<ERROR>");
+
+                        continue;
+                    }
+                    
+                    f.write(fmt.substr(0, i));
+                    fmt = fmt.substr(i + 2);
+                    i = 0;
 
                     arg_it->fn(f, arg_it->data);
                     arg_it++; // NOLINT(*-pointer-arithmetic)
+
+                    continue;
                 }
-                else
+                
+                if (fmt[i + 1] == '{')
                 {
-                    f.write(begin, fmt - begin);
-                    fmt += 2;
-                    begin = fmt;
+                    f.write(fmt.substr(0, i + 1));
+                    fmt = fmt.substr(i + 2);
+                    i = 0;
 
-                    f.write("<ERROR>", 7);
+                    continue;
                 }
             }
-            else if (fmt[1] == '{')
-            {
-                fmt += 1;
-                f.write(begin, fmt - begin);
-                fmt += 1;
-                begin = fmt;
-            }
-            else
-            {
-                f.write(begin, fmt - begin);
-                fmt += 1;
-                begin = fmt;
+            
+            f.write(fmt.substr(0, i));
+            fmt = fmt.substr(i + 1);
+            i = 0;
 
-                f.write("<ERROR>", 7);
-            }
+            f.write("<ERROR>");
         }
-        else if (fmt[0] == '}' && fmt[1] == '}')
+        else if (i + 1 < fmt.size() && fmt[i] == '}' && fmt[i + 1] == '}')
         {
-            fmt += 1;
-            f.write(begin, fmt - begin);
-            fmt += 1;
-            begin = fmt;
+            f.write(fmt.substr(0, i + 1));
+            fmt = fmt.substr(i + 2);
+            i = 0;
         }
         else
         {
-            fmt += 1;
+            i += 1;
         }
     }
 
-    f.write(begin, fmt - begin);
+    f.write(fmt);
 }
 
 void asl::AslFormat(formatter& f, const char* str)
 {
-    f.write(str, static_cast<isize_t>(__builtin_strlen(str)));
+    f.write({str, static_cast<isize_t>(__builtin_strlen(str))});
 }
 
 void asl::AslFormat(formatter& f, float)
 {
-    f.write("<FLOAT>", 7); // @Todo Float formatting
+    f.write("<FLOAT>"); // @Todo Float formatting
 }
 
 void asl::AslFormat(formatter& f, double)
 {
-    f.write("<DOUBLE>", 8); // @Todo Float formatting
+    f.write("<DOUBLE>"); // @Todo Float formatting
 }
 
 void asl::AslFormat(formatter& f, bool v)
 {
     if (v)
     {
-        f.write("true", 4);
+        f.write("true");
     }
     else
     {
-        f.write("false", 5);
+        f.write("false");
     }
 }
 
@@ -170,7 +174,7 @@ void asl::AslFormat(formatter& f, uint64_t v)
         write_one('0' + static_cast<char>(v));
     }
 
-    f.write(buffer + cursor, kMaxDigits - cursor);
+    f.write({buffer + cursor, kMaxDigits - cursor});
 }
 
 void asl::AslFormat(formatter& f, int8_t v)
@@ -192,7 +196,7 @@ void asl::AslFormat(formatter& f, int64_t v)
 {
     if (v < 0)
     {
-        f.write("-", 1);
+        f.write("-");
         uint64_t absolute_value = ~(bit_cast<uint64_t>(v) - 1);
         AslFormat(f, absolute_value);
     }

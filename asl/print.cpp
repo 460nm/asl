@@ -20,12 +20,12 @@ public:
 
 asl::writer* asl::print_internals::get_stdout_writer()
 {
-    static ConsoleWriter writer{stdout};
-    return &writer;
+    static ConsoleWriter s_writer{stdout};
+    return &s_writer;
 }
 
 asl::writer* asl::print_internals::get_stderr_writer()
 {
-    static ConsoleWriter writer{stderr};
-    return &writer;
+    static ConsoleWriter s_writer{stderr};
+    return &s_writer;
 }

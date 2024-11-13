@@ -2,6 +2,7 @@
 
 #include "asl/integers.hpp"
 #include "asl/meta.hpp"
+#include "asl/span.hpp"
 
 namespace asl
 {
@@ -23,6 +24,15 @@ public:
         , m_size{size}
     {}
 
+    template<isize_t kSize>
+    constexpr string_view(const char (&str)[kSize]) // NOLINT(*-explicit-conversions)
+        requires (kSize >= 1)
+        : m_data{str}
+        , m_size{kSize - 1}
+    {
+        ASL_ASSERT(m_data[kSize - 1] == '\0'); // NOLINT(*-pointer-arithmetic)
+    }
+
     constexpr string_view(const string_view&) = default;
     constexpr string_view(string_view&&) = default;
 
@@ -40,6 +50,26 @@ public:
     constexpr const char* begin() const { return m_data; }
     
     constexpr const char* end() const { return m_data + m_size; } // NOLINT(*-pointer-arithmetic)
+
+    constexpr span<const char> as_span() const { return span<const char>(m_data, m_size); }
+
+    constexpr char operator[](isize_t i) const
+    {
+        ASL_ASSERT(i >= 0 && i < m_size);
+        return m_data[i]; // NOLINT(*-pointer-arithmetic)
+    }
+
+    constexpr string_view substr(isize_t offset, isize_t size) const
+    {
+        ASL_ASSERT(offset >= 0 && size >= 0 && offset + size <= m_size);
+        return string_view{m_data + offset, size}; // NOLINT(*-pointer-arithmetic)
+    }
+
+    constexpr string_view substr(isize_t offset) const
+    {
+        ASL_ASSERT(offset >= 0 && offset <= m_size);
+        return string_view{m_data + offset, m_size - offset}; // NOLINT(*-pointer-arithmetic)
+    }
 };
 
 } // namespace asl
@@ -48,3 +78,5 @@ constexpr asl::string_view operator ""_sv(const char* s, size_t len)
 {
     return asl::string_view(s, static_cast<isize_t>(len));
 }
+
+// @Todo Make comparison operator, replace in format and string_view tests
