@@ -70,6 +70,13 @@ public:
         ASL_ASSERT(offset >= 0 && offset <= m_size);
         return string_view{m_data + offset, m_size - offset}; // NOLINT(*-pointer-arithmetic)
     }
+
+    constexpr bool operator==(string_view other) const
+    {
+        if (m_size != other.m_size) { return false; }
+        // @Todo Remove builtin_memcmp
+        return __builtin_memcmp(m_data, other.m_data, static_cast<size_t>(m_size)) == 0;
+    }
 };
 
 } // namespace asl
@@ -78,5 +85,3 @@ constexpr asl::string_view operator ""_sv(const char* s, size_t len)
 {
     return asl::string_view(s, static_cast<isize_t>(len));
 }
-
-// @Todo Make comparison operator, replace in format and string_view tests

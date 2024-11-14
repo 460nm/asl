@@ -19,13 +19,12 @@ class StringSink : public asl::writer
 public:
     void write(asl::span<const asl::byte> str) override
     {
-        m_data = (char*)realloc(m_data, (size_t)(m_current_len + str.size() + 1));
+        m_data = (char*)realloc(m_data, (size_t)(m_current_len + str.size()));
         memcpy(m_data + m_current_len, str.data(), (size_t)str.size());
         m_current_len += str.size();
-        m_data[m_current_len] = '\0';
     }
 
-    constexpr const char* cstr() const { return m_data; }
+    constexpr asl::string_view str() const { return {m_data, m_current_len}; }
 
     void reset()
     {
@@ -40,46 +39,45 @@ ASL_TEST(format_args)
     StringSink sink;
 
     // @Todo Introduce ASL_TEST_EXPECT_EQ, or ASL_TEST_EXPECT_STREQ
-    // @Todo Don't use strcmp for string comparison
 
     asl::format(&sink, "Hello, world!");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "Hello, world!") == 0);
+    ASL_TEST_EXPECT(sink.str() == "Hello, world!"_sv);
 
     sink.reset();
     asl::format(&sink, "");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "") == 0);
+    ASL_TEST_EXPECT(sink.str() == ""_sv);
 
     sink.reset();
     asl::format(&sink, "Hello, {}!", "world");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "Hello, world!") == 0);
+    ASL_TEST_EXPECT(sink.str() == "Hello, world!"_sv);
 
     sink.reset();
     asl::format(&sink, "Hello, {}! {}", "world");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "Hello, world! <ERROR>") == 0);
+    ASL_TEST_EXPECT(sink.str() == "Hello, world! <ERROR>"_sv);
 
     sink.reset();
     asl::format(&sink, "Hello, pup!", "world");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "Hello, pup!") == 0);
+    ASL_TEST_EXPECT(sink.str() == "Hello, pup!"_sv);
 
     sink.reset();
     asl::format(&sink, "{}", "CHEESE");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "CHEESE") == 0);
+    ASL_TEST_EXPECT(sink.str() == "CHEESE"_sv);
 
     sink.reset();
     asl::format(&sink, "{   ", "CHEESE");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "<ERROR>   ") == 0);
+    ASL_TEST_EXPECT(sink.str() == "<ERROR>   "_sv);
 
     sink.reset();
     asl::format(&sink, "{", "CHEESE");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "<ERROR>") == 0);
+    ASL_TEST_EXPECT(sink.str() == "<ERROR>"_sv);
 
     sink.reset();
     asl::format(&sink, "a{{b");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "a{b") == 0);
+    ASL_TEST_EXPECT(sink.str() == "a{b"_sv);
 
     sink.reset();
     asl::format(&sink, "{{{}}} }", "CHEESE");
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "{CHEESE} }") == 0);
+    ASL_TEST_EXPECT(sink.str() == "{CHEESE} }"_sv);
 }
 
 ASL_TEST(format_integers)
@@ -88,23 +86,23 @@ ASL_TEST(format_integers)
     
     sink.reset();
     asl::format(&sink, "{} {} {}", 0, 1, 2);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "0 1 2") == 0);
+    ASL_TEST_EXPECT(sink.str() == "0 1 2"_sv);
 
     sink.reset();
     asl::format(&sink, "{} {} {}", 10, 11, 12);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "10 11 12") == 0);
+    ASL_TEST_EXPECT(sink.str() == "10 11 12"_sv);
 
     sink.reset();
     asl::format(&sink, "{} {} {}", 100, 101, 102);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "100 101 102") == 0);
+    ASL_TEST_EXPECT(sink.str() == "100 101 102"_sv);
 
     sink.reset();
     asl::format(&sink, "{} {} {}", 1000, 1001, 1002);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "1000 1001 1002") == 0);
+    ASL_TEST_EXPECT(sink.str() == "1000 1001 1002"_sv);
 
     sink.reset();
     asl::format(&sink, "{} {} {} {}", -1, -23, -456, -7890);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "-1 -23 -456 -7890") == 0);
+    ASL_TEST_EXPECT(sink.str() == "-1 -23 -456 -7890"_sv);
 }
 
 ASL_TEST(format_boolean)
@@ -113,5 +111,5 @@ ASL_TEST(format_boolean)
     
     sink.reset();
     asl::format(&sink, "{} {}", true, false);
-    ASL_TEST_EXPECT(strcmp(sink.cstr(), "true false") == 0);
+    ASL_TEST_EXPECT(sink.str() == "true false"_sv);
 }
