@@ -1,6 +1,7 @@
 #include "asl/format.hpp"
 #include "asl/utility.hpp"
 #include "asl/assert.hpp"
+#include "asl/memory.hpp"
 
 void asl::format_internals::format(
     writer* writer,
@@ -75,7 +76,7 @@ void asl::format_internals::format(
 
 void asl::AslFormat(formatter& f, const char* str)
 {
-    f.write({str, static_cast<isize_t>(__builtin_strlen(str))});
+    f.write({str, asl::strlen(str)});
 }
 
 void asl::AslFormat(formatter& f, float)

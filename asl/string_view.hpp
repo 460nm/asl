@@ -3,11 +3,10 @@
 #include "asl/integers.hpp"
 #include "asl/meta.hpp"
 #include "asl/span.hpp"
+#include "asl/memory.hpp"
 
 namespace asl
 {
-
-// @Todo Replace all the __builtin_strlen
 
 class string_view
 {
@@ -74,8 +73,7 @@ public:
     constexpr bool operator==(string_view other) const
     {
         if (m_size != other.m_size) { return false; }
-        // @Todo Remove builtin_memcmp
-        return __builtin_memcmp(m_data, other.m_data, static_cast<size_t>(m_size)) == 0;
+        return memcmp(m_data, other.m_data, m_size) == 0;
     }
 };
 
