@@ -95,14 +95,7 @@ ASL_TEST(conversion)
 }
 
 template<typename Span, isize_t kOffset, isize_t kSize = asl::dynamic_size>
-[[maybe_unused]] static auto try_static_subspan(int)
-    -> decltype(asl::declval<Span>().template subspan<kOffset, kSize>());
-
-template<typename, isize_t, isize_t>
-[[maybe_unused]] static auto try_static_subspan(...) -> asl::empty;
-
-template<typename Span, isize_t kOffset, isize_t kSize = asl::dynamic_size>
-concept invalid_subspan = asl::same_as<decltype(try_static_subspan<Span, kOffset, kSize>(0)), asl::empty>;
+concept IsValidSubspan = requires (Span s) { s.template subspan<kOffset, kSize>(); };
 
 static_assert(asl::same_as<asl::span<int, 4>,
      decltype(asl::declval<asl::span<int, 4>>().subspan<0>())>);
@@ -119,7 +112,7 @@ static_assert(asl::same_as<asl::span<int, 1>,
 static_assert(asl::same_as<asl::span<int, 0>,
      decltype(asl::declval<asl::span<int, 4>>().subspan<4>())>);
 
-static_assert(invalid_subspan<asl::span<int, 4>, 5>);
+static_assert(!IsValidSubspan<asl::span<int, 4>, 5>);
 
 static_assert(asl::same_as<asl::span<int>,
      decltype(asl::declval<asl::span<int>>().subspan<0>())>);
@@ -136,7 +129,7 @@ static_assert(asl::same_as<asl::span<int, 2>,
 static_assert(asl::same_as<asl::span<int, 2>,
      decltype(asl::declval<asl::span<int, 4>>().subspan<2, 2>())>);
 
-static_assert(invalid_subspan<asl::span<int, 4>, 2, 3>);
+static_assert(!IsValidSubspan<asl::span<int, 4>, 2, 3>);
 
 ASL_TEST(subspan_static_from_static)
 {
@@ -217,14 +210,7 @@ ASL_TEST(subspan_dynamic)
 }
 
 template<typename Span, isize_t kSize>
-[[maybe_unused]] static auto try_static_first(int)
-    -> decltype(asl::declval<Span>().template first<kSize>());
-
-template<typename, isize_t>
-[[maybe_unused]] static auto try_static_first(...) -> asl::empty;
-
-template<typename Span, isize_t kSize>
-concept invalid_first = asl::same_as<decltype(try_static_first<Span, kSize>(0)), asl::empty>;
+concept IsValidFirst = requires (Span s) { s.template first<kSize>(); };
 
 static_assert(asl::same_as<asl::span<int, 0>,
      decltype(asl::declval<asl::span<int>>().first<0>())>);
@@ -253,9 +239,8 @@ static_assert(asl::same_as<asl::span<int, 3>,
 static_assert(asl::same_as<asl::span<int, 4>,
      decltype(asl::declval<asl::span<int, 4>>().first<4>())>);
 
-static_assert(invalid_first<asl::span<int, 4>, 5>);
-
-static_assert(invalid_first<asl::span<int, 4>, asl::dynamic_size>);
+static_assert(!IsValidFirst<asl::span<int, 4>, 5>);
+static_assert(!IsValidFirst<asl::span<int, 4>, asl::dynamic_size>);
 
 ASL_TEST(first_static_from_static)
 {
@@ -321,14 +306,7 @@ ASL_TEST(first_dynamic)
 }
 
 template<typename Span, isize_t kSize>
-[[maybe_unused]] static auto try_static_last(int)
-    -> decltype(asl::declval<Span>().template last<kSize>());
-
-template<typename, isize_t>
-[[maybe_unused]] static auto try_static_last(...) -> asl::empty;
-
-template<typename Span, isize_t kSize>
-concept invalid_last = asl::same_as<decltype(try_static_last<Span, kSize>(0)), asl::empty>;
+concept IsValidLast = requires (Span s) { s.template last<kSize>(); };
 
 static_assert(asl::same_as<asl::span<int, 0>,
      decltype(asl::declval<asl::span<int>>().last<0>())>);
@@ -357,9 +335,8 @@ static_assert(asl::same_as<asl::span<int, 3>,
 static_assert(asl::same_as<asl::span<int, 4>,
      decltype(asl::declval<asl::span<int, 4>>().last<4>())>);
 
-static_assert(invalid_last<asl::span<int, 4>, 5>);
-
-static_assert(invalid_last<asl::span<int, 4>, asl::dynamic_size>);
+static_assert(!IsValidLast<asl::span<int, 4>, 5>);
+static_assert(!IsValidLast<asl::span<int, 4>, asl::dynamic_size>);
 
 ASL_TEST(last_static_from_static)
 {
@@ -425,10 +402,7 @@ ASL_TEST(last_dynamic)
 }
 
 template<typename T>
-concept HasAsMutableBytes = requires(asl::span<T> s)
-{
-     asl::as_mutable_bytes(s);
-};
+concept HasAsMutableBytes = requires(asl::span<T> s) { asl::as_mutable_bytes(s); };
 
 static_assert(HasAsMutableBytes<int>);
 static_assert(!HasAsMutableBytes<const int>);
