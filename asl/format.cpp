@@ -118,7 +118,7 @@ void asl::AslFormat(formatter& f, uint32_t v)
 
 void asl::AslFormat(formatter& f, uint64_t v)
 {
-    static constexpr char pairs[] = {
+    static constexpr char s_pairs_storage[] = {
         '0', '0', '0', '1', '0', '2', '0', '3', '0', '4',
         '0', '5', '0', '6', '0', '7', '0', '8', '0', '9',
         '1', '0', '1', '1', '1', '2', '1', '3', '1', '4',
@@ -141,11 +141,13 @@ void asl::AslFormat(formatter& f, uint64_t v)
         '9', '5', '9', '6', '9', '7', '9', '8', '9', '9',
     };
 
+    static constexpr span s_pairs = s_pairs_storage;
+
     static constexpr int32_t kMaxDigits = 20;
     char buffer[kMaxDigits];
     int32_t cursor = kMaxDigits;
 
-    auto write_two = [&buffer, &cursor](const char* str)
+    auto write_two = [&buffer, &cursor](span<const char, 2> str)
     {
         ASL_ASSERT(cursor >= 2);
         buffer[--cursor] = str[1];
@@ -162,20 +164,20 @@ void asl::AslFormat(formatter& f, uint64_t v)
     {
         uint64_t x = v % 100;
         v /= 100;
-        write_two(pairs + x * 2);
+        write_two(s_pairs.subspan(static_cast<isize_t>(x * 2)).first<2>());
     }
 
     if (v >= 10)
     {
-        write_two(pairs + v * 2);
+        write_two(s_pairs.subspan(static_cast<isize_t>(v * 2)).first<2>());
     }
     else if (v > 0 || cursor == kMaxDigits)
     {
         ASL_ASSERT(v < 10);
-        write_one('0' + static_cast<char>(v));
+        write_one(static_cast<char>('0' + v));
     }
 
-    f.write({buffer + cursor, kMaxDigits - cursor});
+    f.write(string_view(buffer, kMaxDigits).substr(cursor));
 }
 
 void asl::AslFormat(formatter& f, int8_t v)

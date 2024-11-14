@@ -125,15 +125,15 @@ public:
         }
     }
 
-    constexpr span<T> subspan(isize_t offset, isize_t sub_size = dynamic_size) const
+    constexpr span<T> subspan(isize_t offset) const
     {
         ASL_ASSERT(offset <= size());
-        
-        if (is_dynamic(sub_size))
-        {
-            return span<T>{ data() + offset, size() - offset };
-        }
-        
+        return span<T>{ data() + offset, size() - offset };
+    }
+
+    constexpr span<T> subspan(isize_t offset, isize_t sub_size) const
+    {
+        ASL_ASSERT(offset <= size() && !is_dynamic(sub_size));
         ASL_ASSERT(sub_size <= size() - offset);
         return span<T>{ data() + offset, sub_size };
     }
