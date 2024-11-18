@@ -4,11 +4,11 @@
 #include "asl/memory.hpp"
 
 void asl::format_internals::format(
-    writer* writer,
+    Writer* writer,
     string_view fmt,
     span<const type_erased_arg> args)
 {
-    formatter f(writer);
+    Formatter f(writer);
 
     const auto* arg_it = args.begin();
     const auto* arg_end = args.end();
@@ -74,22 +74,22 @@ void asl::format_internals::format(
     f.write(fmt);
 }
 
-void asl::AslFormat(formatter& f, const char* str)
+void asl::AslFormat(Formatter& f, const char* str)
 {
     f.write({str, asl::strlen(str)});
 }
 
-void asl::AslFormat(formatter& f, float)
+void asl::AslFormat(Formatter& f, float)
 {
     f.write("<FLOAT>"); // @Todo Float formatting
 }
 
-void asl::AslFormat(formatter& f, double)
+void asl::AslFormat(Formatter& f, double)
 {
     f.write("<DOUBLE>"); // @Todo Float formatting
 }
 
-void asl::AslFormat(formatter& f, bool v)
+void asl::AslFormat(Formatter& f, bool v)
 {
     if (v)
     {
@@ -101,22 +101,22 @@ void asl::AslFormat(formatter& f, bool v)
     }
 }
 
-void asl::AslFormat(formatter& f, uint8_t v)
+void asl::AslFormat(Formatter& f, uint8_t v)
 {
     AslFormat(f, static_cast<uint64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, uint16_t v)
+void asl::AslFormat(Formatter& f, uint16_t v)
 {
     AslFormat(f, static_cast<uint64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, uint32_t v)
+void asl::AslFormat(Formatter& f, uint32_t v)
 {
     AslFormat(f, static_cast<uint64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, uint64_t v)
+void asl::AslFormat(Formatter& f, uint64_t v)
 {
     static constexpr char s_pairs_storage[] = {
         '0', '0', '0', '1', '0', '2', '0', '3', '0', '4',
@@ -180,22 +180,22 @@ void asl::AslFormat(formatter& f, uint64_t v)
     f.write(string_view(buffer, kMaxDigits).substr(cursor));
 }
 
-void asl::AslFormat(formatter& f, int8_t v)
+void asl::AslFormat(Formatter& f, int8_t v)
 {
     AslFormat(f, static_cast<int64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, int16_t v)
+void asl::AslFormat(Formatter& f, int16_t v)
 {
     AslFormat(f, static_cast<int64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, int32_t v)
+void asl::AslFormat(Formatter& f, int32_t v)
 {
     AslFormat(f, static_cast<int64_t>(v));
 }
 
-void asl::AslFormat(formatter& f, int64_t v)
+void asl::AslFormat(Formatter& f, int64_t v)
 {
     if (v < 0)
     {

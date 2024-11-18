@@ -24,6 +24,12 @@ constexpr U bit_cast(T value) requires (size_of<T> == size_of<U>)
     return __builtin_bit_cast(U, value); 
 }
 
+template<typename T>
+T min(T a, T b)
+{
+    return (a <= b) ? a : b;
+}
+
 #define ASL_DELETE_COPY(T)                         \
     T(const T&) = delete;                          \
     T& operator=(const T&) = delete;

@@ -3,7 +3,7 @@
 #include <cstdio>
 
 // @Todo Optimize this, maybe make buffered
-class ConsoleWriter : public asl::writer
+class ConsoleWriter : public asl::Writer
 {
     FILE* m_handle;
     
@@ -18,13 +18,13 @@ public:
     }
 };
 
-asl::writer* asl::print_internals::get_stdout_writer()
+asl::Writer* asl::print_internals::get_stdout_writer()
 {
     static ConsoleWriter s_writer{stdout};
     return &s_writer;
 }
 
-asl::writer* asl::print_internals::get_stderr_writer()
+asl::Writer* asl::print_internals::get_stderr_writer()
 {
     static ConsoleWriter s_writer{stderr};
     return &s_writer;

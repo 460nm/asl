@@ -35,6 +35,7 @@ static_assert(!asl::trivially_copy_constructible<NonCopyConstructible>);
 static_assert(asl::move_constructible<int>);
 static_assert(asl::move_constructible<TriviallyMoveConstructible>);
 static_assert(asl::move_constructible<MoveConstructible>);
+static_assert(asl::move_constructible<CopyConstructible>);
 static_assert(!asl::move_constructible<NonMoveConstructible>);
 
 static_assert(asl::trivially_move_constructible<int>);

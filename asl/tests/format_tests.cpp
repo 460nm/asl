@@ -1,26 +1,25 @@
 #include "asl/format.hpp"
 #include "asl/testing/testing.hpp"
-#include "asl/print.hpp"
-
-#include <cstdlib>
-#include <cstring>
-#include <cassert>
-#include <cstdio>
-
-// @Todo Improve this to use our utilities, not the C stdlib
+#include "asl/allocator.hpp"
 
 static_assert(asl::formattable<decltype("Hello")>);
 
-class StringSink : public asl::writer
+class StringSink : public asl::Writer
 {
+    // @Todo Use string, once we have it, or a buffer
     isize_t m_current_len{};
     char*   m_data{};
     
 public:
     void write(asl::span<const asl::byte> str) override
     {
-        m_data = (char*)realloc(m_data, (size_t)(m_current_len + str.size()));
-        memcpy(m_data + m_current_len, str.data(), (size_t)str.size());
+        m_data = reinterpret_cast<char*>(asl::GlobalHeap::realloc(
+            m_data,
+            asl::layout::array<char>(m_current_len),
+            asl::layout::array<char>(m_current_len + str.size())));
+        
+        asl::memcpy(m_data + m_current_len, str.data(), str.size());
+        
         m_current_len += str.size();
     }
 
@@ -29,7 +28,7 @@ public:
     void reset()
     {
         m_current_len = 0;
-        free(m_data);
+        asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
         m_data = nullptr;
     }
 };

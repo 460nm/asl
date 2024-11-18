@@ -9,8 +9,8 @@ namespace print_internals
 {
 
 // @Todo Make print writers thread safe
-writer* get_stdout_writer();
-writer* get_stderr_writer();
+Writer* get_stdout_writer();
+Writer* get_stderr_writer();
 
 } // namespace print_internals
 

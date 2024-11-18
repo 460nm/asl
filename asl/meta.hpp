@@ -21,10 +21,10 @@ template<typename U, typename V>               struct _select_helper<true, U, V>
 
 template<bool kSelect, typename U, typename V> using select_t = _select_helper<kSelect, U, V>::type;
 
-template<typename U, typename V> struct _is_same_helper       : false_type {};
-template<typename T>             struct _is_same_helper<T, T> : true_type {};
+template<typename U, typename V> struct _same_as_helper       : false_type {};
+template<typename T>             struct _same_as_helper<T, T> : true_type {};
 
-template<typename U, typename V> concept same_as = _is_same_helper<U, V>::value && _is_same_helper<V, U>::value;
+template<typename U, typename V> concept same_as = _same_as_helper<U, V>::value && _same_as_helper<V, U>::value;
 
 template<typename T> auto _as_lref_helper(int) -> id<T&>;
 template<typename T> auto _as_lref_helper(...) -> id<T>;

@@ -24,6 +24,12 @@ struct layout
     {
         return layout{ size_of<T>, align_of<T> };
     }
+
+    template<is_object T>
+    static constexpr layout array(isize_t size)
+    {
+        return layout{ size_of<T> * size, align_of<T> };
+    }
 };
 
 } // namespace asl

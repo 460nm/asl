@@ -9,10 +9,10 @@
 namespace asl
 {
 
-class formatter;
+class Formatter;
 
 template<typename T>
-concept formattable = requires (formatter& f, const T& value)
+concept formattable = requires (Formatter& f, const T& value)
 {
     AslFormat(f, value);
 };
@@ -23,10 +23,10 @@ namespace format_internals
 struct type_erased_arg
 {
     const void* data;
-    void (*fn)(formatter&, const void*);
+    void (*fn)(Formatter&, const void*);
 
     template<formattable T>
-    static constexpr void erased_fn(formatter& f, const void* data)
+    static constexpr void erased_fn(Formatter& f, const void* data)
     {
         AslFormat(f, *reinterpret_cast<const T*>(data));
     }
@@ -38,16 +38,16 @@ struct type_erased_arg
     {}
 };
 
-void format(writer*, string_view fmt, span<const type_erased_arg> args);
+void format(Writer*, string_view fmt, span<const type_erased_arg> args);
 
 } // namespace internals
 
-class formatter
+class Formatter
 {
-    writer* m_writer;
+    Writer* m_writer;
 
 public:
-    explicit constexpr formatter(writer* writer)
+    explicit constexpr Formatter(Writer* writer)
         : m_writer{writer}
     {}
 
@@ -58,7 +58,7 @@ public:
 };
 
 template<formattable... Args>
-void format(writer* w, string_view fmt, const Args&... args)
+void format(Writer* w, string_view fmt, const Args&... args)
 {
     if constexpr (types_count<Args...> > 0)
     {
@@ -75,26 +75,26 @@ void format(writer* w, string_view fmt, const Args&... args)
 }
 
 template<isize_t N>
-void AslFormat(formatter& f, const char (&str)[N])
+void AslFormat(Formatter& f, const char (&str)[N])
 {
     f.write(str, N - 1);
 }
 
-void AslFormat(formatter& f, const char* str);
+void AslFormat(Formatter& f, const char* str);
 
-void AslFormat(formatter& f, float);
-void AslFormat(formatter& f, double);
+void AslFormat(Formatter& f, float);
+void AslFormat(Formatter& f, double);
 
-void AslFormat(formatter& f, bool);
+void AslFormat(Formatter& f, bool);
 
-void AslFormat(formatter& f, uint8_t);
-void AslFormat(formatter& f, uint16_t);
-void AslFormat(formatter& f, uint32_t);
-void AslFormat(formatter& f, uint64_t);
+void AslFormat(Formatter& f, uint8_t);
+void AslFormat(Formatter& f, uint16_t);
+void AslFormat(Formatter& f, uint32_t);
+void AslFormat(Formatter& f, uint64_t);
 
-void AslFormat(formatter& f, int8_t);
-void AslFormat(formatter& f, int16_t);
-void AslFormat(formatter& f, int32_t);
-void AslFormat(formatter& f, int64_t);
+void AslFormat(Formatter& f, int8_t);
+void AslFormat(Formatter& f, int16_t);
+void AslFormat(Formatter& f, int32_t);
+void AslFormat(Formatter& f, int64_t);
 
 } // namespace asl

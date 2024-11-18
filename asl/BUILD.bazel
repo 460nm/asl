@@ -1,8 +1,10 @@
 cc_library(
     name = "asl",
     hdrs = [
+        "allocator.hpp",
         "annotations.hpp",
         "assert.hpp",
+        "box.hpp",
         "config.hpp",
         "format.hpp",
         "functional.hpp",
@@ -19,6 +21,7 @@ cc_library(
         "utility.hpp",
     ],
     srcs = [
+        "allocator.cpp",
         "format.cpp",
         "print.cpp",
     ],
@@ -36,6 +39,7 @@ cc_library(
         "//asl/testing",
     ],
 ) for name in [
+    "box",
     "format",
     "functional",
     "integers",
