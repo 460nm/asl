@@ -69,6 +69,9 @@ template<typename T> concept trivially_destructible = __is_trivially_destructibl
 
 template<typename T> concept trivially_copyable = __is_trivially_copyable(T);
 
+template<typename T> concept copyable = copy_constructible<T> && copy_assignable<T>;
+template<typename T> concept moveable = move_constructible<T> && move_assignable<T>;
+
 template<typename To, typename From>
 concept convertible_from = __is_convertible(From, To);
 

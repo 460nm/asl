@@ -7,12 +7,13 @@ namespace asl
 {
 
 template<typename T>
-concept allocator = requires(T& alloc, layout layout, void* ptr)
-{
-    { alloc.alloc(layout) } -> same_as<void*>;
-    { alloc.realloc(ptr, layout, layout) } -> same_as<void*>;
-    alloc.dealloc(ptr, layout);
-};
+concept allocator = moveable<T> &&
+    requires(T& alloc, layout layout, void* ptr)
+    {
+        { alloc.alloc(layout) } -> same_as<void*>;
+        { alloc.realloc(ptr, layout, layout) } -> same_as<void*>;
+        alloc.dealloc(ptr, layout);
+    };
 
 class GlobalHeap
 {

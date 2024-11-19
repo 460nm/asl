@@ -26,6 +26,11 @@ void* asl::GlobalHeap::alloc(const layout& layout)
 
 void* asl::GlobalHeap::realloc(void* old_ptr, const layout& old_layout, const layout& new_layout)
 {
+#if ASL_OS_WINDOWS
+    return ::_aligned_realloc(old_ptr,
+        static_cast<size_t>(new_layout.size),
+        static_cast<size_t>(new_layout.align));
+#elif ASL_OS_LINUX
     if (new_layout.align <= old_layout.align)
     {
         void* new_ptr = ::realloc(old_ptr, static_cast<size_t>(new_layout.size));
@@ -36,9 +41,14 @@ void* asl::GlobalHeap::realloc(void* old_ptr, const layout& old_layout, const la
     void* new_ptr = alloc(new_layout);
     asl::memcpy(new_ptr, old_ptr, asl::min(old_layout.size, new_layout.size));
     return new_ptr;
+#endif
 }
 
 void asl::GlobalHeap::dealloc(void* ptr, const layout&)
 {
+#if ASL_OS_WINDOWS
+    ::_aligned_free(ptr);
+#elif ASL_OS_LINUX
     ::free(ptr);
+#endif
 }
