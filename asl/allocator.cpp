@@ -11,9 +11,15 @@
 
 void* asl::GlobalHeap::alloc(const layout& layout)
 {
+#if ASL_OS_WINDOWS
     void* ptr = ::_aligned_malloc(
         static_cast<size_t>(layout.size),
         static_cast<size_t>(layout.align));
+#elif ASL_OS_LINUX
+    void* ptr = ::aligned_alloc(
+        static_cast<size_t>(layout.size),
+        static_cast<size_t>(layout.align));
+#endif
     ASL_ASSERT(ptr != nullptr); // @Todo panic
     return ptr;
 }
