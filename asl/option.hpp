@@ -123,8 +123,8 @@ public:
     
      // NOLINTNEXTLINE(*-explicit-conversions)
     constexpr option(nullopt_t) requires (!kHasNiche)
-        : m_has_value{false}
-        , m_payload{}
+        : m_payload{}
+        , m_has_value{false}
     {}
     
      // NOLINTNEXTLINE(*-explicit-conversions)
@@ -383,7 +383,18 @@ public:
         
         if constexpr (kHasNiche)
         {
-            m_payload = T(niche{});
+            if constexpr (move_assignable<T>)
+            {
+                m_payload = T(niche{});
+            }
+            else
+            {
+                if constexpr (!trivially_destructible<T>)
+                {
+                    (&m_payload)->~T();
+                }
+                new (&m_payload) T(niche{});
+            }
         }
         else
         {

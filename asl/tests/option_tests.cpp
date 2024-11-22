@@ -308,4 +308,7 @@ ASL_TEST(niche)
     opt = opt2;
     ASL_TEST_EXPECT(opt2.has_value());
     ASL_TEST_EXPECT(opt2.value().value == 2);
+
+    opt.reset();
+    ASL_TEST_EXPECT(!opt.has_value());
 }
