@@ -5,6 +5,7 @@
 #include "asl/annotations.hpp"
 #include "asl/memory.hpp"
 #include "asl/utility.hpp"
+#include "asl/box.hpp"
 
 namespace asl
 {

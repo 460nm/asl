@@ -1,4 +1,5 @@
 #include "asl/box.hpp"
+#include "asl/option.hpp"
 
 #include "asl/testing/testing.hpp"
 #include "asl/tests/test_types.hpp"
@@ -7,6 +8,7 @@ static_assert(sizeof(asl::box<int>) == sizeof(int*));
 static_assert(!asl::copyable<asl::box<int>>);
 static_assert(asl::moveable<asl::box<int>>);
 static_assert(asl::has_niche<asl::box<int>>);
+static_assert(sizeof(asl::option<asl::box<int>>) == sizeof(int*));
 
 ASL_TEST(destructor)
 {
@@ -49,4 +51,26 @@ ASL_TEST(arrow)
 {
     auto b = asl::make_box<Struct>(45);
     ASL_TEST_EXPECT(b->a == 45);
+}
+
+ASL_TEST(niche)
+{
+    asl::option<asl::box<int>> opt;
+    ASL_TEST_EXPECT(!opt.has_value());
+
+    opt = asl::make_box<int>(66);
+    ASL_TEST_EXPECT(opt.has_value());
+    ASL_TEST_EXPECT(*opt.value() == 66);
+
+    opt = asl::nullopt;
+    ASL_TEST_EXPECT(!opt.has_value());
+
+    bool destroyed = false;
+    asl::option<asl::box<DestructorObserver>> opt2 = asl::make_box<DestructorObserver>(&destroyed);
+    ASL_TEST_EXPECT(opt2.has_value());
+    ASL_TEST_EXPECT(!destroyed);
+
+    opt2.reset();
+    ASL_TEST_EXPECT(!opt2.has_value());
+    ASL_TEST_EXPECT(destroyed);
 }
