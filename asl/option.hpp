@@ -4,6 +4,7 @@
 #include "asl/meta.hpp"
 #include "asl/maybe_uninit.hpp"
 #include "asl/functional.hpp"
+#include "asl/annotations.hpp"
 
 namespace asl
 {
@@ -11,7 +12,6 @@ namespace asl
 struct nullopt_t {};
 static constexpr nullopt_t nullopt{};
 
-// @Todo(option) Niche
 // @Todo(option) Reference
 // @Todo(option) Function
 // @Todo(option) Arrays
@@ -71,31 +71,42 @@ class option
         trivially_move_assignable<T> &&
         trivially_destructible<T>;
 
-    using Storage = select_t<kIsTrivial, T, maybe_uninit<T>>;
+    static constexpr bool kHasNiche = has_niche<T>;
+
+    static constexpr bool kHasInlinePayload = kIsTrivial || kHasNiche;
+
+    using Storage = select_t<kHasInlinePayload, T, maybe_uninit<T>>;
+    using HasValueMarker = select_t<kHasNiche, empty, bool>;
 
     Storage m_payload{};
-    bool    m_has_value = false;
+    ASL_NO_UNIQUE_ADDRESS HasValueMarker m_has_value;
 
     template<typename... Args>
-    constexpr void construct(Args&&... args) &
+    constexpr void construct(Args&&... args)
     {
-        ASL_ASSERT(!m_has_value);
-        m_has_value = true;
-        if constexpr (kIsTrivial)
+        ASL_ASSERT(!has_value());
+
+        if constexpr (kHasInlinePayload)
         {
-            new(&m_payload) T(ASL_FWD(args)...);
+            new (&m_payload) T(ASL_FWD(args)...);
         }
         else
         {
             m_payload.init_unsafe(ASL_FWD(args)...);
         }
+
+        if constexpr (!kHasNiche)
+        {
+            m_has_value = true;
+        }
     }
 
-    template<typename Arg>
-    constexpr void assign(Arg&& arg) &
+    template<typename U>
+    constexpr void assign(U&& arg)
     {
-        ASL_ASSERT(m_has_value);
-        if constexpr (kIsTrivial)
+        ASL_ASSERT(has_value());
+
+        if constexpr (kHasInlinePayload)
         {
             m_payload = ASL_FWD(arg);
         }
@@ -108,29 +119,69 @@ class option
 public:
     using type = T;
 
-    constexpr option() = default;
-    constexpr option(nullopt_t) {} // NOLINT(*-explicit-conversions)
+    constexpr option() : option(nullopt) {}
+    
+     // NOLINTNEXTLINE(*-explicit-conversions)
+    constexpr option(nullopt_t) requires (!kHasNiche)
+        : m_has_value{false}
+        , m_payload{}
+    {}
+    
+     // NOLINTNEXTLINE(*-explicit-conversions)
+    constexpr option(nullopt_t) requires kHasNiche
+        : m_payload{niche{}}
+    {}
 
     template<typename U = T>
     constexpr explicit (!convertible_from<T, U&&>)
     option(U&& value)
         requires (
+            kHasNiche &&
             constructible_from<T, U> &&
-            !same_as<un_cvref_t<U>, option>
+            !same_as<un_cvref_t<U>, option> &&
+            !is_niche<U>
         )
+        : m_payload(ASL_FWD(value))
+    {}
+
+    template<typename U = T>
+    constexpr explicit (!convertible_from<T, U&&>)
+    option(U&& value)
+        requires (
+            kHasInlinePayload &&
+            !kHasNiche &&
+            constructible_from<T, U> &&
+            !same_as<un_cvref_t<U>, option> &&
+            !is_niche<U>
+        )
+        : m_payload(ASL_FWD(value))
+        , m_has_value{true}
+    {}
+
+    template<typename U = T>
+    constexpr explicit (!convertible_from<T, U&&>)
+    option(U&& value)
+        requires (
+            !kHasInlinePayload &&
+            constructible_from<T, U> &&
+            !same_as<un_cvref_t<U>, option> &&
+            !is_niche<U>
+        )
+        : option()
     {
         construct(ASL_FWD(value));
     }
     
     constexpr option(const option& other)
-        requires copy_constructible<T> && kIsTrivial = default;
+        requires copy_constructible<T> && kHasInlinePayload = default;
 
     constexpr option(const option& other)
-        requires copy_constructible<T> && (!kIsTrivial)
+        requires copy_constructible<T> && (!kHasInlinePayload)
+        : option()
     {
-        if (other.m_has_value)
+        if (other.has_value())
         {
-            construct(other.m_payload.as_init_unsafe());
+            construct(other.value());
         }
     }
 
@@ -138,16 +189,20 @@ public:
         requires (!copy_constructible<T>) = delete;
         
     constexpr option(option&& other)
-        requires move_constructible<T> && kIsTrivial = default;
+        requires move_constructible<T> && kHasInlinePayload = default;
 
     constexpr option(option&& other)
-        requires move_constructible<T> && (!kIsTrivial)
+        requires move_constructible<T> && (!kHasInlinePayload)
+        : option()
     {
-        if (other.m_has_value)
+        if (other.has_value())
         {
-            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
+            construct(ASL_MOVE(other.value()));
         }
     }
+
+    constexpr option(option&& other)
+        requires (!move_constructible<T>) = delete;
 
     template<typename U>
     constexpr explicit (!convertible_from<T, const U&>)
@@ -156,6 +211,7 @@ public:
             constructible_from<T, const U&> && 
             !option_internal::convertible_constructible_from_option<T, U>
         )
+        : option()
     {
         if (other.has_value())
         {
@@ -170,10 +226,11 @@ public:
             constructible_from<T, U&&> &&
             !option_internal::convertible_constructible_from_option<T, U>
         )
+        : option()
     {
         if (other.has_value())
         {
-            construct(ASL_MOVE(other).value());
+            construct(ASL_MOVE(other.value()));
         }
     }
 
@@ -191,7 +248,7 @@ public:
             !same_as<un_cvref_t<U>, option>
         )
     {
-        if (m_has_value)
+        if (has_value())
         {
             assign(ASL_FWD(value));
         }
@@ -204,19 +261,19 @@ public:
     }
 
     constexpr option& operator=(const option& other) &
-        requires (!copy_assignable<T> || copy_constructible<T>) = delete;
+        requires (!copy_assignable<T> || !copy_constructible<T>) = delete;
         
     constexpr option& operator=(const option& other) &
-        requires copy_assignable<T> && copy_constructible<T> && kIsTrivial = default;
+        requires copy_assignable<T> && copy_constructible<T> && kHasInlinePayload = default;
 
     constexpr option& operator=(const option& other) &
-        requires copy_assignable<T> && copy_constructible<T> && (!kIsTrivial)
+        requires copy_assignable<T> && copy_constructible<T> && (!kHasInlinePayload)
     {
         if (&other == this) { return *this; }
 
-        if (other.m_has_value)
+        if (other.has_value())
         {
-            if (m_has_value)
+            if (has_value())
             {
                 assign(other.m_payload.as_init_unsafe());
             }
@@ -225,7 +282,7 @@ public:
                 construct(other.m_payload.as_init_unsafe());
             }
         }
-        else
+        else if (has_value())
         {
             reset();
         }
@@ -234,16 +291,16 @@ public:
     }
 
     constexpr option& operator=(option&& other) &
-        requires move_assignable<T> && move_constructible<T> && kIsTrivial = default;
+        requires move_assignable<T> && move_constructible<T> && kHasInlinePayload = default;
         
     constexpr option& operator=(option&& other) &
-        requires move_assignable<T> && move_constructible<T> && (!kIsTrivial)
+        requires move_assignable<T> && move_constructible<T> && (!kHasInlinePayload)
     {
         if (&other == this) { return *this; }
 
-        if (other.m_has_value)
+        if (other.has_value())
         {
-            if (m_has_value)
+            if (has_value())
             {
                 assign(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
@@ -252,7 +309,7 @@ public:
                 construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
         }
-        else
+        else if (has_value())
         {
             reset();
         }
@@ -270,7 +327,7 @@ public:
     {
         if (other.has_value())
         {
-            if (m_has_value)
+            if (has_value())
             {
                 assign(other.value());
             }
@@ -279,7 +336,7 @@ public:
                 construct(other.value());
             }
         }
-        else
+        else if (has_value())
         {
             reset();
         }
@@ -297,7 +354,7 @@ public:
     {
         if (other.has_value())
         {
-            if (m_has_value)
+            if (has_value())
             {
                 assign(ASL_MOVE(other).value());
             }
@@ -306,7 +363,7 @@ public:
                 construct(ASL_MOVE(other).value());
             }
         }
-        else
+        else if (has_value())
         {
             reset();
         }
@@ -322,23 +379,38 @@ public:
 
     constexpr void reset()
     {
-        if constexpr (kIsTrivial)
+        if (!has_value()) { return; }
+        
+        if constexpr (kHasNiche)
         {
-            m_has_value = false;
+            m_payload = T(niche{});
         }
-        else if (m_has_value)
+        else
         {
-            m_payload.uninit_unsafe();
             m_has_value = false;
+            if constexpr (!kHasInlinePayload)
+            {
+                m_payload.uninit_unsafe();
+            }
         }
     }
 
-    constexpr bool has_value() const { return m_has_value; }
+    constexpr bool has_value() const
+    {
+        if constexpr (kHasNiche)
+        {
+            return m_payload != niche{};
+        }
+        else
+        {
+            return m_has_value;
+        }
+    }
 
     constexpr T&& value() &&
     {
-        ASL_ASSERT_RELEASE(m_has_value);
-        if constexpr (kIsTrivial)
+        ASL_ASSERT_RELEASE(has_value());
+        if constexpr (kHasInlinePayload)
         {
             return ASL_MOVE(m_payload);
         }
@@ -350,8 +422,8 @@ public:
 
     constexpr T& value() &
     {
-        ASL_ASSERT_RELEASE(m_has_value);
-        if constexpr (kIsTrivial)
+        ASL_ASSERT_RELEASE(has_value());
+        if constexpr (kHasInlinePayload)
         {
             return m_payload;
         }
@@ -363,8 +435,8 @@ public:
 
     constexpr const T& value() const&
     {
-        ASL_ASSERT_RELEASE(m_has_value);
-        if constexpr (kIsTrivial)
+        ASL_ASSERT_RELEASE(has_value());
+        if constexpr (kHasInlinePayload)
         {
             return m_payload;
         }
@@ -392,7 +464,7 @@ public:
     constexpr T& emplace(Args&&... args) &
         requires constructible_from<T, Args&&...>
     {
-        if (m_has_value) { reset(); }
+        if (has_value()) { reset(); }
         construct(ASL_FWD(args)...);
         return value();
     }

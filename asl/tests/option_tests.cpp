@@ -5,6 +5,25 @@
 class Base {};
 class Derived : public Base {};
 
+struct NonZero
+{
+    int value;
+
+    constexpr explicit NonZero(int x) : value(x)
+    {
+        ASL_ASSERT(x != 0);
+    }
+
+    constexpr explicit NonZero(asl::niche) : value(0) {}
+
+    constexpr bool operator==(asl::niche) const { return value == 0; }
+};
+static_assert(asl::has_niche<NonZero>);
+static_assert(!asl::has_niche<int>);
+
+static_assert(sizeof(asl::option<int>) > sizeof(int));
+static_assert(sizeof(asl::option<NonZero>) == sizeof(NonZero));
+
 static_assert(!asl::is_option<int>);
 static_assert(asl::is_option<asl::option<int>>);
 static_assert(asl::is_option<const asl::option<int>>);
@@ -275,4 +294,18 @@ ASL_TEST(or_else)
     static_assert(asl::same_as<decltype(b2), asl::option<int>>);
     ASL_TEST_ASSERT(b2.has_value());
     ASL_TEST_EXPECT(b2.value() == 12);
+}
+
+ASL_TEST(niche)
+{
+    asl::option<NonZero> opt;
+    ASL_TEST_EXPECT(!opt.has_value());
+
+    asl::option<NonZero> opt2(2);
+    ASL_TEST_EXPECT(opt2.has_value());
+    ASL_TEST_EXPECT(opt2.value().value == 2);
+
+    opt = opt2;
+    ASL_TEST_EXPECT(opt2.has_value());
+    ASL_TEST_EXPECT(opt2.value().value == 2);
 }

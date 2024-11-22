@@ -169,4 +169,7 @@ concept has_niche = constructible_from<T, niche> &&
         { value == n } -> same_as<bool>;
     };
 
+template<typename T>
+concept is_niche = same_as<un_cvref_t<T>, niche>;
+
 } // namespace asl
