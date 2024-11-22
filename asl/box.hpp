@@ -16,15 +16,18 @@ class box
     ASL_NO_UNIQUE_ADDRESS Allocator m_alloc;
     
 public:
-    explicit constexpr box(T* ptr = nullptr)
+    explicit constexpr box(niche)
         requires default_constructible<Allocator>
-        : m_ptr{ptr}
+        : m_ptr{nullptr}
+        , m_alloc{}
     {}
-    
+
     constexpr box(T* ptr, Allocator alloc)
         : m_ptr{ptr}
         , m_alloc{ASL_MOVE(alloc)}
-    {}
+    {
+        ASL_ASSERT(m_ptr != nullptr);
+    }
 
     constexpr box(box&& other)
         : m_ptr{exchange(other.m_ptr, nullptr)}
@@ -76,6 +79,11 @@ public:
     {
         ASL_ASSERT(m_ptr != nullptr);
         return m_ptr;
+    }
+
+    constexpr bool operator==(niche) const
+    {
+        return m_ptr == nullptr;
     }
 };
 

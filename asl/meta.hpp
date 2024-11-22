@@ -160,4 +160,13 @@ template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
 
 template<typename T> concept is_array = _is_array_helper<T>::value;
 
+struct niche {};
+
+template<typename T>
+concept has_niche = constructible_from<T, niche> &&
+    requires (const T& value, niche n)
+    {
+        { value == n } -> same_as<bool>;
+    };
+
 } // namespace asl

@@ -4,30 +4,20 @@
 #include "asl/tests/test_types.hpp"
 
 static_assert(sizeof(asl::box<int>) == sizeof(int*));
-static_assert(asl::default_constructible<asl::box<int>>);
 static_assert(!asl::copyable<asl::box<int>>);
 static_assert(asl::moveable<asl::box<int>>);
-static_assert(asl::default_constructible<asl::box<NonMoveConstructible>>);
+static_assert(asl::has_niche<asl::box<int>>);
 
 ASL_TEST(destructor)
 {
     bool d = false;
 
     {
-        asl::box<DestructorObserver> box2;
-    
-        {
-            auto box = asl::make_box<DestructorObserver>(&d);
-            ASL_TEST_ASSERT(!d);
-    
+        auto box = asl::make_box<DestructorObserver>(&d);
+        ASL_TEST_ASSERT(!d);
 
-            auto box3 = ASL_MOVE(box);
-            ASL_TEST_ASSERT(!d);
 
-            box2 = ASL_MOVE(box3);
-            ASL_TEST_ASSERT(!d);
-        }
-    
+        auto box3 = ASL_MOVE(box);
         ASL_TEST_ASSERT(!d);
     }
 
