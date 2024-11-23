@@ -79,16 +79,6 @@ void asl::AslFormat(Formatter& f, const char* str)
     f.write({str, asl::strlen(str)});
 }
 
-void asl::AslFormat(Formatter& f, float)
-{
-    f.write("<FLOAT>"); // @Todo Float formatting
-}
-
-void asl::AslFormat(Formatter& f, double)
-{
-    f.write("<DOUBLE>"); // @Todo Float formatting
-}
-
 void asl::AslFormat(Formatter& f, bool v)
 {
     if (v)

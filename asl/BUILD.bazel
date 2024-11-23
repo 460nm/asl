@@ -23,6 +23,7 @@ cc_library(
     srcs = [
         "allocator.cpp",
         "format.cpp",
+        "format_float.cpp",
         "print.cpp",
     ],
     visibility = ["//visibility:public"],

@@ -104,6 +104,19 @@ ASL_TEST(format_integers)
     ASL_TEST_EXPECT(sink.str() == "-1 -23 -456 -7890"_sv);
 }
 
+ASL_TEST(format_floats)
+{
+    StringSink sink;
+    
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 0.0F, 1.0, 2.0F);
+    ASL_TEST_EXPECT(sink.str() == "0.000000 1.000000 2.000000"_sv);
+
+    sink.reset();
+    asl::format(&sink, "{} {}", 10.25F, -22.3);
+    ASL_TEST_EXPECT(sink.str() == "10.250000 -22.300000"_sv);
+}
+
 ASL_TEST(format_boolean)
 {
     StringSink sink;

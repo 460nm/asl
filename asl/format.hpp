@@ -77,10 +77,15 @@ void format(Writer* w, string_view fmt, const Args&... args)
 template<isize_t N>
 void AslFormat(Formatter& f, const char (&str)[N])
 {
-    f.write(str, N - 1);
+    f.write(string_view(str, N - 1));
 }
 
 void AslFormat(Formatter& f, const char* str);
+
+inline void AslFormat(Formatter& f, string_view sv)
+{
+    f.write(sv);
+}
 
 void AslFormat(Formatter& f, float);
 void AslFormat(Formatter& f, double);
