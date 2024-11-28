@@ -160,6 +160,12 @@ template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
 
 template<typename T> concept is_array = _is_array_helper<T>::value;
 
+template<typename T> struct _is_floating_point_helper         : false_type {};
+template<>           struct _is_floating_point_helper<float>  : true_type  {};
+template<>           struct _is_floating_point_helper<double> : true_type  {};
+
+template<typename T> concept is_floating_point = _is_floating_point_helper<un_cv_t<T>>::value;
+
 struct niche {};
 
 template<typename T>

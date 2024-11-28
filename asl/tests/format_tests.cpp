@@ -1,6 +1,7 @@
 #include "asl/format.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/allocator.hpp"
+#include "asl/float.hpp"
 
 static_assert(asl::formattable<decltype("Hello")>);
 
@@ -110,11 +111,31 @@ ASL_TEST(format_floats)
     
     sink.reset();
     asl::format(&sink, "{} {} {}", 0.0F, 1.0, 2.0F);
-    ASL_TEST_EXPECT(sink.str() == "0.000000 1.000000 2.000000"_sv);
+    ASL_TEST_EXPECT(sink.str() == "0 1 2"_sv);
+    
+    sink.reset();
+    asl::format(&sink, "{} {} {}", 0.1F, 0.001F, 0.123F);
+    ASL_TEST_EXPECT(sink.str() == "0.1 0.001 0.123"_sv);
 
     sink.reset();
-    asl::format(&sink, "{} {}", 10.25F, -22.3);
-    ASL_TEST_EXPECT(sink.str() == "10.250000 -22.300000"_sv);
+    asl::format(&sink, "{} {}", 1.25F, -22.3);
+    ASL_TEST_EXPECT(sink.str() == "1.25 -22.3"_sv);
+
+    sink.reset();
+    asl::format(&sink, "{}", 1e32);
+    ASL_TEST_EXPECT(sink.str() == "100000000000000000000000000000000"_sv);
+
+    sink.reset();
+    asl::format(&sink, "{}", 123e-8);
+    ASL_TEST_EXPECT(sink.str() == "0.00000123"_sv);
+
+    sink.reset();
+    asl::format(&sink, "{} {}", asl::infinity<float>(), -asl::infinity<double>());
+    ASL_TEST_EXPECT(sink.str() == "Infinity -Infinity"_sv);
+
+    sink.reset();
+    asl::format(&sink, "{}", asl::nan<float>());
+    ASL_TEST_EXPECT(sink.str() == "NaN"_sv);
 }
 
 ASL_TEST(format_boolean)

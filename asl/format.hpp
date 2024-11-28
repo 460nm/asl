@@ -102,4 +102,6 @@ void AslFormat(Formatter& f, int16_t);
 void AslFormat(Formatter& f, int32_t);
 void AslFormat(Formatter& f, int64_t);
 
+string_view format_uint64(uint64_t value, span<char, 20> buffer);
+
 } // namespace asl

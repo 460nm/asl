@@ -1,21 +1,98 @@
 #include "asl/format.hpp"
+#include "asl/float.hpp"
 
-#include <cstdio>
+#define JKJ_STD_REPLACEMENT_NAMESPACE_DEFINED 0
+#define JKJ_STATIC_DATA_SECTION_DEFINED 0
+#include <dragonbox.h>
 
-// @Todo Use something like ryu or dragonbox
+static constexpr isize_t kZeroCount = 100;
+static constexpr char kZeros[kZeroCount] = {
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+};
+
+template<asl::is_floating_point T>
+static void format_float(asl::Formatter& f, T value)
+{
+    if (asl::is_infinity(value))
+    {
+        if (value > 0)
+        {
+            f.write("Infinity"_sv);
+        }
+        else
+        {
+            f.write("-Infinity"_sv);
+        }
+        return;
+    }
+    
+    if (value == static_cast<T>(0))
+    {
+        f.write("0"_sv);
+        return;
+    }
+    
+    if (asl::is_nan(value))
+    {
+        f.write("NaN"_sv);
+        return;
+    }
+    
+    auto decimal = jkj::dragonbox::to_decimal(value);
+
+    if (decimal.is_negative) { f.write("-"); }
+    
+    char buffer[20];
+    asl::string_view digits = asl::format_uint64(decimal.significand, buffer);
+
+    if (decimal.exponent >= 0)
+    {
+        f.write(digits);
+        while (decimal.exponent > 0)
+        {
+            isize_t to_write = asl::min(static_cast<isize_t>(decimal.exponent), kZeroCount);
+            f.write(asl::string_view(kZeros, to_write));
+            decimal.exponent -= to_write;
+        }
+    }
+    else
+    {
+        if (digits.size() <= -decimal.exponent)
+        {
+            f.write("0.");
+            decimal.exponent = -decimal.exponent - static_cast<int>(digits.size());
+            while (decimal.exponent > 0)
+            {
+                isize_t to_write = asl::min(static_cast<isize_t>(decimal.exponent), kZeroCount);
+                f.write(asl::string_view(kZeros, to_write));
+                decimal.exponent -= to_write;
+            }
+            f.write(digits);
+        }
+        else
+        {
+            f.write(digits.first(digits.size() + decimal.exponent));
+            f.write(".");
+            f.write(digits.last(-decimal.exponent));
+        }
+    }
+}
 
 void asl::AslFormat(Formatter& f, float value)
 {
-    static constexpr isize_t kBufferLength = 64;
-    char buffer[kBufferLength];
-    int output_length = snprintf(buffer, kBufferLength, "%f", (double)value);
-    f.write(string_view(buffer, output_length));
+    format_float(f, value);
 }
 
 void asl::AslFormat(Formatter& f, double value)
 {
-    static constexpr isize_t kBufferLength = 64;
-    char buffer[kBufferLength];
-    int output_length = snprintf(buffer, kBufferLength, "%f", value);
-    f.write(string_view(buffer, output_length));
+    format_float(f, value);
 }

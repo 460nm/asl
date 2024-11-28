@@ -6,6 +6,7 @@ cc_library(
         "assert.hpp",
         "box.hpp",
         "config.hpp",
+        "float.hpp",
         "format.hpp",
         "functional.hpp",
         "integers.hpp",
@@ -26,6 +27,9 @@ cc_library(
         "format_float.cpp",
         "print.cpp",
     ],
+    deps = [
+        "//vendor/dragonbox",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -41,6 +45,7 @@ cc_library(
     ],
 ) for name in [
     "box",
+    "float",
     "format",
     "functional",
     "integers",

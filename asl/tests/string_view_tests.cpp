@@ -58,6 +58,38 @@ ASL_TEST(substr2)
     ASL_TEST_ASSERT(s2.size() == 0);
 }
 
+ASL_TEST(first)
+{
+    asl::string_view s1 = "abcd";
+    
+    asl::string_view s2 = s1.first(0);
+    ASL_TEST_ASSERT(s2.size() == 0);
+
+    s2 = s1.first(2);
+    ASL_TEST_ASSERT(s2.size() == 2);
+    ASL_TEST_EXPECT(asl::memcmp(s2.data(), "ab", 2) == 0);
+
+    s2 = s1.first(4);
+    ASL_TEST_ASSERT(s2.size() == 4);
+    ASL_TEST_EXPECT(asl::memcmp(s2.data(), "abcd", 4) == 0);
+}
+
+ASL_TEST(last)
+{
+    asl::string_view s1 = "abcd";
+    
+    asl::string_view s2 = s1.last(0);
+    ASL_TEST_ASSERT(s2.size() == 0);
+
+    s2 = s1.last(2);
+    ASL_TEST_ASSERT(s2.size() == 2);
+    ASL_TEST_EXPECT(asl::memcmp(s2.data(), "cd", 2) == 0);
+
+    s2 = s1.last(4);
+    ASL_TEST_ASSERT(s2.size() == 4);
+    ASL_TEST_EXPECT(asl::memcmp(s2.data(), "abcd", 4) == 0);
+}
+
 ASL_TEST(equal)
 {
     ASL_TEST_EXPECT("abc"_sv == "abc"_sv);

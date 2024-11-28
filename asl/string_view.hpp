@@ -70,6 +70,16 @@ public:
         return string_view{m_data + offset, m_size - offset}; // NOLINT(*-pointer-arithmetic)
     }
 
+    constexpr string_view first(isize_t size) const
+    {
+        return substr(0, size);
+    }
+
+    constexpr string_view last(isize_t size) const
+    {
+        return substr(m_size - size);
+    }
+
     constexpr bool operator==(string_view other) const
     {
         if (m_size != other.m_size) { return false; }
