@@ -5,6 +5,7 @@ cc_library(
         "annotations.hpp",
         "assert.hpp",
         "box.hpp",
+        "buffer.hpp",
         "config.hpp",
         "float.hpp",
         "format.hpp",
@@ -45,6 +46,7 @@ cc_library(
     ],
 ) for name in [
     "box",
+    "buffer",
     "float",
     "format",
     "functional",

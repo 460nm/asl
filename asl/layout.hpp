@@ -33,3 +33,5 @@ struct layout
 };
 
 } // namespace asl
+
+#define AslOffsetOf(S, M) (static_cast<isize_t>(__builtin_offsetof(S, M)))
