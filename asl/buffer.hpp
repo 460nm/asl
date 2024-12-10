@@ -116,7 +116,7 @@ public:
         {
             return is_on_heap(load_size_encoded())
                 ? m_data
-                : reinterpret_cast<const T*>(this);
+                : reinterpret_cast<T*>(this);
         }
     }
 };
