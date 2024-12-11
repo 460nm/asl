@@ -2,6 +2,7 @@
 
 #include "asl/meta.hpp"
 #include "asl/layout.hpp"
+#include "asl/assert.hpp"
 
 #define ASL_MOVE(expr_) (static_cast<::asl::un_ref_t<decltype(expr_)>&&>(expr_))
 
@@ -28,6 +29,22 @@ template<typename T>
 T min(T a, T b)
 {
     return (a <= b) ? a : b;
+}
+
+constexpr uint64_t round_up_pow2(uint64_t v)
+{
+    ASL_ASSERT(v <= 0x8000'0000'0000'0000);
+
+    v -= 1;
+    
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    v |= v >> 32;
+
+    return v + 1;
 }
 
 #define ASL_DELETE_COPY(T)                         \

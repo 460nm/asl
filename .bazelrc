@@ -7,6 +7,8 @@ build:linux    --repo_env=CC=clang
 build:windows  --cxxopt=-Xclang=-std=c++20
 build:linux    --cxxopt=-std=c++20
 
+common --incompatible_autoload_externally=+@rules_python
+
 build --cxxopt=-Wall
 build --cxxopt=-Wno-c++98-compat
 build --cxxopt=-Wno-c++98-compat-pedantic

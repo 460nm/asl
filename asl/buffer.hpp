@@ -4,6 +4,7 @@
 #include "asl/allocator.hpp"
 #include "asl/annotations.hpp"
 #include "asl/memory.hpp"
+#include "asl/assert.hpp"
 
 namespace asl
 {
@@ -35,9 +36,19 @@ class buffer
         return s;
     }
 
+    constexpr void store_size_encoded(size_t encoded)
+    {
+        asl::memcpy(&m_size_encoded_, &encoded, sizeof(size_t));
+    }
+
     static constexpr bool is_on_heap(size_t size_encoded)
     {
         return (size_encoded & kOnHeapMask) != 0;
+    }
+
+    static constexpr size_t encode_size_heap(isize_t size)
+    {
+        return static_cast<size_t>(size) | kOnHeapMask;
     }
 
     static constexpr isize_t decode_size(size_t size_encoded)
@@ -55,7 +66,12 @@ class buffer
                 : static_cast<isize_t>(size_encoded >> 56);
         }
     }
-   
+
+    constexpr bool is_on_heap() const
+    {
+        return is_on_heap(load_size_encoded());
+    }
+
 public:
 
     static constexpr isize_t kInlineCapacity = []() {
@@ -85,10 +101,70 @@ public:
         }
         else
         {
-            return is_on_heap(load_size_encoded())
-                ? m_capacity
-                : kInlineCapacity;
+            return is_on_heap() ? m_capacity : kInlineCapacity;
         }
+    }
+
+    void reserve_capacity(isize_t new_capacity)
+    {
+        ASL_ASSERT(new_capacity >= 0);
+        ASL_ASSERT_RELEASE(new_capacity <= 0x4000'0000'0000'0000);
+        
+        if (new_capacity <= capacity()) { return; }
+        ASL_ASSERT(new_capacity > kInlineCapacity);
+
+        new_capacity = static_cast<isize_t>(round_up_pow2(static_cast<uint64_t>(new_capacity)));
+
+        T* old_data = data();
+        const isize_t old_capacity = capacity();
+        const isize_t current_size = size();
+        const bool currently_on_heap = is_on_heap();
+
+        auto old_layout = layout::array<T>(old_capacity);
+        auto new_layout = layout::array<T>(new_capacity);
+            
+        if (currently_on_heap && trivially_copyable<T>)
+        {
+            m_data = reinterpret_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
+            m_capacity = new_capacity;
+            return;
+        }
+
+        T* new_data = reinterpret_cast<T*>(m_allocator.alloc(new_layout));
+
+        // @Todo Move this logic somewhere else. Make move/destruct/etc. abstractions.
+
+        if constexpr (trivially_copyable<T>)
+        {
+            auto init_layout = layout::array<T>(current_size);
+            memcpy(new_data, old_data, init_layout.size);
+        }
+        else
+        {
+            static_assert(move_constructible<T>);
+            for (isize_t i = 0; i < current_size; ++i)
+            {
+                // NOLINTNEXTLINE(*-pointer-arithmetic)
+                new(new_data + i) T(ASL_MOVE(old_data[i]));
+            }
+        }
+
+        if constexpr (!trivially_destructible<T>)
+        {
+            for (isize_t i = 0; i < current_size; ++i)
+            {
+                (old_data + i)->~T();
+            }
+        }
+
+        if (currently_on_heap)
+        {
+            m_allocator.dealloc(old_data, old_layout);
+        }
+
+        m_data = new_data;
+        m_capacity = new_capacity;
+        store_size_encoded(encode_size_heap(current_size));
     }
 
     // @Todo(C++23) Use deducing this
@@ -100,9 +176,7 @@ public:
         }
         else
         {
-            return is_on_heap(load_size_encoded())
-                ? m_data
-                : reinterpret_cast<const T*>(this);
+            return is_on_heap() ? m_data : reinterpret_cast<const T*>(this);
         }
     }
 
@@ -114,9 +188,7 @@ public:
         }
         else
         {
-            return is_on_heap(load_size_encoded())
-                ? m_data
-                : reinterpret_cast<T*>(this);
+            return is_on_heap() ? m_data : reinterpret_cast<T*>(this);
         }
     }
 };
