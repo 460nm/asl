@@ -88,7 +88,7 @@ class option
 
         if constexpr (kHasInlinePayload)
         {
-            new (&m_payload) T(ASL_FWD(args)...);
+            construct_at<T>(&m_payload, ASL_FWD(args)...);
         }
         else
         {
@@ -389,11 +389,8 @@ public:
             }
             else
             {
-                if constexpr (!trivially_destructible<T>)
-                {
-                    (&m_payload)->~T();
-                }
-                new (&m_payload) T(niche{});
+                destruct(&m_payload);
+                construct_at<T>(&m_payload, niche{});
             }
         }
         else

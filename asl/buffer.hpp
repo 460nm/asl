@@ -132,30 +132,7 @@ public:
 
         T* new_data = reinterpret_cast<T*>(m_allocator.alloc(new_layout));
 
-        // @Todo Move this logic somewhere else. Make move/destruct/etc. abstractions.
-
-        if constexpr (trivially_copyable<T>)
-        {
-            auto init_layout = layout::array<T>(current_size);
-            memcpy(new_data, old_data, init_layout.size);
-        }
-        else
-        {
-            static_assert(move_constructible<T>);
-            for (isize_t i = 0; i < current_size; ++i)
-            {
-                // NOLINTNEXTLINE(*-pointer-arithmetic)
-                new(new_data + i) T(ASL_MOVE(old_data[i]));
-            }
-        }
-
-        if constexpr (!trivially_destructible<T>)
-        {
-            for (isize_t i = 0; i < current_size; ++i)
-            {
-                (old_data + i)->~T();
-            }
-        }
+        relocate_uninit_n(new_data, old_data, current_size);
 
         if (currently_on_heap)
         {

@@ -24,7 +24,7 @@ void* asl::GlobalHeap::alloc(const layout& layout)
     return ptr;
 }
 
-void* asl::GlobalHeap::realloc(void* old_ptr, const layout& old_layout, const layout& new_layout)
+void* asl::GlobalHeap::realloc(void* old_ptr, [[maybe_unused]] const layout& old_layout, const layout& new_layout)
 {
 #if ASL_OS_WINDOWS
     return ::_aligned_realloc(old_ptr,

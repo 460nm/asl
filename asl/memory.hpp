@@ -1,6 +1,9 @@
 #pragma once
 
 #include "asl/integers.hpp"
+#include "asl/meta.hpp"
+#include "asl/layout.hpp"
+#include "asl/utility.hpp"
 
 constexpr void* operator new(size_t, void* ptr)
 {
@@ -23,6 +26,54 @@ constexpr void memcpy(void* dst, const void* src, isize_t size)
 constexpr isize_t strlen(const char* s)
 {
     return static_cast<isize_t>(__builtin_strlen(s));
+}
+
+template<typename T, typename... Args>
+constexpr T* construct_at(void* ptr, Args&&... args)
+    requires constructible_from<T, Args&&...>
+{
+    return new (ptr) T{ ASL_FWD(args)... };
+}
+
+template<typename T>
+constexpr void destruct(T* data)
+{
+    if constexpr (!trivially_destructible<T>)
+    {
+        data->~T();
+    }
+}
+
+template<typename T>
+constexpr void destruct_n(T* data, isize_t n)
+{
+    if constexpr (!trivially_destructible<T>)
+    {
+        for (isize_t i = 0; i < n; ++i)
+        {
+            destruct(data + i);
+        }
+    }
+}
+
+template<typename T>
+constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
+{
+    if constexpr (trivially_copyable<T>)
+    {
+        memcpy(to, from, size_of<T> * n);
+    }
+    else
+    {
+        static_assert(move_constructible<T>);
+        for (isize_t i = 0; i < n; ++i)
+        {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            construct_at<T>(to + i, ASL_MOVE(from[i]));
+        }
+    }
+    
+    destruct_n(from, n);
 }
 
 } // namespace asl

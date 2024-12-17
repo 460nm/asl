@@ -47,16 +47,13 @@ public:
     template<typename... Args>
     constexpr void init_unsafe(Args&&... args) &
     {
-        new(uninit_ptr()) T(ASL_FWD(args)...);
+        construct_at<T>(uninit_ptr(), ASL_FWD(args)...);
     }
 
     // @Safety Must be called only when in initialized state.
     constexpr void uninit_unsafe() &
     {
-        if constexpr (!trivially_destructible<T>)
-        {
-            init_ptr_unsafe()->~T();
-        }
+        destruct(init_ptr_unsafe());
     }
 };
 

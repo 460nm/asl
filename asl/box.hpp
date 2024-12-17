@@ -58,10 +58,7 @@ public:
     {
         if (m_ptr != nullptr)
         {
-            if constexpr (!trivially_destructible<T>)
-            {
-                m_ptr->~T();
-            }
+            destruct(m_ptr);
             m_alloc.dealloc(m_ptr, layout::of<T>());
             m_ptr = nullptr;
         }
@@ -92,7 +89,7 @@ constexpr box<T, Allocator> make_box_in(Allocator allocator, Args&&... args)
     requires constructible_from<T, Args&&...>
 {
     void* raw_ptr = allocator.alloc(layout::of<T>());
-    T* ptr = new (raw_ptr) T(ASL_FWD(args)...);
+    auto* ptr = construct_at<T>(raw_ptr, ASL_FWD(args)...);
     return box(ptr, ASL_MOVE(allocator));
 }
 
@@ -102,7 +99,7 @@ constexpr box<T, Allocator> make_box(Args&&... args)
 {
     Allocator allocator{};
     void* raw_ptr = allocator.alloc(layout::of<T>());
-    T* ptr = new (raw_ptr) T{ ASL_FWD(args)... };
+    auto* ptr = construct_at<T>(raw_ptr, ASL_FWD(args)...);
     return box<T>(ptr, ASL_MOVE(allocator));
 }
 
