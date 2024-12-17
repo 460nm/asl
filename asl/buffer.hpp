@@ -16,6 +16,16 @@ class buffer
     T*         m_data{};
     isize_t    m_capacity{};
 
+public:
+    static constexpr isize_t kInlineCapacity = []() {
+        // 1 byte is used for size inline in m_size_encoded.
+        // This is enough because we have at most 24 bytes available,
+        // so 23 chars of capacity.
+        const isize_t available_size = size_of<T*> + size_of<isize_t> + size_of<size_t> - 1;
+        return available_size / size_of<T>;
+    }();
+
+private:
     static constexpr size_t kOnHeapMask = 0x8000'0000'0000'0000ULL;
 
     // bit 63       : 1 = on heap, 0 = inline
@@ -72,15 +82,32 @@ class buffer
         return is_on_heap(load_size_encoded());
     }
 
-public:
+    constexpr T* push_uninit()
+    {
+        isize_t sz = size();
+        reserve_capacity(sz + 1);
+        set_size(sz + 1);
+        return data() + sz;
+    }
 
-    static constexpr isize_t kInlineCapacity = []() {
-        // 1 byte is used for size inline in m_size_encoded.
-        // This is enough because we have at most 24 bytes available,
-        // so 23 chars of capacity.
-        const isize_t available_size = size_of<T*> + size_of<isize_t> + size_of<size_t> - 1;
-        return available_size / size_of<T>;
-    }();
+    constexpr void set_size(isize_t new_size)
+    {
+        ASL_ASSERT(new_size >= 0);
+        ASL_ASSERT_RELEASE(new_size <= capacity());
+        size_t size_encoded = load_size_encoded();
+        if (kInlineCapacity == 0 || is_on_heap(size_encoded))
+        {
+            store_size_encoded(encode_size_heap(new_size));
+        }
+        else
+        {
+            ASL_ASSERT(new_size <= kInlineCapacity);
+            size_encoded = (size_encoded & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56);
+            store_size_encoded(size_encoded);
+        }
+    }
+
+public:
 
     constexpr buffer() requires default_constructible<Allocator> = default;
 
@@ -144,6 +171,14 @@ public:
         store_size_encoded(encode_size_heap(current_size));
     }
 
+    constexpr T& push(auto&&... args)
+        requires constructible_from<T, decltype(args)&&...>
+    {
+        T* uninit = push_uninit();
+        T* init = construct_at<T>(uninit, ASL_FWD(args)...);
+        return *init;
+    }
+
     // @Todo(C++23) Use deducing this
     const T* data() const
     {
@@ -168,6 +203,8 @@ public:
             return is_on_heap() ? m_data : reinterpret_cast<T*>(this);
         }
     }
+
+    // @Todo operator[]
 };
 
 } // namespace asl
