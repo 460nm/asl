@@ -45,22 +45,22 @@ static_assert(!asl::trivially_move_constructible<NonMoveConstructible>);
 static_assert(asl::copy_assignable<int>);
 static_assert(asl::copy_assignable<CopyAssignable>);
 static_assert(asl::copy_assignable<TriviallyCopyAssignable>);
-static_assert(!asl::copy_assignable<NoCopyAssignable>);
+static_assert(!asl::copy_assignable<NonCopyAssignable>);
 
 static_assert(asl::trivially_copy_assignable<int>);
 static_assert(!asl::trivially_copy_assignable<CopyAssignable>);
 static_assert(asl::trivially_copy_assignable<TriviallyCopyAssignable>);
-static_assert(!asl::trivially_copy_assignable<NoCopyAssignable>);
+static_assert(!asl::trivially_copy_assignable<NonCopyAssignable>);
 
 static_assert(asl::move_assignable<int>);
 static_assert(asl::move_assignable<MoveAssignable>);
 static_assert(asl::move_assignable<TriviallyMoveAssignable>);
-static_assert(!asl::move_assignable<NoMoveAssignable>);
+static_assert(!asl::move_assignable<NonMoveAssignable>);
 
 static_assert(asl::trivially_move_assignable<int>);
 static_assert(!asl::trivially_move_assignable<MoveAssignable>);
 static_assert(asl::trivially_move_assignable<TriviallyMoveAssignable>);
-static_assert(!asl::trivially_move_assignable<NoMoveAssignable>);
+static_assert(!asl::trivially_move_assignable<NonMoveAssignable>);
 
 static_assert(asl::trivially_destructible<int>);
 static_assert(asl::trivially_destructible<TriviallyDestructible>);
