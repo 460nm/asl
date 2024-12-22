@@ -25,29 +25,56 @@ ASL_TEST(default_size)
     ASL_TEST_EXPECT(b2.data() == nullptr);
 }
 
-// @Todo Make test allocator that counts allocations
+struct CounterAllocator
+{
+    isize_t* count;
+    
+    void* alloc(const asl::layout& layout) const
+    {
+        *count += 1;
+        return asl::GlobalHeap::alloc(layout);
+    }
+    
+    void* realloc(void* ptr, const asl::layout& old, const asl::layout& new_layout) const
+    {
+        *count += 1;
+        return asl::GlobalHeap::realloc(ptr, old, new_layout);
+    }
+    
+    static void dealloc(void* ptr, const asl::layout& layout)
+    {
+        asl::GlobalHeap::dealloc(ptr, layout);
+    }
+};
+static_assert(asl::allocator<CounterAllocator>);
 
 ASL_TEST(reserve_capacity)
 {
-    asl::buffer<int32_t> b;
+    isize_t count = 0;
+    asl::buffer<int32_t, CounterAllocator> b(CounterAllocator{&count});
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() == 5);
+    ASL_TEST_EXPECT(count == 0);
 
     b.reserve_capacity(4);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() == 5);
+    ASL_TEST_EXPECT(count == 0);
 
     b.reserve_capacity(12);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 12);
+    ASL_TEST_EXPECT(count == 1);
 
     b.reserve_capacity(13);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 13);
+    ASL_TEST_EXPECT(count == 1);
 
     b.reserve_capacity(130);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 130);
+    ASL_TEST_EXPECT(count == 2);
 }
 
 // NOLINTBEGIN(*-pointer-arithmetic)

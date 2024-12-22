@@ -21,4 +21,10 @@ build --cxxopt=-Wno-extra-semi
 build --cxxopt=-Wno-global-constructors
 build --cxxopt=-Wno-unsafe-buffer-usage
 
+build:windows_asan --config=windows
+build:windows_asan --cxxopt=-fno-sanitize-ignorelist
+build:windows_asan --cxxopt=-fsanitize=address
+build:windows_asan --linkopt=clang_rt.asan-x86_64.lib
+build:windows_asan --cxxopt=/MT
+
 test --test_output=errors
