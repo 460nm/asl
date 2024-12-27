@@ -3,10 +3,10 @@
 #include "asl/tests/test_types.hpp"
 
 static_assert(asl::trivially_destructible<asl::span<int>>);
-static_assert(asl::trivially_destructible<asl::span<HasDestructor>>);
+static_assert(asl::trivially_destructible<asl::span<WithDestructor>>);
 
-static_assert(asl::trivially_copyable<asl::span<int>>);
-static_assert(asl::trivially_copyable<asl::span<NonCopyConstructible>>);
+static_assert(asl::trivially_copy_constructible<asl::span<int>>);
+static_assert(asl::trivially_copy_constructible<asl::span<Pinned>>);
 
 static_assert(asl::size_of<asl::span<int>> == asl::size_of<void*> * 2);
 static_assert(asl::size_of<asl::span<int, 2>> == asl::size_of<void*>);

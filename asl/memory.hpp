@@ -56,24 +56,23 @@ constexpr void destruct_n(T* data, isize_t n)
     }
 }
 
-template<typename T>
+template<move_constructible T>
 constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
 {
-    if constexpr (trivially_copyable<T>)
+    if constexpr (trivially_move_constructible<T>)
     {
+        static_assert(trivially_destructible<T>);
         memcpy(to, from, size_of<T> * n);
     }
     else
     {
-        static_assert(move_constructible<T>);
         for (isize_t i = 0; i < n; ++i)
         {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             construct_at<T>(to + i, ASL_MOVE(from[i]));
         }
+        destruct_n(from, n);
     }
-    
-    destruct_n(from, n);
 }
 
 } // namespace asl

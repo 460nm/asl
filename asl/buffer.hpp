@@ -108,12 +108,15 @@ private:
     }
 
 public:
-
     constexpr buffer() requires default_constructible<Allocator> = default;
 
     explicit constexpr buffer(Allocator allocator)
         : m_allocator{ASL_MOVE(allocator)}
     {}
+
+    // @Todo Destructor
+    // @Todo clear
+    // @Todo Copy/move constructor & assignment
 
     constexpr isize_t size() const
     {
@@ -150,7 +153,7 @@ public:
         auto old_layout = layout::array<T>(old_capacity);
         auto new_layout = layout::array<T>(new_capacity);
             
-        if (currently_on_heap && trivially_copyable<T>)
+        if (currently_on_heap && trivially_move_constructible<T>)
         {
             m_data = reinterpret_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
             m_capacity = new_capacity;
@@ -204,7 +207,18 @@ public:
         }
     }
 
-    // @Todo operator[]
+    // @Todo(C++23) Use deducing this
+    constexpr T& operator[](isize_t i)
+    {
+        ASL_ASSERT(i >= 0 && i <= size());
+        return data()[i];
+    }
+    
+    constexpr const T& operator[](isize_t i) const
+    {
+        ASL_ASSERT(i >= 0 && i <= size());
+        return data()[i];
+    }
 };
 
 } // namespace asl

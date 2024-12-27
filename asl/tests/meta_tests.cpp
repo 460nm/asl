@@ -13,59 +13,88 @@ static_assert(asl::same_as<asl::select_t<false, int, float>, float>);
 static_assert(asl::same_as<asl::select_t<true, int, float>, int>);
 
 static_assert(asl::default_constructible<int>);
-static_assert(asl::default_constructible<TriviallyDefaultConstructible>);
-static_assert(asl::default_constructible<DefaultConstructible>);
-static_assert(!asl::default_constructible<NonDefaultConstructible>);
+static_assert(asl::default_constructible<TrivialType>);
+static_assert(asl::default_constructible<TrivialTypeDefaultValue>);
 
 static_assert(asl::trivially_default_constructible<int>);
-static_assert(asl::trivially_default_constructible<TriviallyDefaultConstructible>);
-static_assert(!asl::trivially_default_constructible<DefaultConstructible>);
-static_assert(!asl::trivially_default_constructible<NonDefaultConstructible>);
+static_assert(asl::trivially_default_constructible<TrivialType>);
+static_assert(!asl::trivially_default_constructible<TrivialTypeDefaultValue>);
 
 static_assert(asl::copy_constructible<int>);
-static_assert(asl::copy_constructible<TriviallyCopyConstructible>);
-static_assert(asl::copy_constructible<CopyConstructible>);
-static_assert(!asl::copy_constructible<NonCopyConstructible>);
+static_assert(asl::copy_constructible<TrivialType>);
+static_assert(asl::copy_constructible<Copyable>);
+static_assert(!asl::copy_constructible<MoveableOnly>);
+static_assert(!asl::copy_constructible<Pinned>);
 
 static_assert(asl::trivially_copy_constructible<int>);
-static_assert(asl::trivially_copy_constructible<TriviallyCopyConstructible>);
-static_assert(!asl::trivially_copy_constructible<CopyConstructible>);
-static_assert(!asl::trivially_copy_constructible<NonCopyConstructible>);
+static_assert(asl::trivially_copy_constructible<TrivialType>);
+static_assert(asl::trivially_copy_constructible<TrivialTypeDefaultValue>);
+static_assert(!asl::trivially_copy_constructible<WithDestructor>);
+static_assert(!asl::trivially_copy_constructible<Copyable>);
+static_assert(!asl::trivially_copy_constructible<MoveableOnly>);
+static_assert(!asl::trivially_copy_constructible<Pinned>);
 
 static_assert(asl::move_constructible<int>);
-static_assert(asl::move_constructible<TriviallyMoveConstructible>);
-static_assert(asl::move_constructible<MoveConstructible>);
-static_assert(asl::move_constructible<CopyConstructible>);
-static_assert(!asl::move_constructible<NonMoveConstructible>);
+static_assert(asl::move_constructible<TrivialType>);
+static_assert(asl::move_constructible<Copyable>);
+static_assert(asl::move_constructible<MoveableOnly>);
+static_assert(!asl::move_constructible<Pinned>);
 
 static_assert(asl::trivially_move_constructible<int>);
-static_assert(asl::trivially_move_constructible<TriviallyMoveConstructible>);
-static_assert(!asl::trivially_move_constructible<MoveConstructible>);
-static_assert(!asl::trivially_move_constructible<NonMoveConstructible>);
+static_assert(asl::trivially_move_constructible<TrivialType>);
+static_assert(asl::trivially_move_constructible<TrivialTypeDefaultValue>);
+static_assert(!asl::trivially_move_constructible<WithDestructor>);
+static_assert(!asl::trivially_move_constructible<Copyable>);
+static_assert(!asl::trivially_move_constructible<MoveableOnly>);
+static_assert(!asl::trivially_move_constructible<Pinned>);
 
 static_assert(asl::copy_assignable<int>);
-static_assert(asl::copy_assignable<CopyAssignable>);
-static_assert(asl::copy_assignable<TriviallyCopyAssignable>);
-static_assert(!asl::copy_assignable<NonCopyAssignable>);
+static_assert(asl::copy_assignable<TrivialType>);
+static_assert(asl::copy_assignable<Copyable>);
+static_assert(!asl::copy_assignable<MoveableOnly>);
+static_assert(!asl::copy_assignable<Pinned>);
 
 static_assert(asl::trivially_copy_assignable<int>);
-static_assert(!asl::trivially_copy_assignable<CopyAssignable>);
-static_assert(asl::trivially_copy_assignable<TriviallyCopyAssignable>);
-static_assert(!asl::trivially_copy_assignable<NonCopyAssignable>);
+static_assert(asl::trivially_copy_assignable<TrivialType>);
+static_assert(asl::trivially_copy_assignable<TrivialTypeDefaultValue>);
+static_assert(asl::trivially_copy_assignable<WithDestructor>);
+static_assert(!asl::trivially_copy_assignable<Copyable>);
+static_assert(!asl::trivially_copy_assignable<MoveableOnly>);
+static_assert(!asl::trivially_copy_assignable<Pinned>);
+
+static_assert(asl::copyable<int>);
+static_assert(asl::copyable<TrivialType>);
+static_assert(asl::copyable<Copyable>);
+static_assert(!asl::copyable<MoveableOnly>);
+static_assert(!asl::copyable<Pinned>);
+
+static_assert(asl::moveable<int>);
+static_assert(asl::moveable<TrivialType>);
+static_assert(asl::moveable<Copyable>);
+static_assert(asl::moveable<MoveableOnly>);
+static_assert(!asl::moveable<Pinned>);
 
 static_assert(asl::move_assignable<int>);
-static_assert(asl::move_assignable<MoveAssignable>);
-static_assert(asl::move_assignable<TriviallyMoveAssignable>);
-static_assert(!asl::move_assignable<NonMoveAssignable>);
+static_assert(asl::move_assignable<TrivialType>);
+static_assert(asl::move_assignable<Copyable>);
+static_assert(asl::move_assignable<MoveableOnly>);
+static_assert(!asl::move_assignable<Pinned>);
 
 static_assert(asl::trivially_move_assignable<int>);
-static_assert(!asl::trivially_move_assignable<MoveAssignable>);
-static_assert(asl::trivially_move_assignable<TriviallyMoveAssignable>);
-static_assert(!asl::trivially_move_assignable<NonMoveAssignable>);
+static_assert(asl::trivially_move_assignable<TrivialType>);
+static_assert(asl::trivially_move_assignable<TrivialTypeDefaultValue>);
+static_assert(asl::trivially_move_assignable<WithDestructor>);
+static_assert(!asl::trivially_move_assignable<Copyable>);
+static_assert(!asl::trivially_move_assignable<MoveableOnly>);
+static_assert(!asl::trivially_move_assignable<Pinned>);
 
 static_assert(asl::trivially_destructible<int>);
-static_assert(asl::trivially_destructible<TriviallyDestructible>);
-static_assert(!asl::trivially_destructible<HasDestructor>);
+static_assert(asl::trivially_destructible<TrivialType>);
+static_assert(asl::trivially_destructible<TrivialTypeDefaultValue>);
+static_assert(!asl::trivially_destructible<WithDestructor>);
+static_assert(asl::trivially_destructible<Copyable>);
+static_assert(asl::trivially_destructible<MoveableOnly>);
+static_assert(asl::trivially_destructible<Pinned>);
 
 static_assert(asl::same_as<int, asl::un_const_t<int>>);
 static_assert(asl::same_as<int, asl::un_const_t<const int>>);
@@ -163,12 +192,6 @@ static_assert(asl::types_count<int, float> == 2);
 static_assert(asl::types_count<int, int> == 2);
 static_assert(asl::types_count<int> == 1);
 static_assert(asl::types_count<> == 0);
-
-static_assert(asl::trivially_copyable<int>);
-static_assert(!asl::trivially_copyable<HasDestructor>);
-static_assert(!asl::trivially_copyable<CopyAssignable>);
-static_assert(asl::trivially_copyable<DefaultConstructible>);
-static_assert(asl::trivially_copyable<TriviallyDefaultConstructible>);
 
 class Base {};
 class Derived : public Base {};

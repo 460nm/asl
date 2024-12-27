@@ -28,28 +28,28 @@ static_assert(!asl::is_option<int>);
 static_assert(asl::is_option<asl::option<int>>);
 static_assert(asl::is_option<const asl::option<int>>);
 
-static_assert(asl::trivially_destructible<asl::option<TriviallyDestructible>>);
-static_assert(!asl::trivially_destructible<asl::option<HasDestructor>>);
+static_assert(asl::trivially_destructible<asl::option<TrivialType>>);
+static_assert(!asl::trivially_destructible<asl::option<WithDestructor>>);
 
 static_assert(asl::copy_constructible<asl::option<int>>);
-static_assert(asl::copy_constructible<asl::option<CopyConstructible>>);
-static_assert(!asl::copy_constructible<asl::option<MoveConstructible>>);
-static_assert(!asl::copy_constructible<asl::option<NonMoveConstructible>>);
+static_assert(asl::copy_constructible<asl::option<Copyable>>);
+static_assert(!asl::copy_constructible<asl::option<MoveableOnly>>);
+static_assert(!asl::copy_constructible<asl::option<Pinned>>);
 
 static_assert(asl::move_constructible<asl::option<int>>);
-static_assert(asl::move_constructible<asl::option<CopyConstructible>>);
-static_assert(asl::move_constructible<asl::option<MoveConstructible>>);
-static_assert(!asl::move_constructible<asl::option<NonMoveConstructible>>);
+static_assert(asl::move_constructible<asl::option<Copyable>>);
+static_assert(asl::move_constructible<asl::option<MoveableOnly>>);
+static_assert(!asl::move_constructible<asl::option<Pinned>>);
 
 static_assert(asl::copy_assignable<asl::option<int>>);
-static_assert(asl::copy_assignable<asl::option<CopyAssignable>>);
-static_assert(!asl::copy_assignable<asl::option<MoveAssignable>>);
-static_assert(!asl::copy_assignable<asl::option<NonMoveAssignable>>);
+static_assert(asl::copy_assignable<asl::option<Copyable>>);
+static_assert(!asl::copy_assignable<asl::option<MoveableOnly>>);
+static_assert(!asl::copy_assignable<asl::option<Pinned>>);
 
 static_assert(asl::move_assignable<asl::option<int>>);
-static_assert(asl::move_assignable<asl::option<CopyAssignable>>);
-static_assert(asl::move_assignable<asl::option<MoveAssignable>>);
-static_assert(!asl::move_assignable<asl::option<NonMoveAssignable>>);
+static_assert(asl::move_assignable<asl::option<Copyable>>);
+static_assert(asl::move_assignable<asl::option<MoveableOnly>>);
+static_assert(!asl::move_assignable<asl::option<Pinned>>);
 
 static_assert(asl::assignable_from<asl::option<Base*>&, asl::option<Derived*>>);
 static_assert(!asl::assignable_from<asl::option<Derived*>&, asl::option<Base*>>);
@@ -70,16 +70,24 @@ static_assert(!asl::convertible_from<asl::option<ExplicitConversion>, asl::optio
 static_assert(asl::convertible_from<asl::option<ImplicitConversion>, asl::option<int>>);
 
 static_assert(asl::trivially_copy_constructible<asl::option<int>>);
-static_assert(!asl::trivially_copy_constructible<asl::option<CopyConstructible>>);
+static_assert(asl::trivially_copy_constructible<asl::option<TrivialType>>);
+static_assert(asl::trivially_copy_constructible<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::trivially_copy_constructible<asl::option<Copyable>>);
 
 static_assert(asl::trivially_move_constructible<asl::option<int>>);
-static_assert(!asl::trivially_move_constructible<asl::option<MoveConstructible>>);
+static_assert(asl::trivially_move_constructible<asl::option<TrivialType>>);
+static_assert(asl::trivially_move_constructible<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::trivially_move_constructible<asl::option<MoveableOnly>>);
 
 static_assert(asl::trivially_copy_assignable<asl::option<int>>);
-static_assert(!asl::trivially_copy_assignable<asl::option<CopyAssignable>>);
+static_assert(asl::trivially_copy_assignable<asl::option<TrivialType>>);
+static_assert(asl::trivially_copy_assignable<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::trivially_copy_assignable<asl::option<Copyable>>);
 
 static_assert(asl::trivially_move_assignable<asl::option<int>>);
-static_assert(!asl::trivially_move_assignable<asl::option<MoveAssignable>>);
+static_assert(asl::trivially_move_assignable<asl::option<TrivialType>>);
+static_assert(asl::trivially_move_assignable<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::trivially_move_assignable<asl::option<MoveableOnly>>);
 
 ASL_TEST(make_null)
 {

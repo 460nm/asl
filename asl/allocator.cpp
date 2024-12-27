@@ -2,6 +2,7 @@
 #include "asl/assert.hpp"
 #include "asl/utility.hpp"
 #include "asl/memory.hpp"
+#include "asl/print.hpp"
 
 #include <cstdlib>
 
@@ -40,6 +41,7 @@ void* asl::GlobalHeap::realloc(void* old_ptr, [[maybe_unused]] const layout& old
 
     void* new_ptr = alloc(new_layout);
     asl::memcpy(new_ptr, old_ptr, asl::min(old_layout.size, new_layout.size));
+    dealloc(old_ptr, old_layout);
     return new_ptr;
 #endif
 }

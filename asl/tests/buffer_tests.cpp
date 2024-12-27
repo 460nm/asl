@@ -1,4 +1,5 @@
 #include "asl/buffer.hpp"
+#include "asl/print.hpp"
 
 #include "asl/testing/testing.hpp"
 
@@ -77,7 +78,6 @@ ASL_TEST(reserve_capacity)
     ASL_TEST_EXPECT(count == 2);
 }
 
-// NOLINTBEGIN(*-pointer-arithmetic)
 ASL_TEST(push)
 {
     asl::buffer<int32_t> b;
@@ -85,28 +85,90 @@ ASL_TEST(push)
 
     b.push(1);
     ASL_TEST_EXPECT(b.size() == 1);
-    ASL_TEST_EXPECT(b.data()[0] == 1);
+    ASL_TEST_EXPECT(b[0] == 1);
 
     b.push(2);
     b.push(3);
     ASL_TEST_EXPECT(b.size() == 3);
-    ASL_TEST_EXPECT(b.data()[0] == 1);
-    ASL_TEST_EXPECT(b.data()[1] == 2);
-    ASL_TEST_EXPECT(b.data()[2] == 3);
+    ASL_TEST_EXPECT(b[0] == 1);
+    ASL_TEST_EXPECT(b[1] == 2);
+    ASL_TEST_EXPECT(b[2] == 3);
 
     b.push(4);
     b.push(5);
     b.push(6);
     b.push(7);
     ASL_TEST_EXPECT(b.size() == 7);
-    ASL_TEST_EXPECT(b.data()[0] == 1);
-    ASL_TEST_EXPECT(b.data()[1] == 2);
-    ASL_TEST_EXPECT(b.data()[2] == 3);
-    ASL_TEST_EXPECT(b.data()[3] == 4);
-    ASL_TEST_EXPECT(b.data()[4] == 5);
-    ASL_TEST_EXPECT(b.data()[5] == 6);
-    ASL_TEST_EXPECT(b.data()[6] == 7);
+    ASL_TEST_EXPECT(b[0] == 1);
+    ASL_TEST_EXPECT(b[1] == 2);
+    ASL_TEST_EXPECT(b[2] == 3);
+    ASL_TEST_EXPECT(b[3] == 4);
+    ASL_TEST_EXPECT(b[4] == 5);
+    ASL_TEST_EXPECT(b[5] == 6);
+    ASL_TEST_EXPECT(b[6] == 7);
 }
-// NOLINTEND(*-pointer-arithmetic)
+
+struct MoveableType
+{
+    int moved{};
+    int value;
+
+    explicit MoveableType(int x) : value{x} {}
+    MoveableType(const MoveableType&) = delete;
+    MoveableType(MoveableType&& other)  : moved{other.moved + 1}, value{other.value} {}
+    MoveableType& operator=(const MoveableType&) = delete;
+    MoveableType& operator=(MoveableType&&) = delete;
+};
+static_assert(!asl::trivially_copy_constructible<MoveableType>);
+static_assert(!asl::trivially_move_constructible<MoveableType>);
+static_assert(!asl::copyable<MoveableType>);
+static_assert(asl::move_constructible<MoveableType>);
+
+ASL_TEST(push_move)
+{
+    asl::buffer<MoveableType> b;
+
+    static_assert(asl::buffer<MoveableType>::kInlineCapacity > 0);
+
+    b.push(0);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 0);
+    
+    b.push(1);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 0);
+    ASL_TEST_EXPECT(b[1].value == 1);
+    ASL_TEST_EXPECT(b[1].moved == 0);
+    
+    b.push(2);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 1);
+    ASL_TEST_EXPECT(b[1].value == 1);
+    ASL_TEST_EXPECT(b[1].moved == 1);
+    ASL_TEST_EXPECT(b[2].value == 2);
+    ASL_TEST_EXPECT(b[2].moved == 0);
+    
+    b.push(3);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 1);
+    ASL_TEST_EXPECT(b[1].value == 1);
+    ASL_TEST_EXPECT(b[1].moved == 1);
+    ASL_TEST_EXPECT(b[2].value == 2);
+    ASL_TEST_EXPECT(b[2].moved == 0);
+    ASL_TEST_EXPECT(b[3].value == 3);
+    ASL_TEST_EXPECT(b[3].moved == 0);
+    
+    b.push(4);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 2);
+    ASL_TEST_EXPECT(b[1].value == 1);
+    ASL_TEST_EXPECT(b[1].moved == 2);
+    ASL_TEST_EXPECT(b[2].value == 2);
+    ASL_TEST_EXPECT(b[2].moved == 1);
+    ASL_TEST_EXPECT(b[3].value == 3);
+    ASL_TEST_EXPECT(b[3].moved == 1);
+    ASL_TEST_EXPECT(b[4].value == 4);
+    ASL_TEST_EXPECT(b[4].moved == 0);
+}
 
 // @Todo Test push with non trivial move (non copy) types

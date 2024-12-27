@@ -63,23 +63,15 @@ concept is_option = requires
 template<is_object T>
 class option
 {
-    static constexpr bool kIsTrivial =
-        trivially_default_constructible<T> &&
-        trivially_copy_constructible<T> &&
-        trivially_move_constructible<T> &&
-        trivially_copy_assignable<T> &&
-        trivially_move_assignable<T> &&
-        trivially_destructible<T>;
-
     static constexpr bool kHasNiche = has_niche<T>;
 
-    static constexpr bool kHasInlinePayload = kIsTrivial || kHasNiche;
+    static constexpr bool kHasInlinePayload = default_constructible<T> || kHasNiche;
 
     using Storage = select_t<kHasInlinePayload, T, maybe_uninit<T>>;
     using HasValueMarker = select_t<kHasNiche, empty, bool>;
 
-    Storage m_payload{};
-    ASL_NO_UNIQUE_ADDRESS HasValueMarker m_has_value;
+    Storage m_payload;
+    ASL_NO_UNIQUE_ADDRESS HasValueMarker m_has_value{};
 
     template<typename... Args>
     constexpr void construct(Args&&... args)
@@ -88,7 +80,7 @@ class option
 
         if constexpr (kHasInlinePayload)
         {
-            construct_at<T>(&m_payload, ASL_FWD(args)...);
+            m_payload = T(ASL_FWD(args)...);
         }
         else
         {
@@ -122,9 +114,11 @@ public:
     constexpr option() : option(nullopt) {}
     
      // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr option(nullopt_t) requires (!kHasNiche)
+    constexpr option(nullopt_t) requires (!kHasNiche) && trivially_default_constructible<T> {}
+    
+     // NOLINTNEXTLINE(*-explicit-conversions)
+    constexpr option(nullopt_t) requires (!kHasNiche) && (!trivially_default_constructible<T>)
         : m_payload{}
-        , m_has_value{false}
     {}
     
      // NOLINTNEXTLINE(*-explicit-conversions)
@@ -167,7 +161,7 @@ public:
             !same_as<un_cvref_t<U>, option> &&
             !is_niche<U>
         )
-        : option()
+        : option(nullopt)
     {
         construct(ASL_FWD(value));
     }
@@ -177,7 +171,7 @@ public:
 
     constexpr option(const option& other)
         requires copy_constructible<T> && (!kHasInlinePayload)
-        : option()
+        : option(nullopt)
     {
         if (other.has_value())
         {
@@ -193,7 +187,7 @@ public:
 
     constexpr option(option&& other)
         requires move_constructible<T> && (!kHasInlinePayload)
-        : option()
+        : option(nullopt)
     {
         if (other.has_value())
         {
@@ -211,7 +205,7 @@ public:
             constructible_from<T, const U&> && 
             !option_internal::convertible_constructible_from_option<T, U>
         )
-        : option()
+        : option(nullopt)
     {
         if (other.has_value())
         {
@@ -226,7 +220,7 @@ public:
             constructible_from<T, U&&> &&
             !option_internal::convertible_constructible_from_option<T, U>
         )
-        : option()
+        : option(nullopt)
     {
         if (other.has_value())
         {
@@ -415,6 +409,7 @@ public:
         }
     }
 
+    // @Todo(C++23) Deducing this
     constexpr T&& value() &&
     {
         ASL_ASSERT_RELEASE(has_value());

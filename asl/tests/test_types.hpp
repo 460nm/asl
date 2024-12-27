@@ -2,34 +2,68 @@
 
 #include "asl/utility.hpp"
 
-struct DefaultConstructible { DefaultConstructible() {} };
-struct TriviallyDefaultConstructible { TriviallyDefaultConstructible() = default; };
-struct NonDefaultConstructible { NonDefaultConstructible() = delete; };
+struct TrivialType
+{
+    int x;
+    TrivialType() = default;
+    TrivialType(const TrivialType&) = default;
+    TrivialType(TrivialType&&) = default;
+    TrivialType& operator=(const TrivialType&) = default;
+    TrivialType& operator=(TrivialType&&) = default;
+    ~TrivialType() = default;
+};
 
-struct CopyConstructible { CopyConstructible(const CopyConstructible&) {} };
-struct TriviallyCopyConstructible { TriviallyCopyConstructible(const TriviallyCopyConstructible&) = default; };
-struct NonCopyConstructible { NonCopyConstructible(const NonCopyConstructible&) = delete; };
+struct TrivialTypeDefaultValue
+{
+    int x{};
+    TrivialTypeDefaultValue() = default;
+    TrivialTypeDefaultValue(const TrivialTypeDefaultValue&) = default;
+    TrivialTypeDefaultValue(TrivialTypeDefaultValue&&) = default;
+    TrivialTypeDefaultValue& operator=(const TrivialTypeDefaultValue&) = default;
+    TrivialTypeDefaultValue& operator=(TrivialTypeDefaultValue&&) = default;
+    ~TrivialTypeDefaultValue() = default;
+};
 
-struct MoveConstructible { MoveConstructible(MoveConstructible&&) {} };
-struct TriviallyMoveConstructible { TriviallyMoveConstructible(TriviallyMoveConstructible&&) = default; };
-struct NonMoveConstructible { NonMoveConstructible(NonMoveConstructible&&) = delete; };
+struct WithDestructor
+{
+    WithDestructor() = default;
+    WithDestructor(const WithDestructor&) = default;
+    WithDestructor(WithDestructor&&) = default;
+    WithDestructor& operator=(const WithDestructor&) = default;
+    WithDestructor& operator=(WithDestructor&&) = default;
+    ~WithDestructor() {} // NOLINT
+};
 
-struct CopyAssignable { CopyAssignable(const CopyAssignable&) {} CopyAssignable& operator=(const CopyAssignable&) { return *this; } };
-struct TriviallyCopyAssignable { TriviallyCopyAssignable& operator=(const TriviallyCopyAssignable&) = default; };
-struct NonCopyAssignable { NonCopyAssignable& operator=(const NonCopyAssignable&) = delete; };
+struct Copyable // NOLINT
+{
+    Copyable(const Copyable&) {} // NOLINT
+    Copyable& operator=(const Copyable&); // NOLINT
+};
 
-struct MoveAssignable { MoveAssignable(MoveAssignable&&) {} MoveAssignable& operator=(MoveAssignable&&) { return *this; } };
-struct TriviallyMoveAssignable { TriviallyMoveAssignable& operator=(TriviallyMoveAssignable&&) = default; };
-struct NonMoveAssignable { NonMoveAssignable& operator=(NonMoveAssignable&&) = delete; };
+struct MoveableOnly // NOLINT
+{
+    MoveableOnly(const MoveableOnly&) = delete;
+    MoveableOnly& operator=(const MoveableOnly&) = delete;
+    MoveableOnly(MoveableOnly&&);
+    MoveableOnly& operator=(MoveableOnly&&); // NOLINT
+};
 
-struct TriviallyDestructible { ~TriviallyDestructible() = default; };
-struct HasDestructor { ~HasDestructor() {} };
+struct Pinned // NOLINT
+{
+    Pinned(const Pinned&) = delete;
+    Pinned& operator=(const Pinned&) = delete;
+    Pinned(Pinned&&) = delete;
+    Pinned& operator=(Pinned&&) = delete;
+};
 
 struct DestructorObserver
 {
     bool* destroyed;
 
     explicit DestructorObserver(bool* destroyed_) : destroyed{destroyed_} {}
+
+    DestructorObserver(const DestructorObserver&) = delete;
+    DestructorObserver& operator=(const DestructorObserver&) = delete;
 
     DestructorObserver(DestructorObserver&& other)
         : destroyed{asl::exchange(other.destroyed, nullptr)}

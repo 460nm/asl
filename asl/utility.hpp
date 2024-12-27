@@ -19,7 +19,7 @@ T exchange(T& obj, U&& new_value)
     return old_value;
 }
 
-template<trivially_copyable U, trivially_copyable T>
+template<trivially_copy_constructible U, trivially_copy_constructible T>
 constexpr U bit_cast(T value) requires (size_of<T> == size_of<U>)
 {
     return __builtin_bit_cast(U, value); 
