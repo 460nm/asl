@@ -21,11 +21,13 @@ build --cxxopt=-Wno-extra-semi
 build --cxxopt=-Wno-global-constructors
 build --cxxopt=-Wno-unsafe-buffer-usage
 
-build:windows_asan --config=windows
-build:windows_asan --copt=-fno-sanitize-ignorelist
-build:windows_asan --copt=-fsanitize=address
-build:windows_asan --linkopt=clang_rt.asan-x86_64.lib
-build:windows_asan --copt=/MT
+build:windows_san --config=windows
+build:windows_san --copt=-fno-sanitize-ignorelist
+build:windows_san --copt=-fsanitize=address
+build:windows_san --copt=-fsanitize=undefined
+build:windows_san --copt=-fno-sanitize-recover=all
+build:windows_san --linkopt=clang_rt.asan-x86_64.lib
+build:windows_san --copt=/MT
 
 build:linux_asan --config=linux
 build:linux_asan --copt=-fsanitize=address
