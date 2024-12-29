@@ -12,6 +12,11 @@ class StringSink : public asl::Writer
     char*   m_data{};
     
 public:
+    ~StringSink()
+    {
+        reset();
+    }
+    
     void write(asl::span<const asl::byte> str) override
     {
         m_data = reinterpret_cast<char*>(asl::GlobalHeap::realloc(
@@ -28,9 +33,12 @@ public:
 
     void reset()
     {
-        m_current_len = 0;
-        asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
-        m_data = nullptr;
+        if (m_data != nullptr)
+        {
+            m_current_len = 0;
+            asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
+            m_data = nullptr;
+        }
     }
 };
 

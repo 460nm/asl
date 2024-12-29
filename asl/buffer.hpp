@@ -117,6 +117,7 @@ public:
     // @Todo Destructor
     // @Todo clear
     // @Todo Copy/move constructor & assignment
+    // @Todo Do leak checks on Linux
 
     constexpr isize_t size() const
     {
