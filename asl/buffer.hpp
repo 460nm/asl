@@ -12,10 +12,18 @@ namespace asl
 template<is_object T, allocator Allocator = DefaultAllocator>
 class buffer
 {
-    
     T*         m_data{};
     isize_t    m_capacity{};
 
+    static constexpr size_t kOnHeapMask = 0x8000'0000'0000'0000ULL;
+    
+    // bit 63       : 1 = on heap, 0 = inline
+    // bits [62:56] : size when inline
+    // bits [62:0]  : size when on heap
+    size_t     m_size_encoded_{};
+    
+    ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
+    
 public:
     static constexpr isize_t kInlineCapacity = []() {
         // 1 byte is used for size inline in m_size_encoded.
@@ -26,15 +34,6 @@ public:
     }();
 
 private:
-    static constexpr size_t kOnHeapMask = 0x8000'0000'0000'0000ULL;
-
-    // bit 63       : 1 = on heap, 0 = inline
-    // bits [62:56] : size when inline
-    // bits [62:0]  : size when on heap
-    size_t     m_size_encoded_{};
-
-    ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
-    
     static_assert(align_of<T> <= align_of<T*>);
     static_assert(align_of<T*> == align_of<isize_t>);
     static_assert(align_of<T*> == align_of<size_t>);
@@ -114,10 +113,17 @@ public:
         : m_allocator{ASL_MOVE(allocator)}
     {}
 
-    // @Todo Destructor
-    // @Todo clear
+    ~buffer()
+    {
+        clear();
+        if (is_on_heap() && m_data != nullptr)
+        {
+            auto current_layout = layout::array<T>(m_capacity);
+            m_allocator.dealloc(m_data, current_layout);
+        }
+    }
+
     // @Todo Copy/move constructor & assignment
-    // @Todo Do leak checks on Linux
 
     constexpr isize_t size() const
     {
@@ -134,6 +140,15 @@ public:
         {
             return is_on_heap() ? m_capacity : kInlineCapacity;
         }
+    }
+
+    void clear()
+    {
+        isize_t current_size = size();
+        if (current_size == 0) { return; }
+        
+        destruct_n(data(), current_size);
+        set_size(0);
     }
 
     void reserve_capacity(isize_t new_capacity)

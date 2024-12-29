@@ -1,7 +1,7 @@
 #include "asl/buffer.hpp"
-#include "asl/print.hpp"
 
 #include "asl/testing/testing.hpp"
+#include "asl/tests/test_types.hpp"
 
 struct Big
 {
@@ -171,4 +171,58 @@ ASL_TEST(push_move)
     ASL_TEST_EXPECT(b[4].moved == 0);
 }
 
-// @Todo Test push with non trivial move (non copy) types
+ASL_TEST(clear)
+{
+    asl::buffer<int32_t> b;
+    ASL_TEST_EXPECT(b.size() == 0);
+
+    b.push(1);
+    b.push(2);
+    b.push(3);
+    b.push(4);
+    b.push(5);
+    b.push(6);
+    b.push(7);
+    ASL_TEST_EXPECT(b.size() == 7);
+
+    b.clear();
+    ASL_TEST_EXPECT(b.size() == 0);
+}
+
+ASL_TEST(clear_destructor_small)
+{
+    bool d0 = false;
+    bool d1 = false;
+
+    asl::buffer<DestructorObserver> buf;
+    static_assert(asl::buffer<DestructorObserver>::kInlineCapacity >= 2);
+    
+    buf.push(&d0);
+    buf.push(&d1);
+
+    buf.clear();
+    ASL_TEST_EXPECT(d0 == true);
+    ASL_TEST_EXPECT(d1 == true);
+}
+
+ASL_TEST(clear_destructor_heap)
+{
+    bool d0 = false;
+    bool d1 = false;
+    bool d2 = false;
+
+    asl::buffer<DestructorObserver> buf;
+    static_assert(asl::buffer<DestructorObserver>::kInlineCapacity < 3);
+    
+    buf.push(&d0);
+    buf.push(&d1);
+    buf.push(&d2);
+    ASL_TEST_EXPECT(d0 == false);
+    ASL_TEST_EXPECT(d1 == false);
+    ASL_TEST_EXPECT(d2 == false);
+
+    buf.clear();
+    ASL_TEST_EXPECT(d0 == true);
+    ASL_TEST_EXPECT(d1 == true);
+    ASL_TEST_EXPECT(d2 == true);
+}
