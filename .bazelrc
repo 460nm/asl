@@ -29,14 +29,12 @@ build:windows_san --copt=-fno-sanitize-recover=all
 build:windows_san --linkopt=clang_rt.asan-x86_64.lib
 build:windows_san --copt=/MT
 
-build:linux_asan --config=linux
-build:linux_asan --copt=-fsanitize=address
-build:linux_asan --linkopt=-fsanitize=address
-
-build:linux_ubsan --config=linux
-build:linux_ubsan --copt=-fsanitize=undefined
-build:linux_ubsan --copt=-fno-sanitize-recover=all
-build:linux_ubsan --linkopt=-fsanitize=undefined
-build:linux_ubsan --linkopt=-fsanitize-link-c++-runtime
+build:linux_san --config=linux
+build:linux_san --copt=-fsanitize=address
+build:linux_san --linkopt=-fsanitize=address
+build:linux_san --copt=-fsanitize=undefined
+build:linux_san --copt=-fno-sanitize-recover=all
+build:linux_san --linkopt=-fsanitize=undefined
+build:linux_san --linkopt=-fsanitize-link-c++-runtime
 
 test --test_output=errors
