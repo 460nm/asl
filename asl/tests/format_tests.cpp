@@ -12,7 +12,7 @@ class StringSink : public asl::Writer
     char*   m_data{};
     
 public:
-    ~StringSink()
+    ~StringSink() override
     {
         reset();
     }
@@ -24,7 +24,7 @@ public:
             asl::layout::array<char>(m_current_len),
             asl::layout::array<char>(m_current_len + str.size())));
         
-        asl::memcpy(m_data + m_current_len, str.data(), str.size());
+        asl::memcpy(m_data + m_current_len, str.data(), str.size()); // NOLINT
         
         m_current_len += str.size();
     }

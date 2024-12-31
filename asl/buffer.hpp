@@ -23,13 +23,15 @@ class buffer
     size_t     m_size_encoded_{};
     
     ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
+
+    static constexpr isize_t kInlineRegionSize = size_of<T*> + size_of<isize_t> + size_of<size_t>;
     
 public:
     static constexpr isize_t kInlineCapacity = []() {
         // 1 byte is used for size inline in m_size_encoded.
         // This is enough because we have at most 24 bytes available,
         // so 23 chars of capacity.
-        const isize_t available_size = size_of<T*> + size_of<isize_t> + size_of<size_t> - 1;
+        const isize_t available_size = kInlineRegionSize - 1;
         return available_size / size_of<T>;
     }();
 
@@ -89,20 +91,24 @@ private:
         return data() + sz;
     }
 
+    constexpr void set_size_inline(isize_t new_size)
+    {
+        ASL_ASSERT(new_size >= 0 && new_size <= kInlineCapacity);
+        size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56);
+        store_size_encoded(size_encoded);
+    }
+
     constexpr void set_size(isize_t new_size)
     {
         ASL_ASSERT(new_size >= 0);
         ASL_ASSERT_RELEASE(new_size <= capacity());
-        size_t size_encoded = load_size_encoded();
-        if (kInlineCapacity == 0 || is_on_heap(size_encoded))
+        if (kInlineCapacity == 0 || is_on_heap())
         {
             store_size_encoded(encode_size_heap(new_size));
         }
         else
         {
-            ASL_ASSERT(new_size <= kInlineCapacity);
-            size_encoded = (size_encoded & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56);
-            store_size_encoded(size_encoded);
+            set_size_inline(new_size);
         }
     }
 
@@ -113,14 +119,32 @@ public:
         : m_allocator{ASL_MOVE(allocator)}
     {}
 
+    constexpr buffer(buffer&& other)
+        : buffer(ASL_MOVE(other.m_allocator))
+    {
+        if (other.is_on_heap())
+        {
+            // @Todo Test this
+            destroy();
+            m_data = other.m_data;
+            m_capacity = other.m_capacity;
+            set_size(other.size());
+        }
+        else if (trivially_move_constructible<T>)
+        {
+            // @Todo Test this
+            destroy();
+            asl::memcpy(this, &other, kInlineRegionSize);
+        }
+        else
+        {
+            // @Todo
+        }
+    }
+
     ~buffer()
     {
-        clear();
-        if (is_on_heap() && m_data != nullptr)
-        {
-            auto current_layout = layout::array<T>(m_capacity);
-            m_allocator.dealloc(m_data, current_layout);
-        }
+        destroy();
     }
 
     // @Todo Copy/move constructor & assignment
@@ -149,6 +173,19 @@ public:
         
         destruct_n(data(), current_size);
         set_size(0);
+    }
+
+    void destroy()
+    {
+        clear();
+        if (is_on_heap())
+        {
+            if (m_data != nullptr)
+            {
+                auto current_layout = layout::array<T>(m_capacity);
+                m_allocator.dealloc(m_data, current_layout);
+            }
+        }
     }
 
     void reserve_capacity(isize_t new_capacity)

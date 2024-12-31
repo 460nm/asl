@@ -46,6 +46,8 @@ struct CounterAllocator
     {
         asl::GlobalHeap::dealloc(ptr, layout);
     }
+
+    constexpr bool operator==(const CounterAllocator&) const { return true; }
 };
 static_assert(asl::allocator<CounterAllocator>);
 

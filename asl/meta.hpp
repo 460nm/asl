@@ -164,6 +164,17 @@ template<>           struct _is_floating_point_helper<double> : true_type  {};
 
 template<typename T> concept is_floating_point = _is_floating_point_helper<un_cv_t<T>>::value;
 
+template<typename T, typename U>
+concept equality_comparable_with = requires (const un_cvref_t<T>& a, const un_cvref_t<T>& b)
+{
+    { a == b } -> same_as<bool>;
+    { b == a } -> same_as<bool>;
+    { a != b } -> same_as<bool>;
+    { b != a } -> same_as<bool>;
+};
+
+template<typename T> concept equality_comparable = equality_comparable_with<T, T>;
+
 struct niche {};
 
 template<typename T>
