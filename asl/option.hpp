@@ -383,7 +383,7 @@ public:
             }
             else
             {
-                destruct(&m_payload);
+                destroy(&m_payload);
                 construct_at<T>(&m_payload, niche{});
             }
         }

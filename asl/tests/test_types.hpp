@@ -82,6 +82,7 @@ struct DestructorObserver
     {
         if (destroyed != nullptr)
         {
+            ASL_ASSERT_RELEASE(*destroyed == false);
             *destroyed = true;
         }
     }

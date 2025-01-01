@@ -36,7 +36,7 @@ constexpr T* construct_at(void* ptr, Args&&... args)
 }
 
 template<typename T>
-constexpr void destruct(T* data)
+constexpr void destroy(T* data)
 {
     if constexpr (!trivially_destructible<T>)
     {
@@ -45,13 +45,13 @@ constexpr void destruct(T* data)
 }
 
 template<typename T>
-constexpr void destruct_n(T* data, isize_t n)
+constexpr void destroy_n(T* data, isize_t n)
 {
     if constexpr (!trivially_destructible<T>)
     {
         for (isize_t i = 0; i < n; ++i)
         {
-            destruct(data + i);
+            destroy(data + i);
         }
     }
 }
@@ -71,7 +71,7 @@ constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             construct_at<T>(to + i, ASL_MOVE(from[i]));
         }
-        destruct_n(from, n);
+        destroy_n(from, n);
     }
 }
 

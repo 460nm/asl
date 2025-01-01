@@ -38,6 +38,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
     int fail = 0;
     int pass = 0;
+
+    asl::testing::Test* failed_head = nullptr;
     
     for (auto* it = g_head; it != nullptr; it = it->m_next)
     {
@@ -55,6 +57,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         {
             asl::eprint(RED("[  FAILED  ]") " {}\n", it->m_case_name);
             fail += 1;
+
+            it->m_next = asl::exchange(failed_head, it);
         }
     }
     
@@ -67,6 +71,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
     else
     {
         asl::eprint(RED("[  FAILED  ]") " {} test(s) failed\n", fail);
+        for (auto* it = failed_head; it != nullptr; it = it->m_next)
+        {
+            asl::eprint(RED("[  FAILED  ]") " {}\n", it->m_case_name);
+        }
     }
     
     return fail;

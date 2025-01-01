@@ -58,7 +58,7 @@ public:
     {
         if (m_ptr != nullptr)
         {
-            destruct(m_ptr);
+            destroy(m_ptr);
             m_alloc.dealloc(m_ptr, layout::of<T>());
             m_ptr = nullptr;
         }

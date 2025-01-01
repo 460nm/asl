@@ -53,7 +53,7 @@ public:
     // @Safety Must be called only when in initialized state.
     constexpr void uninit_unsafe() &
     {
-        destruct(init_ptr_unsafe());
+        destroy(init_ptr_unsafe());
     }
 };
 

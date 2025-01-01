@@ -100,9 +100,8 @@ private:
 
     constexpr void set_size(isize_t new_size)
     {
-        ASL_ASSERT(new_size >= 0);
-        ASL_ASSERT_RELEASE(new_size <= capacity());
-        if (kInlineCapacity == 0 || is_on_heap())
+        ASL_ASSERT(new_size >= 0 && new_size <= capacity());
+        if (is_on_heap())
         {
             store_size_encoded(encode_size_heap(new_size));
         }
@@ -124,22 +123,23 @@ public:
     {
         if (other.is_on_heap())
         {
-            // @Todo Test this
-            destroy();
             m_data = other.m_data;
             m_capacity = other.m_capacity;
-            set_size(other.size());
+            store_size_encoded(other.load_size_encoded());
         }
         else if (trivially_move_constructible<T>)
         {
-            // @Todo Test this
-            destroy();
             asl::memcpy(this, &other, kInlineRegionSize);
         }
         else
         {
-            // @Todo
+            isize_t n = other.size();
+            ASL_ASSERT(n <= kInlineCapacity);
+            relocate_uninit_n(data(), other.data(), n);
+            set_size_inline(n);
         }
+
+        other.set_size_inline(0);
     }
 
     ~buffer()
@@ -171,7 +171,7 @@ public:
         isize_t current_size = size();
         if (current_size == 0) { return; }
         
-        destruct_n(data(), current_size);
+        destroy_n(data(), current_size);
         set_size(0);
     }
 
@@ -185,6 +185,7 @@ public:
                 auto current_layout = layout::array<T>(m_capacity);
                 m_allocator.dealloc(m_data, current_layout);
             }
+            set_size_inline(0);
         }
     }
 

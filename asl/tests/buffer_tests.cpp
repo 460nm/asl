@@ -228,3 +228,58 @@ ASL_TEST(clear_destructor_heap)
     ASL_TEST_EXPECT(d1 == true);
     ASL_TEST_EXPECT(d2 == true);
 }
+
+ASL_TEST(move_construct_from_heap)
+{
+    bool d[3]{};
+    asl::buffer<DestructorObserver> buf;
+    buf.push(&d[0]);
+    buf.push(&d[1]);
+    buf.push(&d[2]);
+
+    {
+        asl::buffer<DestructorObserver> buf2(ASL_MOVE(buf));
+        ASL_TEST_EXPECT(buf2.size() == 3);
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+        ASL_TEST_EXPECT(d[2] == false);
+    }
+    
+    ASL_TEST_EXPECT(buf.size() == 0);
+    ASL_TEST_EXPECT(d[0] == true);
+    ASL_TEST_EXPECT(d[1] == true);
+    ASL_TEST_EXPECT(d[2] == true);
+}
+
+ASL_TEST(move_construct_inline_trivial)
+{
+    asl::buffer<uint64_t> buf;
+    buf.push(1U);
+    buf.push(2U);
+
+    asl::buffer<uint64_t> buf2(ASL_MOVE(buf));
+    ASL_TEST_EXPECT(buf2[0] == 1U);
+    ASL_TEST_EXPECT(buf2[1] == 2U);
+    
+    ASL_TEST_EXPECT(buf2.size() == 2);
+    ASL_TEST_EXPECT(buf.size() == 0);
+}
+
+ASL_TEST(move_construct_from_inline_non_trivial)
+{
+    bool d[2]{};
+    asl::buffer<DestructorObserver> buf;
+    buf.push(&d[0]);
+    buf.push(&d[1]);
+
+    {
+        asl::buffer<DestructorObserver> buf2(ASL_MOVE(buf));
+        ASL_TEST_EXPECT(buf2.size() == 2);
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+    }
+
+    ASL_TEST_EXPECT(buf.size() == 0);
+    ASL_TEST_EXPECT(d[0] == true);
+    ASL_TEST_EXPECT(d[1] == true);
+}
