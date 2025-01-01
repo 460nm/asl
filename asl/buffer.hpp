@@ -111,15 +111,8 @@ private:
         }
     }
 
-public:
-    constexpr buffer() requires default_constructible<Allocator> = default;
-
-    explicit constexpr buffer(Allocator allocator)
-        : m_allocator{ASL_MOVE(allocator)}
-    {}
-
-    constexpr buffer(buffer&& other)
-        : buffer(ASL_MOVE(other.m_allocator))
+    // NOLINTNEXTLINE(*-rvalue-reference-param-not-moved)
+    void move_from_other(buffer&& other)
     {
         if (other.is_on_heap())
         {
@@ -140,6 +133,30 @@ public:
         }
 
         other.set_size_inline(0);
+    }
+
+public:
+    constexpr buffer() requires default_constructible<Allocator> = default;
+
+    explicit constexpr buffer(Allocator allocator)
+        : m_allocator{ASL_MOVE(allocator)}
+    {}
+
+    constexpr buffer(buffer&& other)
+        : buffer(ASL_MOVE(other.m_allocator))
+    {
+        move_from_other(ASL_MOVE(other));
+    }
+
+    constexpr buffer& operator=(buffer&& other)
+    {
+        if (&other == this) { return *this; }
+
+        destroy();
+        m_allocator = ASL_MOVE(other.m_allocator);
+        move_from_other(ASL_MOVE(other));
+
+        return *this;
     }
 
     ~buffer()

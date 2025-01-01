@@ -191,13 +191,14 @@ ASL_TEST(clear)
     ASL_TEST_EXPECT(b.size() == 0);
 }
 
+static_assert(asl::buffer<DestructorObserver>::kInlineCapacity == 2);
+
 ASL_TEST(clear_destructor_small)
 {
     bool d0 = false;
     bool d1 = false;
 
     asl::buffer<DestructorObserver> buf;
-    static_assert(asl::buffer<DestructorObserver>::kInlineCapacity >= 2);
     
     buf.push(&d0);
     buf.push(&d1);
@@ -214,7 +215,6 @@ ASL_TEST(clear_destructor_heap)
     bool d2 = false;
 
     asl::buffer<DestructorObserver> buf;
-    static_assert(asl::buffer<DestructorObserver>::kInlineCapacity < 3);
     
     buf.push(&d0);
     buf.push(&d1);
@@ -282,4 +282,97 @@ ASL_TEST(move_construct_from_inline_non_trivial)
     ASL_TEST_EXPECT(buf.size() == 0);
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
+}
+
+ASL_TEST(move_assign_from_heap)
+{
+    bool d[6]{};
+    
+    {
+        asl::buffer<DestructorObserver> buf;
+        asl::buffer<DestructorObserver> buf2;
+    
+        buf.push(&d[0]);
+        buf.push(&d[1]);
+        buf.push(&d[2]);
+    
+        buf2.push(&d[3]);
+        buf2.push(&d[4]);
+        buf2.push(&d[5]);
+
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+        ASL_TEST_EXPECT(d[2] == false);
+        ASL_TEST_EXPECT(d[3] == false);
+        ASL_TEST_EXPECT(d[4] == false);
+        ASL_TEST_EXPECT(d[5] == false);
+
+        buf2 = ASL_MOVE(buf);
+    
+        ASL_TEST_EXPECT(buf.size() == 0);
+        ASL_TEST_EXPECT(buf2.size() == 3);
+        
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+        ASL_TEST_EXPECT(d[2] == false);
+        ASL_TEST_EXPECT(d[3] == true);
+        ASL_TEST_EXPECT(d[4] == true);
+        ASL_TEST_EXPECT(d[5] == true);
+    }
+    
+    ASL_TEST_EXPECT(d[0] == true);
+    ASL_TEST_EXPECT(d[1] == true);
+    ASL_TEST_EXPECT(d[2] == true);
+    ASL_TEST_EXPECT(d[3] == true);
+    ASL_TEST_EXPECT(d[4] == true);
+    ASL_TEST_EXPECT(d[5] == true);
+}
+
+ASL_TEST(move_assign_trivial_heap_to_inline)
+{
+    isize_t alloc_count = 0;
+    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator(&alloc_count)};
+    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator(&alloc_count)};
+
+    buf.push(1);
+    buf.push(2);
+    ASL_TEST_EXPECT(alloc_count == 0);
+
+    buf2.push(3);
+    buf2.push(4);
+    buf2.push(5);
+    ASL_TEST_EXPECT(alloc_count == 1);
+
+    buf = ASL_MOVE(buf2);
+    ASL_TEST_EXPECT(alloc_count == 1);
+
+    ASL_TEST_EXPECT(buf.size() == 3);
+    ASL_TEST_EXPECT(buf2.size() == 0);
+    ASL_TEST_EXPECT(buf[0] == 3);
+    ASL_TEST_EXPECT(buf[1] == 4);
+    ASL_TEST_EXPECT(buf[2] == 5);
+}
+
+ASL_TEST(move_assign_trivial_inline_to_heap)
+{
+    isize_t alloc_count = 0;
+    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator(&alloc_count)};
+    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator(&alloc_count)};
+
+    buf.push(1);
+    buf.push(2);
+    ASL_TEST_EXPECT(alloc_count == 0);
+
+    buf2.push(3);
+    buf2.push(4);
+    buf2.push(5);
+    ASL_TEST_EXPECT(alloc_count == 1);
+
+    buf2 = ASL_MOVE(buf);
+    ASL_TEST_EXPECT(alloc_count == 1);
+
+    ASL_TEST_EXPECT(buf.size() == 0);
+    ASL_TEST_EXPECT(buf2.size() == 2);
+    ASL_TEST_EXPECT(buf2[0] == 1);
+    ASL_TEST_EXPECT(buf2[1] == 2);
 }
