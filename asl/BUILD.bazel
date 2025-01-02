@@ -24,6 +24,7 @@ cc_library(
     ],
     srcs = [
         "allocator.cpp",
+        "assert.cpp",
         "format.cpp",
         "format_float.cpp",
         "print.cpp",

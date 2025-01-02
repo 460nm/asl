@@ -114,6 +114,8 @@ private:
     // NOLINTNEXTLINE(*-rvalue-reference-param-not-moved)
     void move_from_other(buffer&& other)
     {
+        ASL_ASSERT(size() == 0 && !is_on_heap());
+        
         if (other.is_on_heap())
         {
             m_data = other.m_data;

@@ -4,6 +4,19 @@
 
 namespace asl {
 
+struct source_location
+{
+    const char* file;
+    int         line;
+
+    explicit source_location(
+        const char* file = __builtin_FILE(),
+        int line = __builtin_LINE())
+        : file{file}
+        , line{line}
+    {}
+};
+
 struct empty {};
 
 template<typename T> struct id { using type = T; };
