@@ -86,9 +86,19 @@ private:
     constexpr T* push_uninit()
     {
         isize_t sz = size();
-        reserve_capacity(sz + 1);
-        set_size(sz + 1);
+        resize_uninit(sz + 1);
         return data() + sz;
+    }
+
+    constexpr void resize_uninit(isize_t new_size)
+    {
+        isize_t old_size = size();
+        if (!trivially_destructible<T> && new_size < old_size)
+        {
+            destroy_n(data() + new_size, old_size - new_size);
+        }
+        reserve_capacity(new_size);
+        set_size(new_size);
     }
 
     constexpr void set_size_inline(isize_t new_size)
@@ -112,22 +122,38 @@ private:
     }
 
     // NOLINTNEXTLINE(*-rvalue-reference-param-not-moved)
-    void move_from_other(buffer&& other)
+    void move_from_other(buffer&& other, bool assign)
     {
-        ASL_ASSERT(size() == 0 && !is_on_heap());
-        
         if (other.is_on_heap())
         {
+            destroy();
             m_data = other.m_data;
             m_capacity = other.m_capacity;
             store_size_encoded(other.load_size_encoded());
         }
         else if (trivially_move_constructible<T>)
         {
+            destroy();
             asl::memcpy(this, &other, kInlineRegionSize);
+        }
+        else if (!assign || m_allocator == other.m_allocator)
+        {
+            isize_t other_n = other.size();
+            isize_t this_n = size();
+            resize_uninit(other_n);
+            if (other_n < this_n)
+            {
+                relocate_assign_n(data(), other.data(), other_n);
+            }
+            else
+            {
+                relocate_assign_n(data(), other.data(), this_n);
+                relocate_uninit_n(data() + this_n, other.data() + this_n, other_n - this_n);
+            }
         }
         else
         {
+            destroy();
             isize_t n = other.size();
             ASL_ASSERT(n <= kInlineCapacity);
             relocate_uninit_n(data(), other.data(), n);
@@ -135,6 +161,11 @@ private:
         }
 
         other.set_size_inline(0);
+        
+        if (assign)
+        {
+            m_allocator = ASL_MOVE(other.m_allocator);
+        }
     }
 
 public:
@@ -147,17 +178,13 @@ public:
     constexpr buffer(buffer&& other)
         : buffer(ASL_MOVE(other.m_allocator))
     {
-        move_from_other(ASL_MOVE(other));
+        move_from_other(ASL_MOVE(other), false);
     }
 
     constexpr buffer& operator=(buffer&& other)
     {
         if (&other == this) { return *this; }
-
-        destroy();
-        m_allocator = ASL_MOVE(other.m_allocator);
-        move_from_other(ASL_MOVE(other));
-
+        move_from_other(ASL_MOVE(other), true);
         return *this;
     }
 
@@ -166,7 +193,7 @@ public:
         destroy();
     }
 
-    // @Todo Copy/move constructor & assignment
+    // @Todo Copy constructor & assignment
 
     constexpr isize_t size() const
     {

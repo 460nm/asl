@@ -51,6 +51,27 @@ struct CounterAllocator
 };
 static_assert(asl::allocator<CounterAllocator>);
 
+struct IncompatibleAllocator
+{
+    static void* alloc(const asl::layout& layout)
+    {
+        return asl::GlobalHeap::alloc(layout);
+    }
+    
+    static void* realloc(void* ptr, const asl::layout& old, const asl::layout& new_layout)
+    {
+        return asl::GlobalHeap::realloc(ptr, old, new_layout);
+    }
+    
+    static void dealloc(void* ptr, const asl::layout& layout)
+    {
+        asl::GlobalHeap::dealloc(ptr, layout);
+    }
+
+    constexpr bool operator==(const IncompatibleAllocator&) const { return false; }
+};
+static_assert(asl::allocator<IncompatibleAllocator>);
+
 ASL_TEST(reserve_capacity)
 {
     isize_t count = 0;
@@ -375,4 +396,76 @@ ASL_TEST(move_assign_trivial_inline_to_heap)
     ASL_TEST_EXPECT(buf2.size() == 2);
     ASL_TEST_EXPECT(buf2[0] == 1);
     ASL_TEST_EXPECT(buf2[1] == 2);
+}
+
+ASL_TEST(move_assign_inline_to_heap)
+{
+    bool d[6]{};
+
+    {
+        asl::buffer<DestructorObserver> buf;
+        asl::buffer<DestructorObserver> buf2;
+
+        buf.push(&d[0]);
+        buf.push(&d[1]);
+
+        buf2.push(&d[2]);
+        buf2.push(&d[3]);
+        buf2.push(&d[4]);
+        buf2.push(&d[5]);
+
+        buf2 = ASL_MOVE(buf);
+
+        ASL_TEST_EXPECT(buf.size() == 0);
+        ASL_TEST_EXPECT(buf2.size() == 2);
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+        ASL_TEST_EXPECT(d[2] == false); // moved but not destroyed
+        ASL_TEST_EXPECT(d[3] == false); // moved but not destroyed
+        ASL_TEST_EXPECT(d[4] == true);
+        ASL_TEST_EXPECT(d[5] == true);
+    }
+    
+    ASL_TEST_EXPECT(d[0] == true);
+    ASL_TEST_EXPECT(d[1] == true);
+    ASL_TEST_EXPECT(d[2] == false); // moved but not destroyed
+    ASL_TEST_EXPECT(d[3] == false); // moved but not destroyed
+    ASL_TEST_EXPECT(d[4] == true);
+    ASL_TEST_EXPECT(d[5] == true);
+}
+
+ASL_TEST(move_assign_from_inline_incompatible_allocator)
+{
+    bool d[6]{};
+
+    {
+        asl::buffer<DestructorObserver, IncompatibleAllocator> buf;
+        asl::buffer<DestructorObserver, IncompatibleAllocator> buf2;
+
+        buf.push(&d[0]);
+        buf.push(&d[1]);
+
+        buf2.push(&d[2]);
+        buf2.push(&d[3]);
+        buf2.push(&d[4]);
+        buf2.push(&d[5]);
+
+        buf2 = ASL_MOVE(buf);
+
+        ASL_TEST_EXPECT(buf.size() == 0);
+        ASL_TEST_EXPECT(buf2.size() == 2);
+        ASL_TEST_EXPECT(d[0] == false);
+        ASL_TEST_EXPECT(d[1] == false);
+        ASL_TEST_EXPECT(d[2] == true);
+        ASL_TEST_EXPECT(d[3] == true);
+        ASL_TEST_EXPECT(d[4] == true);
+        ASL_TEST_EXPECT(d[5] == true);
+    }
+    
+    ASL_TEST_EXPECT(d[0] == true);
+    ASL_TEST_EXPECT(d[1] == true);
+    ASL_TEST_EXPECT(d[2] == true);
+    ASL_TEST_EXPECT(d[3] == true);
+    ASL_TEST_EXPECT(d[4] == true);
+    ASL_TEST_EXPECT(d[5] == true);
 }

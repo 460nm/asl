@@ -75,5 +75,24 @@ constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
     }
 }
 
+template<move_assignable T>
+constexpr void relocate_assign_n(T* to, T* from, isize_t n)
+{
+    if constexpr (trivially_move_assignable<T>)
+    {
+        static_assert(trivially_destructible<T>);
+        memcpy(to, from, size_of<T> * n);
+    }
+    else
+    {
+        for (isize_t i = 0; i < n; ++i)
+        {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            to[i] = ASL_MOVE(from[i]);
+        }
+        destroy_n(from, n);
+    }
+}
+
 } // namespace asl
 
