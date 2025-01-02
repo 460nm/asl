@@ -5,6 +5,7 @@
 #include "asl/annotations.hpp"
 #include "asl/memory.hpp"
 #include "asl/assert.hpp"
+#include "asl/span.hpp"
 
 namespace asl
 {
@@ -141,7 +142,7 @@ private:
             isize_t other_n = other.size();
             isize_t this_n = size();
             resize_uninit(other_n);
-            if (other_n < this_n)
+            if (other_n <= this_n)
             {
                 relocate_assign_n(data(), other.data(), other_n);
             }
@@ -168,6 +169,26 @@ private:
         }
     }
 
+    void copy_range(span<const T> to_copy)
+    {
+        isize_t this_size = size();
+        isize_t new_size = to_copy.size();
+        
+        resize_uninit(to_copy.size());
+        ASL_ASSERT(capacity() >= new_size);
+        ASL_ASSERT(size() == to_copy.size());
+
+        if (new_size <= this_size)
+        {
+            copy_assign_n(data(), to_copy.data(), new_size);
+        }
+        else
+        {
+            copy_assign_n(data(), to_copy.data(), this_size);
+            copy_uninit_n(data() + this_size, to_copy.data() + this_size, new_size - this_size);
+        }
+    }
+
 public:
     constexpr buffer() requires default_constructible<Allocator> = default;
 
@@ -175,13 +196,30 @@ public:
         : m_allocator{ASL_MOVE(allocator)}
     {}
 
+    constexpr buffer(const buffer& other)
+        requires copy_constructible<Allocator> && copyable<T>
+        : m_allocator{other.m_allocator}
+    {
+        copy_range(other);
+    }
+
     constexpr buffer(buffer&& other)
+        requires moveable<T>
         : buffer(ASL_MOVE(other.m_allocator))
     {
         move_from_other(ASL_MOVE(other), false);
     }
+    
+    constexpr buffer& operator=(const buffer& other)
+        requires copyable<T>
+    {
+        if (&other == this) { return *this; }
+        copy_range(other);
+        return *this;
+    }
 
     constexpr buffer& operator=(buffer&& other)
+        requires moveable<T>
     {
         if (&other == this) { return *this; }
         move_from_other(ASL_MOVE(other), true);
@@ -192,8 +230,6 @@ public:
     {
         destroy();
     }
-
-    // @Todo Copy constructor & assignment
 
     constexpr isize_t size() const
     {
@@ -305,6 +341,17 @@ public:
         {
             return is_on_heap() ? m_data : reinterpret_cast<T*>(this);
         }
+    }
+
+    // @Todo(C++23) Deducing this
+    operator span<const T>() const // NOLINT(*-explicit-conversions)
+    {
+        return span<const T>{data(), size()};
+    }
+    
+    operator span<T>() // NOLINT(*-explicit-conversions)
+    {
+        return span<T>{data(), size()};
     }
 
     // @Todo(C++23) Use deducing this

@@ -469,3 +469,64 @@ ASL_TEST(move_assign_from_inline_incompatible_allocator)
     ASL_TEST_EXPECT(d[4] == true);
     ASL_TEST_EXPECT(d[5] == true);
 }
+
+ASL_TEST(copy_construct_inline)
+{
+    asl::buffer<int> buf;
+    buf.push(0);
+    buf.push(1);
+    buf.push(2);
+
+    asl::buffer<int> buf2{buf};
+
+    ASL_TEST_EXPECT(buf.size() == buf2.size());
+    ASL_TEST_EXPECT(buf.size() == 3);
+    ASL_TEST_EXPECT(buf[0] == 0);
+    ASL_TEST_EXPECT(buf[1] == 1);
+    ASL_TEST_EXPECT(buf[2] == 2);
+    ASL_TEST_EXPECT(buf2[0] == 0);
+    ASL_TEST_EXPECT(buf2[1] == 1);
+    ASL_TEST_EXPECT(buf2[2] == 2);
+}
+
+ASL_TEST(copy_assign_into_smaller)
+{
+    asl::buffer<int> buf;
+    buf.push(0);
+    buf.push(1);
+    buf.push(2);
+
+    asl::buffer<int> buf2;
+    buf2.push(4);
+
+    buf2 = buf;
+
+    ASL_TEST_EXPECT(buf.size() == 3);
+    ASL_TEST_EXPECT(buf2.size() == 3);
+
+    ASL_TEST_EXPECT(buf[0] == 0);
+    ASL_TEST_EXPECT(buf[1] == 1);
+    ASL_TEST_EXPECT(buf[2] == 2);
+    ASL_TEST_EXPECT(buf2[0] == 0);
+    ASL_TEST_EXPECT(buf2[1] == 1);
+    ASL_TEST_EXPECT(buf2[2] == 2);
+}
+
+ASL_TEST(copy_assign_into_larger)
+{
+    asl::buffer<int> buf;
+    buf.push(0);
+    buf.push(1);
+    buf.push(2);
+
+    asl::buffer<int> buf2;
+    buf2.push(4);
+
+    buf = buf2;
+
+    ASL_TEST_EXPECT(buf.size() == 1);
+    ASL_TEST_EXPECT(buf2.size() == 1);
+
+    ASL_TEST_EXPECT(buf[0] == 4);
+    ASL_TEST_EXPECT(buf2[0] == 4);
+}

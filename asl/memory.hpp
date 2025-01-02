@@ -56,6 +56,40 @@ constexpr void destroy_n(T* data, isize_t n)
     }
 }
 
+template<copy_constructible T>
+constexpr void copy_uninit_n(T* to, const T* from, isize_t n)
+{
+    if constexpr (trivially_copy_constructible<T>)
+    {
+        memcpy(to, from, size_of<T> * n);
+    }
+    else
+    {
+        for (isize_t i = 0; i < n; ++i)
+        {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            construct_at<T>(to + i, from[i]);
+        }
+    }
+}
+
+template<copy_assignable T>
+constexpr void copy_assign_n(T* to, const T* from, isize_t n)
+{
+    if constexpr (trivially_copy_constructible<T>)
+    {
+        memcpy(to, from, size_of<T> * n);
+    }
+    else
+    {
+        for (isize_t i = 0; i < n; ++i)
+        {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            to[i] = from[i];
+        }
+    }
+}
+
 template<move_constructible T>
 constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
 {
