@@ -21,6 +21,7 @@ Checks:
   - "-*-avoid-c-arrays"
   - "-*-use-anonymous-namespace"
   - "-*-reinterpret-cast"
+  - "-*-noexcept-swap"
   - "-*-noexcept-move"
   - "-*-noexcept-move-constructor"
   - "-*-noexcept-move-operations"

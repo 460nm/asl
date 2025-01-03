@@ -23,6 +23,8 @@ using uint32_t = unsigned int;
 using size_t  = uint64_t;
 using isize_t = int64_t;
 
+using uintptr_t = size_t;
+
 namespace asl
 {
     

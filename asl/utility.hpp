@@ -11,6 +11,14 @@
 namespace asl
 {
 
+template<moveable T>
+constexpr void swap(T& a, T& b)
+{
+    T tmp{ASL_MOVE(a)};
+    a = ASL_MOVE(b);
+    b = ASL_MOVE(tmp);
+}
+
 template<typename T, typename U>
 T exchange(T& obj, U&& new_value)
 {

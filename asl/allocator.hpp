@@ -2,6 +2,7 @@
 
 #include "asl/layout.hpp"
 #include "asl/meta.hpp"
+#include "asl/memory.hpp"
 
 namespace asl
 {
@@ -27,5 +28,31 @@ public:
 static_assert(allocator<GlobalHeap>);
 
 using DefaultAllocator = GlobalHeap;
+
+template<typename T>
+T* alloc_new(allocator auto& a, auto&&... args)
+{
+    void* ptr = a.alloc(layout::of<T>());
+    return construct_at<T>(ptr, ASL_FWD(args)...);
+}
+
+template<typename T>
+void alloc_delete(allocator auto& a, T* ptr)
+{
+    destroy(ptr);
+    a.dealloc(ptr, layout::of<T>());
+}
+
+template<typename T>
+constexpr T* alloc_new_default(auto&&... args)
+{
+    return alloc_new<T>(DefaultAllocator{}, ASL_FWD(args)...);
+}
+
+template<typename T>
+void alloc_delete_default(T* ptr)
+{
+    alloc_delete(DefaultAllocator{}, ptr);
+}
 
 } // namespace asl
