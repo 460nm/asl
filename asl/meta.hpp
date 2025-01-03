@@ -177,6 +177,18 @@ template<>           struct _is_floating_point_helper<double> : true_type  {};
 
 template<typename T> concept is_floating_point = _is_floating_point_helper<un_cv_t<T>>::value;
 
+template<typename T> struct _is_integer_helper           : false_type {};
+template<>           struct _is_integer_helper<int8_t>   : true_type  {};
+template<>           struct _is_integer_helper<int16_t>  : true_type  {};
+template<>           struct _is_integer_helper<int32_t>  : true_type  {};
+template<>           struct _is_integer_helper<int64_t>  : true_type  {};
+template<>           struct _is_integer_helper<uint8_t>  : true_type  {};
+template<>           struct _is_integer_helper<uint16_t> : true_type  {};
+template<>           struct _is_integer_helper<uint32_t> : true_type  {};
+template<>           struct _is_integer_helper<uint64_t> : true_type  {};
+
+template<typename T> concept is_integer = _is_integer_helper<un_cv_t<T>>::value;
+
 template<typename T, typename U>
 concept equality_comparable_with = requires (const un_cvref_t<T>& a, const un_cvref_t<T>& b)
 {
