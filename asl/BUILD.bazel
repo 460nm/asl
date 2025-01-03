@@ -19,6 +19,7 @@ cc_library(
         "option.hpp",
         "print.hpp",
         "span.hpp",
+        "string.hpp",
         "string_view.hpp",
         "utility.hpp",
     ],
@@ -56,6 +57,7 @@ cc_library(
     "meta",
     "option",
     "span",
+    "string",
     "string_view",
     "utility",
 ]]

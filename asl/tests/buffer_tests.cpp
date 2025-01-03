@@ -131,6 +131,18 @@ ASL_TEST(push)
     ASL_TEST_EXPECT(b[6] == 7);
 }
 
+ASL_TEST(from_span)
+{
+    int data[] = {1, 2, 4, 8};
+    asl::buffer<int> b{data};
+
+    ASL_TEST_EXPECT(b.size() == 4);
+    ASL_TEST_EXPECT(b[0] == 1);
+    ASL_TEST_EXPECT(b[1] == 2);
+    ASL_TEST_EXPECT(b[2] == 4);
+    ASL_TEST_EXPECT(b[3] == 8);
+}
+
 struct MoveableType
 {
     int moved{};

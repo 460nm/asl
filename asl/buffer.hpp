@@ -191,10 +191,23 @@ private:
 
 public:
     constexpr buffer() requires default_constructible<Allocator> = default;
+    
+    explicit constexpr buffer(span<const T> s)
+        requires default_constructible<Allocator>
+        : buffer{}
+    {
+        copy_range(s);
+    }
 
     explicit constexpr buffer(Allocator allocator)
         : m_allocator{ASL_MOVE(allocator)}
     {}
+    
+    explicit constexpr buffer(span<const T> s, Allocator allocator)
+        : m_allocator{ASL_MOVE(allocator)}
+    {
+        copy_range(s);
+    }
 
     constexpr buffer(const buffer& other)
         requires copy_constructible<Allocator> && copyable<T>
@@ -344,12 +357,22 @@ public:
     }
 
     // @Todo(C++23) Deducing this
-    operator span<const T>() const // NOLINT(*-explicit-conversions)
+    constexpr operator span<const T>() const // NOLINT(*-explicit-conversions)
+    {
+        return as_span();
+    }
+    
+    constexpr operator span<T>() // NOLINT(*-explicit-conversions)
+    {
+        return as_span();
+    }
+    
+    constexpr span<const T> as_span() const
     {
         return span<const T>{data(), size()};
     }
     
-    operator span<T>() // NOLINT(*-explicit-conversions)
+    constexpr span<T> as_span()
     {
         return span<T>{data(), size()};
     }

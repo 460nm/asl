@@ -1,4 +1,3 @@
-string
 hashing
 hash_set
 hash_map
