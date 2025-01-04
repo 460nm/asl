@@ -364,8 +364,8 @@ ASL_TEST(move_assign_from_heap)
 ASL_TEST(move_assign_trivial_heap_to_inline)
 {
     isize_t alloc_count = 0;
-    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator(&alloc_count)};
-    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator(&alloc_count)};
+    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator{&alloc_count}};
+    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator{&alloc_count}};
 
     buf.push(1);
     buf.push(2);
@@ -389,8 +389,8 @@ ASL_TEST(move_assign_trivial_heap_to_inline)
 ASL_TEST(move_assign_trivial_inline_to_heap)
 {
     isize_t alloc_count = 0;
-    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator(&alloc_count)};
-    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator(&alloc_count)};
+    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator{&alloc_count}};
+    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator{&alloc_count}};
 
     buf.push(1);
     buf.push(2);

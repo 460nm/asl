@@ -59,4 +59,6 @@ public:
     }
 };
 
+string() -> string<>;
+
 } // namespace asl

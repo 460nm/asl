@@ -21,12 +21,14 @@ class status
 
     static constexpr void* status_to_payload(status_code code)
     {
-        return code == status_code::ok ? nullptr : bit_cast<void*>(((uintptr_t)code << 1) | 1);
+        return code == status_code::ok
+            ? nullptr
+            : bit_cast<void*>((static_cast<uintptr_t>(code) << 1) | 1);
     }
 
     static constexpr status_code payload_to_status(void* payload)
     {
-        return (status_code)(bit_cast<uintptr_t>(payload) >> 1);
+        return static_cast<status_code>(bit_cast<uintptr_t>(payload) >> 1);
     }
 
     status_code code_internal() const;

@@ -10,10 +10,10 @@ struct source_location
     int         line;
 
     explicit source_location(
-        const char* file = __builtin_FILE(),
-        int line = __builtin_LINE())
-        : file{file}
-        , line{line}
+        const char* file_ = __builtin_FILE(),
+        int line_ = __builtin_LINE())
+        : file{file_}
+        , line{line_}
     {}
 };
 

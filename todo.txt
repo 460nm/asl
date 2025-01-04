@@ -2,7 +2,6 @@ hashing
 hash_set
 hash_map
 logging
-atomic
 status
 status_or
 dynlib
