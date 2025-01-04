@@ -49,7 +49,9 @@ class status
     }
 
     status_code code_internal() const;
+    string_view message_internal() const;
 
+    void ref();
     void unref();
     
 public:
@@ -57,10 +59,7 @@ public:
 
     constexpr ~status()
     {
-        if (!is_inline())
-        {
-            unref();
-        }
+        if (!is_inline()) { unref(); }
     }
     
     explicit constexpr status(status_code code)
@@ -69,9 +68,26 @@ public:
 
     status(status_code code, string_view msg);
 
+    constexpr status(const status& other)
+        : m_payload{other.m_payload}
+    {
+        if (!is_inline()) { ref(); }
+    }
+
     constexpr status(status&& other)
         : m_payload{exchange(other.m_payload, nullptr)}
     {}
+
+    constexpr status& operator=(const status& other)
+    {
+        if (&other != this)
+        {
+            if (!is_inline()) { unref(); }
+            m_payload = other.m_payload;
+            if (!is_inline()) { ref(); }
+        }
+        return *this;
+    }
 
     constexpr status& operator=(status&& other)
     {
@@ -81,8 +97,6 @@ public:
         }
         return *this;
     }
-
-    // @Todo Copy constructor & assignment
 
     constexpr bool ok() const
     {
@@ -95,6 +109,15 @@ public:
     constexpr status_code code() const
     {
         return is_inline() ? code_inline() : code_internal();
+    }
+
+    constexpr string_view message() const
+    {
+        if (!is_inline())
+        {
+            return message_internal();
+        }
+        return {};
     }
 };
 

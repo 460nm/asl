@@ -3,6 +3,7 @@
 #include "asl/string.hpp"
 #include "asl/atomic.hpp"
 
+// @Todo Use custom allocator
 using Allocator = asl::DefaultAllocator;
 static Allocator g_allocator{};
 
@@ -11,13 +12,12 @@ namespace
 
 struct StatusInternal
 {
-    // @Todo Use custom allocator
-    asl::string<> msg;
+    asl::string<Allocator> msg;
     asl::status_code code;
     asl::atomic<int32_t> ref_count;
 
     constexpr StatusInternal(asl::string_view msg_, asl::status_code code_)
-        : msg{msg_}
+        : msg{msg_, g_allocator}
         , code{code_}
     {
         atomic_store(&ref_count, 1);
@@ -32,8 +32,21 @@ asl::status::status(status_code code, string_view msg)
 
 asl::status_code asl::status::code_internal() const
 {
-    ASL_ASSERT(m_payload && (bit_cast<uintptr_t>(m_payload) & 1) == 0);
+    ASL_ASSERT(!is_inline());
     return reinterpret_cast<const StatusInternal*>(m_payload)->code;
+}
+
+asl::string_view asl::status::message_internal() const
+{
+    ASL_ASSERT(!is_inline());
+    return reinterpret_cast<const StatusInternal*>(m_payload)->msg;
+}
+
+void asl::status::ref()
+{
+    ASL_ASSERT(!is_inline());
+    auto* internal = reinterpret_cast<StatusInternal*>(m_payload);
+    atomic_fetch_increment(&internal->ref_count, memory_order::relaxed);
 }
 
 void asl::status::unref()
