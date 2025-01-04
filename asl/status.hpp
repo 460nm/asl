@@ -6,6 +6,8 @@
 namespace asl
 {
 
+// @Todo Make status with formatting
+
 enum class status_code : uint8_t
 {
     ok               = 0,
@@ -31,10 +33,35 @@ class status
         return static_cast<status_code>(bit_cast<uintptr_t>(payload) >> 1);
     }
 
+    constexpr bool is_inline() const
+    {
+        return m_payload == nullptr || (bit_cast<uintptr_t>(m_payload) & 1) != 0;
+    }
+
+    constexpr status_code code_inline() const
+    {
+        ASL_ASSERT(is_inline());
+        if (m_payload == nullptr)
+        {
+            return status_code::ok;
+        }
+        return payload_to_status(m_payload);
+    }
+
     status_code code_internal() const;
+
+    void unref();
     
 public:
     constexpr status() = default;
+
+    constexpr ~status()
+    {
+        if (!is_inline())
+        {
+            unref();
+        }
+    }
     
     explicit constexpr status(status_code code)
         : m_payload{status_to_payload(code)}
@@ -67,17 +94,7 @@ public:
 
     constexpr status_code code() const
     {
-        if (m_payload == nullptr)
-        {
-            return status_code::ok;
-        }
-        
-        if ((bit_cast<uintptr_t>(m_payload) & 1) != 0)
-        {
-            return payload_to_status(m_payload);
-        }
-
-        return code_internal();
+        return is_inline() ? code_inline() : code_internal();
     }
 };
 
