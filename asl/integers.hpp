@@ -20,6 +20,12 @@ using uint32_t = unsigned int;
     using uint64_t = unsigned long;
 #endif
 
+struct uint128_t
+{
+    uint64_t high;
+    uint64_t low;
+};
+
 using size_t  = uint64_t;
 using isize_t = int64_t;
 
