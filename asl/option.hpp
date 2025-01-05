@@ -22,34 +22,24 @@ namespace option_internal
 {
 
 template<typename T, typename U>
-concept convertible_from_option =
-    convertible_from<T, option<U>&> &&
-    convertible_from<T, const option<U>&> &&
-    convertible_from<T, option<U>&&> &&
-    convertible_from<T, const option<U>&&>;
+concept not_constructible_from_option = 
+    !constructible_from<T, option<U>&> &&
+    !constructible_from<T, const option<U>&> &&
+    !constructible_from<T, option<U>&&> &&
+    !constructible_from<T, const option<U>&&>;
 
 template<typename T, typename U>
-concept constructible_from_option = 
-    constructible_from<T, option<U>&> &&
-    constructible_from<T, const option<U>&> &&
-    constructible_from<T, option<U>&&> &&
-    constructible_from<T, const option<U>&&>;
-
-template<typename T, typename U>
-concept assignable_from_option = 
-    assignable_from<T&, option<U>&> &&
-    assignable_from<T&, const option<U>&> &&
-    assignable_from<T&, option<U>&&> &&
-    assignable_from<T&, const option<U>&&>;
-
-template<typename T, typename U>
-concept convertible_constructible_from_option = 
-    convertible_from_option<T, U> && constructible_from_option<T, U>;
+concept not_assignable_from_option = 
+    !assignable_from<T&, option<U>&> &&
+    !assignable_from<T&, const option<U>&> &&
+    !assignable_from<T&, option<U>&&> &&
+    !assignable_from<T&, const option<U>&&>;
 
 
 template<typename T, typename U>
-concept convertible_constructible_assignable_from_option = 
-    convertible_constructible_from_option<T, U> && assignable_from_option<T, U>;
+concept not_constructible_assignable_from_option =
+    not_constructible_from_option<T, U> &&
+    not_assignable_from_option<T, U>;
 
 } // namespace option_internal
 
@@ -65,31 +55,35 @@ class option
 {
     static constexpr bool kHasNiche = has_niche<T>;
 
-    static constexpr bool kHasInlinePayload = default_constructible<T> || kHasNiche;
-
-    using Storage = select_t<kHasInlinePayload, T, maybe_uninit<T>>;
     using HasValueMarker = select_t<kHasNiche, empty, bool>;
 
-    Storage m_payload;
+    maybe_uninit<T> m_payload{};
     ASL_NO_UNIQUE_ADDRESS HasValueMarker m_has_value{};
+
+    template<is_object U>
+    friend class option;
 
     template<typename... Args>
     constexpr void construct(Args&&... args)
     {
         ASL_ASSERT(!has_value());
 
-        if constexpr (kHasInlinePayload)
+        if constexpr (!kHasNiche)
         {
-            m_payload = T(ASL_FWD(args)...);
+            m_payload.construct_unsafe(ASL_FWD(args)...);
+            m_has_value = true;
         }
         else
         {
-            m_payload.init_unsafe(ASL_FWD(args)...);
-        }
-
-        if constexpr (!kHasNiche)
-        {
-            m_has_value = true;
+            if constexpr (move_assignable<T>)
+            {
+                m_payload.assign_unsafe(ASL_MOVE(T{ASL_FWD(args)...}));
+            }
+            else
+            {
+                m_payload.destroy_unsafe();
+                m_payload.construct_unsafe(ASL_FWD(args)...);
+            }
         }
     }
 
@@ -97,119 +91,81 @@ class option
     constexpr void assign(U&& arg)
     {
         ASL_ASSERT(has_value());
-
-        if constexpr (kHasInlinePayload)
-        {
-            m_payload = ASL_FWD(arg);
-        }
-        else
-        {
-            m_payload.as_init_unsafe() = ASL_FWD(arg);
-        }
+        m_payload.assign_unsafe(ASL_FWD(arg));
     }
 
 public:
     using type = T;
 
-    constexpr option() : option(nullopt) {}
+    constexpr option() : option{nullopt} {}
     
      // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr option(nullopt_t) requires (!kHasNiche) && trivially_default_constructible<T> {}
+    constexpr option(nullopt_t) requires (!kHasNiche) {}
     
      // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr option(nullopt_t) requires (!kHasNiche) && (!trivially_default_constructible<T>)
-        : m_payload{}
-    {}
-    
-     // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr option(nullopt_t) requires kHasNiche
-        : m_payload{niche{}}
-    {}
+    constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place, niche_t{}} {}
 
     template<typename U = T>
     constexpr explicit (!convertible_from<T, U&&>)
     option(U&& value)
         requires (
             kHasNiche &&
-            constructible_from<T, U> &&
-            !same_as<un_cvref_t<U>, option> &&
-            !is_niche<U>
+            constructible_from<T, U&&> &&
+            !same_as<un_cvref_t<U>, option>
         )
-        : m_payload(ASL_FWD(value))
+        : m_payload{in_place, ASL_FWD(value)}
     {}
 
     template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)
+    constexpr explicit (!convertible_from<T, U&&>)        
     option(U&& value)
         requires (
-            kHasInlinePayload &&
             !kHasNiche &&
-            constructible_from<T, U> &&
-            !same_as<un_cvref_t<U>, option> &&
-            !is_niche<U>
+            constructible_from<T, U&&> &&
+            !is_option<U>
         )
-        : m_payload(ASL_FWD(value))
+        : m_payload{in_place, ASL_FWD(value)}
         , m_has_value{true}
     {}
+    
+    constexpr option(const option& other) requires trivially_copy_constructible<T> = default;
+    constexpr option(const option& other) requires (!copy_constructible<T>) = delete;
 
-    template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)
-    option(U&& value)
-        requires (
-            !kHasInlinePayload &&
-            constructible_from<T, U> &&
-            !same_as<un_cvref_t<U>, option> &&
-            !is_niche<U>
-        )
-        : option(nullopt)
+    constexpr option(const option& other)    
+        requires copy_constructible<T> && (!trivially_copy_constructible<T>)
+        : option{nullopt}
     {
-        construct(ASL_FWD(value));
+        if (other.has_value())
+        {
+            construct(other.m_payload.as_init_unsafe());
+        }
     }
     
-    constexpr option(const option& other)
-        requires copy_constructible<T> && kHasInlinePayload = default;
+    constexpr option(option&& other) requires trivially_move_constructible<T> = default;
+    constexpr option(option&& other) requires (!move_constructible<T>) = delete;
 
-    constexpr option(const option& other)
-        requires copy_constructible<T> && (!kHasInlinePayload)
-        : option(nullopt)
+    constexpr option(option&& other)    
+        requires move_constructible<T> && (!trivially_move_constructible<T>)
+        : option{nullopt}
     {
         if (other.has_value())
         {
-            construct(other.value());
+            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
         }
     }
-
-    constexpr option(const option& other)
-        requires (!copy_constructible<T>) = delete;
-        
-    constexpr option(option&& other)
-        requires move_constructible<T> && kHasInlinePayload = default;
-
-    constexpr option(option&& other)
-        requires move_constructible<T> && (!kHasInlinePayload)
-        : option(nullopt)
-    {
-        if (other.has_value())
-        {
-            construct(ASL_MOVE(other.value()));
-        }
-    }
-
-    constexpr option(option&& other)
-        requires (!move_constructible<T>) = delete;
 
     template<typename U>
     constexpr explicit (!convertible_from<T, const U&>)
     option(const option<U>& other)
         requires (
             constructible_from<T, const U&> && 
-            !option_internal::convertible_constructible_from_option<T, U>
+            option_internal::not_constructible_from_option<T, U>
         )
-        : option(nullopt)
+        : option{nullopt}
     {
         if (other.has_value())
         {
-            construct(other.value());
+            construct(other.m_payload.as_init_unsafe());
         }
     }
 
@@ -218,13 +174,13 @@ public:
     option(option<U>&& other)
         requires (
             constructible_from<T, U&&> &&
-            !option_internal::convertible_constructible_from_option<T, U>
+            option_internal::not_constructible_from_option<T, U>
         )
-        : option(nullopt)
+        : option{nullopt}
     {
         if (other.has_value())
         {
-            construct(ASL_MOVE(other.value()));
+            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
         }
     }
 
@@ -237,9 +193,9 @@ public:
     template<typename U = T>
     constexpr option& operator=(U&& value) &
         requires (
-            assignable_from<T&, U> &&
-            constructible_from<T, U> && 
-            !same_as<un_cvref_t<U>, option>
+            assignable_from<T&, U&&> &&
+            constructible_from<T, U&&> && 
+            !is_option<U>
         )
     {
         if (has_value())
@@ -255,13 +211,13 @@ public:
     }
 
     constexpr option& operator=(const option& other) &
-        requires (!copy_assignable<T> || !copy_constructible<T>) = delete;
+        requires (!copy_assignable<T>) = delete;
         
     constexpr option& operator=(const option& other) &
-        requires copy_assignable<T> && copy_constructible<T> && kHasInlinePayload = default;
+        requires trivially_copy_assignable<T> = default;
 
     constexpr option& operator=(const option& other) &
-        requires copy_assignable<T> && copy_constructible<T> && (!kHasInlinePayload)
+        requires copy_assignable<T> && (!trivially_copy_constructible<T>)
     {
         if (&other == this) { return *this; }
 
@@ -283,12 +239,15 @@ public:
         
         return *this;
     }
-
+    
     constexpr option& operator=(option&& other) &
-        requires move_assignable<T> && move_constructible<T> && kHasInlinePayload = default;
+        requires (!move_assignable<T>) = delete;
         
     constexpr option& operator=(option&& other) &
-        requires move_assignable<T> && move_constructible<T> && (!kHasInlinePayload)
+        requires trivially_move_assignable<T> = default;
+
+    constexpr option& operator=(option&& other) &
+        requires move_assignable<T> && (!trivially_move_constructible<T>)
     {
         if (&other == this) { return *this; }
 
@@ -316,18 +275,18 @@ public:
         requires (
             constructible_from<T, const U&> &&
             assignable_from<T&, const U&> &&
-            !option_internal::convertible_constructible_assignable_from_option<T, U>
+            option_internal::not_constructible_assignable_from_option<T, U>
         )
     {
         if (other.has_value())
         {
             if (has_value())
             {
-                assign(other.value());
+                assign(other.m_payload.as_init_unsafe());
             }
             else
             {
-                construct(other.value());
+                construct(other.m_payload.as_init_unsafe());
             }
         }
         else if (has_value())
@@ -341,20 +300,20 @@ public:
     template<typename U = T>
     constexpr option& operator=(option<U>&& other) &
         requires (
-            constructible_from<T, U> &&
-            assignable_from<T&, U> &&
-            !option_internal::convertible_constructible_assignable_from_option<T, U>
+            constructible_from<T, U&&> &&
+            assignable_from<T&, U&&> &&
+            option_internal::not_constructible_assignable_from_option<T, U>
         )
     {
         if (other.has_value())
         {
             if (has_value())
             {
-                assign(ASL_MOVE(other).value());
+                assign(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
             else
             {
-                construct(ASL_MOVE(other).value());
+                construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
             }
         }
         else if (has_value())
@@ -364,8 +323,8 @@ public:
 
         return *this;
     }
-    
-    constexpr ~option() = default;
+       
+    constexpr ~option() requires trivially_destructible<T> = default;
     constexpr ~option() requires (!trivially_destructible<T>)
     {
         reset();
@@ -379,21 +338,18 @@ public:
         {
             if constexpr (move_assignable<T>)
             {
-                m_payload = T(niche{});
+                m_payload.assign_unsafe(ASL_MOVE(T{niche_t{}}));
             }
             else
             {
-                destroy(&m_payload);
-                construct_at<T>(&m_payload, niche{});
+                m_payload.destroy_unsafe();
+                m_payload.construct_unsafe(niche_t{});
             }
         }
         else
         {
             m_has_value = false;
-            if constexpr (!kHasInlinePayload)
-            {
-                m_payload.uninit_unsafe();
-            }
+            m_payload.destroy_unsafe();
         }
     }
 
@@ -401,7 +357,7 @@ public:
     {
         if constexpr (kHasNiche)
         {
-            return m_payload != niche{};
+            return m_payload.as_init_unsafe() != niche_t{};
         }
         else
         {
@@ -413,40 +369,19 @@ public:
     constexpr T&& value() &&
     {
         ASL_ASSERT_RELEASE(has_value());
-        if constexpr (kHasInlinePayload)
-        {
-            return ASL_MOVE(m_payload);
-        }
-        else
-        {
-            return ASL_MOVE(m_payload).as_init_unsafe();
-        }
+        return ASL_MOVE(m_payload).as_init_unsafe();
     }
 
     constexpr T& value() &
     {
         ASL_ASSERT_RELEASE(has_value());
-        if constexpr (kHasInlinePayload)
-        {
-            return m_payload;
-        }
-        else
-        {
-            return m_payload.as_init_unsafe();
-        }
+        return m_payload.as_init_unsafe();
     }
 
     constexpr const T& value() const&
     {
         ASL_ASSERT_RELEASE(has_value());
-        if constexpr (kHasInlinePayload)
-        {
-            return m_payload;
-        }
-        else
-        {
-            return m_payload.as_init_unsafe();
-        }
+        return m_payload.as_init_unsafe();
     }
 
     template<typename U>

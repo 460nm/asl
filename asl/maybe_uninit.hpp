@@ -1,60 +1,72 @@
 #pragma once
 
-#include "asl/layout.hpp"
-#include "asl/memory.hpp"
 #include "asl/meta.hpp"
 #include "asl/utility.hpp"
+#include "asl/memory.hpp"
 
 namespace asl
 {
 
 template<is_object T>
-class maybe_uninit
+union maybe_uninit
 {
-    union
-    {
-        alignas(align_of<T>) char m_storage[size_of<T>];
-        T m_value;
-    };
+private:
+    T m_value;
 
 public:
-    constexpr maybe_uninit() {} // NOLINT(*-member-init)
+    constexpr maybe_uninit() requires trivially_default_constructible<T> = default;
+    constexpr maybe_uninit() requires (!trivially_default_constructible<T>) {} // NOLINT
     
-    maybe_uninit(const maybe_uninit&) = delete;
-    maybe_uninit(maybe_uninit&&) = delete;
-
-    maybe_uninit& operator=(const maybe_uninit&) = delete;
-    maybe_uninit& operator=(maybe_uninit&&) = delete;
-    
-    constexpr ~maybe_uninit() = default;
-    constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {}
-    
-    constexpr void*       uninit_ptr() && = delete;
-    constexpr const void* uninit_ptr() const& { return m_storage; }
-    constexpr void*       uninit_ptr() &      { return m_storage; }
-
-    // @Safety Pointer must only be accessed when in initialized state.
-    constexpr       T* init_ptr_unsafe() && = delete;
-    constexpr const T* init_ptr_unsafe() const& { return &m_value; }
-    constexpr       T* init_ptr_unsafe() &      { return &m_value; }
-
-    // @Safety Reference must only be accessed when in initialized state.
-    constexpr       T&& as_init_unsafe() &&     { return ASL_MOVE(m_value); }
-    constexpr const T&  as_init_unsafe() const& { return m_value; }
-    constexpr       T&  as_init_unsafe() &      { return m_value; }
-
-    // @Safety Must be called only when in uninitialized state.
     template<typename... Args>
-    constexpr void init_unsafe(Args&&... args) &
+    explicit constexpr maybe_uninit(in_place_t, Args&&... args)
+        requires constructible_from<T, Args&&...>
+        : m_value{ASL_FWD(args)...}
+    {}
+    
+    constexpr maybe_uninit(const maybe_uninit&) requires trivially_copy_constructible<T> = default;
+    constexpr maybe_uninit(const maybe_uninit&) requires (!trivially_copy_constructible<T>) {} // NOLINT
+    
+    constexpr maybe_uninit(maybe_uninit&&) requires trivially_move_constructible<T> = default;
+    constexpr maybe_uninit(maybe_uninit&&) requires (!trivially_move_constructible<T>) {} // NOLINT
+    
+    constexpr maybe_uninit& operator=(const maybe_uninit&) requires trivially_copy_assignable<T> = default;
+    constexpr maybe_uninit& operator=(const maybe_uninit&) requires (!trivially_copy_assignable<T>) {}
+    
+    constexpr maybe_uninit& operator=(maybe_uninit&&) requires trivially_move_assignable<T> = default;
+    constexpr maybe_uninit& operator=(maybe_uninit&&) requires (!trivially_move_assignable<T>) {}
+    
+    constexpr ~maybe_uninit() requires trivially_destructible<T> = default;
+    constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {} // NOLINT
+
+    // @Safety Value must not have been initialized yet
+    template<typename... Args>
+    constexpr void construct_unsafe(Args&&... args)
+        requires constructible_from<T, Args&&...>
     {
-        construct_at<T>(uninit_ptr(), ASL_FWD(args)...);
+        construct_at<T>(&m_value, ASL_FWD(args)...);
     }
 
-    // @Safety Must be called only when in initialized state.
-    constexpr void uninit_unsafe() &
+    // @Safety Value must have been initialized
+    template<typename U>
+    constexpr void assign_unsafe(U&& value)
+        requires assignable_from<T&, U&&>
     {
-        destroy(init_ptr_unsafe());
+        m_value = ASL_FWD(value);
     }
+
+    // @Safety Value must have been initialized
+    constexpr void destroy_unsafe()
+    {
+        if constexpr (!trivially_destructible<T>)
+        {
+            destroy(&m_value);
+        }
+    }
+
+    // @Safety Value must have been initialized
+    constexpr const T& as_init_unsafe() const& { return m_value; }
+    constexpr T&       as_init_unsafe() &      { return m_value; }
+    constexpr T&&      as_init_unsafe() &&     { return ASL_MOVE(m_value); }
 };
 
 } // namespace asl

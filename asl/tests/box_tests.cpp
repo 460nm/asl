@@ -55,6 +55,8 @@ ASL_TEST(arrow)
 
 ASL_TEST(niche)
 {
+    static_assert(sizeof(asl::box<int>) == sizeof(asl::option<asl::box<int>>));
+    
     asl::option<asl::box<int>> opt;
     ASL_TEST_EXPECT(!opt.has_value());
 
@@ -66,7 +68,7 @@ ASL_TEST(niche)
     ASL_TEST_EXPECT(!opt.has_value());
 
     bool destroyed = false;
-    asl::option<asl::box<DestructorObserver>> opt2 = asl::make_box<DestructorObserver>(&destroyed);
+    asl::option opt2 = asl::make_box<DestructorObserver>(&destroyed);
     ASL_TEST_EXPECT(opt2.has_value());
     ASL_TEST_EXPECT(!destroyed);
 

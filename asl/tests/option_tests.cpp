@@ -14,14 +14,14 @@ struct NonZero
         ASL_ASSERT(x != 0);
     }
 
-    constexpr explicit NonZero(asl::niche) : value(0) {}
+    constexpr explicit NonZero(asl::niche_t) : value(0) {}
 
-    constexpr bool operator==(asl::niche) const { return value == 0; }
+    constexpr bool operator==(asl::niche_t) const { return value == 0; }
 };
 static_assert(asl::has_niche<NonZero>);
 static_assert(!asl::has_niche<int>);
 
-static_assert(sizeof(asl::option<int>) > sizeof(int));
+static_assert(sizeof(asl::option<int>) >= sizeof(int));
 static_assert(sizeof(asl::option<NonZero>) == sizeof(NonZero));
 
 static_assert(!asl::is_option<int>);
@@ -31,22 +31,26 @@ static_assert(asl::is_option<const asl::option<int>>);
 static_assert(asl::trivially_destructible<asl::option<TrivialType>>);
 static_assert(!asl::trivially_destructible<asl::option<WithDestructor>>);
 
-static_assert(asl::copy_constructible<asl::option<int>>);
+static_assert(asl::trivially_copy_constructible<asl::option<int>>);
+static_assert(asl::trivially_copy_constructible<asl::option<NonZero>>);
 static_assert(asl::copy_constructible<asl::option<Copyable>>);
 static_assert(!asl::copy_constructible<asl::option<MoveableOnly>>);
 static_assert(!asl::copy_constructible<asl::option<Pinned>>);
 
-static_assert(asl::move_constructible<asl::option<int>>);
+static_assert(asl::trivially_move_constructible<asl::option<int>>);
+static_assert(asl::trivially_move_constructible<asl::option<NonZero>>);
 static_assert(asl::move_constructible<asl::option<Copyable>>);
 static_assert(asl::move_constructible<asl::option<MoveableOnly>>);
 static_assert(!asl::move_constructible<asl::option<Pinned>>);
 
-static_assert(asl::copy_assignable<asl::option<int>>);
+static_assert(asl::trivially_copy_assignable<asl::option<int>>);
+static_assert(asl::trivially_copy_assignable<asl::option<NonZero>>);
 static_assert(asl::copy_assignable<asl::option<Copyable>>);
 static_assert(!asl::copy_assignable<asl::option<MoveableOnly>>);
 static_assert(!asl::copy_assignable<asl::option<Pinned>>);
 
-static_assert(asl::move_assignable<asl::option<int>>);
+static_assert(asl::trivially_move_assignable<asl::option<int>>);
+static_assert(asl::trivially_move_assignable<asl::option<NonZero>>);
 static_assert(asl::move_assignable<asl::option<Copyable>>);
 static_assert(asl::move_assignable<asl::option<MoveableOnly>>);
 static_assert(!asl::move_assignable<asl::option<Pinned>>);

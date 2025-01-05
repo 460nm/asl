@@ -16,7 +16,7 @@ class box
     ASL_NO_UNIQUE_ADDRESS Allocator m_alloc;
     
 public:
-    explicit constexpr box(niche)
+    explicit constexpr box(niche_t)
         requires default_constructible<Allocator>
         : m_ptr{nullptr}
         , m_alloc{}
@@ -78,7 +78,7 @@ public:
         return m_ptr;
     }
 
-    constexpr bool operator==(niche) const
+    constexpr bool operator==(niche_t) const
     {
         return m_ptr == nullptr;
     }

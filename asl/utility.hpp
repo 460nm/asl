@@ -11,6 +11,9 @@
 namespace asl
 {
 
+struct in_place_t {};
+static constexpr in_place_t in_place{};
+
 template<moveable T>
 constexpr void swap(T& a, T& b)
 {
