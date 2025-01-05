@@ -2,5 +2,4 @@ hashing
 hash_set
 hash_map
 logging
-status_or
 dynlib

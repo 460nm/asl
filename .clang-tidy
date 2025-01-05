@@ -31,3 +31,4 @@ Checks:
   - "-readability-use-anyofallof"
   - "-readability-function-cognitive-complexity"
   - "-readability-math-missing-parentheses"
+  - "-*-rvalue-reference-param-not-moved"

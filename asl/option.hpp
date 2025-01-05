@@ -35,7 +35,6 @@ concept not_assignable_from_option =
     !assignable_from<T&, option<U>&&> &&
     !assignable_from<T&, const option<U>&&>;
 
-
 template<typename T, typename U>
 concept not_constructible_assignable_from_option =
     not_constructible_from_option<T, U> &&

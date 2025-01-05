@@ -75,7 +75,7 @@ public:
     }
 
     constexpr status(status&& other)
-        : m_payload{exchange(other.m_payload, nullptr)}
+        : m_payload{exchange(other.m_payload, status_to_payload(other.code()))}
     {}
 
     constexpr status& operator=(const status& other)
@@ -93,7 +93,8 @@ public:
     {
         if (&other != this)
         {
-            swap(m_payload, other.m_payload);
+            if (!is_inline()) { unref(); }
+            m_payload = exchange(other.m_payload, status_to_payload(other.code()));
         }
         return *this;
     }
