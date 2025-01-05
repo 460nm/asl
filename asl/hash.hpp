@@ -1,11 +1,11 @@
 #pragma once
 
 #include "asl/integers.hpp"
+#include "asl/meta.hpp"
+#include "asl/utility.hpp"
 
 namespace asl::city_hash
 {
-
-// All CityHash stuff below this point
 
 // Hash function for a byte array.
 uint64_t CityHash64(const char *s, size_t len);
@@ -51,3 +51,44 @@ constexpr uint64_t Hash128to64(const uint128_t& x)
 }
 
 } // namespace asl::city_hash
+
+namespace asl
+{
+
+template<typename T, typename H>
+concept hashable_generic = requires(const T& value, H h)
+{
+    { AslHashValue(h, value) } -> same_as<H>;
+};
+
+struct HashState
+{
+    uint128_t state{};
+
+    constexpr HashState() = default;
+    explicit constexpr HashState(uint128_t s) : state{s} {}
+
+    static constexpr HashState combine(HashState h)
+    {
+        return h;
+    }
+
+    template<hashable_generic<HashState> Arg, hashable_generic<HashState>... Remaining>
+    static constexpr HashState combine(HashState h, const Arg& arg, const Remaining&... remaining)
+    {
+        return combine(AslHashValue(h, arg), remaining...);
+    }
+};
+
+template<typename T>
+concept hashable = hashable_generic<T, HashState>;
+
+template<typename H, uniquely_represented T>
+constexpr H AslHashValue(H h, const T& value)
+{
+    auto hashed = city_hash::CityHash128WithSeed(reinterpret_cast<const char*>(&value), size_of<T>, h.state);
+    return HashState{hashed};
+}
+
+} // namespace asl
+

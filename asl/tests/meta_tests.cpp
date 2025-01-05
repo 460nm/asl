@@ -232,3 +232,7 @@ static_assert(asl::is_floating_point<volatile double>);
 static_assert(!asl::is_floating_point<const float&>);
 static_assert(!asl::is_floating_point<int>);
 static_assert(!asl::is_floating_point<C>);
+
+static_assert(asl::uniquely_represented<int>);
+static_assert(asl::uniquely_represented<uint128_t>);
+static_assert(!asl::uniquely_represented<bool>);
