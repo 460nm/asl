@@ -1,46 +1,9 @@
 #include "asl/format.hpp"
 #include "asl/testing/testing.hpp"
-#include "asl/allocator.hpp"
 #include "asl/float.hpp"
+#include "asl/tests/test_types.hpp"
 
 static_assert(asl::formattable<decltype("Hello")>);
-
-class StringSink : public asl::Writer
-{
-    // @Todo Use string, once we have it, or a buffer
-    isize_t m_current_len{};
-    char*   m_data{};
-    
-public:
-    ~StringSink() override
-    {
-        reset();
-    }
-    
-    void write(asl::span<const asl::byte> str) override
-    {
-        m_data = reinterpret_cast<char*>(asl::GlobalHeap::realloc(
-            m_data,
-            asl::layout::array<char>(m_current_len),
-            asl::layout::array<char>(m_current_len + str.size())));
-        
-        asl::memcpy(m_data + m_current_len, str.data(), str.size()); // NOLINT
-        
-        m_current_len += str.size();
-    }
-
-    constexpr asl::string_view str() const { return {m_data, m_current_len}; }
-
-    void reset()
-    {
-        if (m_data != nullptr)
-        {
-            m_current_len = 0;
-            asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
-            m_data = nullptr;
-        }
-    }
-};
 
 ASL_TEST(format_args)
 {
@@ -153,4 +116,27 @@ ASL_TEST(format_boolean)
     sink.reset();
     asl::format(&sink, "{} {}", true, false);
     ASL_TEST_EXPECT(sink.str() == "true false"_sv);
+}
+
+struct CustomFormat
+{
+    int x;
+    friend void AslFormat(asl::Formatter&, const CustomFormat&);
+};
+
+void AslFormat(asl::Formatter& f, const CustomFormat& c)
+{
+    f.write("("_sv);
+    AslFormat(f, c.x);
+    f.write(")"_sv);
+}
+
+static_assert(asl::formattable<CustomFormat>);
+
+ASL_TEST(format_custom)
+{
+    StringSink sink;
+    
+    asl::format(&sink, "{}", CustomFormat{37});
+    ASL_TEST_EXPECT(sink.str() == "(37)"_sv);
 }

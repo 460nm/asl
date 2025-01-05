@@ -2,11 +2,12 @@
 
 #include "asl/integers.hpp"
 #include "asl/string_view.hpp"
+#include "asl/format.hpp"
 
 namespace asl
 {
 
-// @Todo Make status with formatting
+class Formatter;
 
 enum class status_code : uint8_t
 {
@@ -55,8 +56,6 @@ class status
     void unref();
     
 public:
-    constexpr status() = default;
-
     constexpr ~status()
     {
         if (!is_inline()) { unref(); }
@@ -67,6 +66,7 @@ public:
     {}
 
     status(status_code code, string_view msg);
+    status(status_code code, string_view fmt, span<format_internals::type_erased_arg> args);
 
     constexpr status(const status& other)
         : m_payload{other.m_payload}
@@ -100,7 +100,7 @@ public:
 
     constexpr bool ok() const
     {
-        return m_payload == nullptr || code() == status_code::ok;
+        return m_payload == nullptr;
     }
 
     // NOLINTNEXTLINE(*-explicit-conversions)
@@ -119,6 +119,27 @@ public:
         }
         return {};
     }
+
+    friend void AslFormat(Formatter& f, const status&);
 };
+
+static constexpr status ok() { return status{status_code::ok}; }
+
+#define ASL_DEFINE_ERROR_(type) \
+    static constexpr status type##_error() { return status{status_code::type}; }                \
+    static inline status type##_error(string_view sv) { return status{status_code::type, sv}; } \
+    template<formattable... Args>                                                               \
+    [[maybe_unused]] static status type##_error(string_view fmt, const Args&... args)           \
+    {                                                                                           \
+        format_internals::type_erased_arg type_erased_args[] = {                                \
+            format_internals::type_erased_arg(args)...                                          \
+        };                                                                                      \
+        return status{status_code::type, fmt, type_erased_args};                                \
+    }
+
+ASL_DEFINE_ERROR_(unknown)
+ASL_DEFINE_ERROR_(internal)
+ASL_DEFINE_ERROR_(runtime)
+ASL_DEFINE_ERROR_(invalid_argument)
 
 } // namespace asl

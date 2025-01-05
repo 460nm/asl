@@ -1,9 +1,11 @@
 #include "asl/status.hpp"
 #include "asl/testing/testing.hpp"
+#include "asl/format.hpp"
+#include "asl/tests/test_types.hpp"
 
 ASL_TEST(simple_ok)
 {
-    asl::status s;
+    asl::status s = asl::ok();
     ASL_TEST_ASSERT(s);
     ASL_TEST_ASSERT(s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::ok);
@@ -11,7 +13,7 @@ ASL_TEST(simple_ok)
 
 ASL_TEST(simple_code)
 {
-    asl::status s{asl::status_code::runtime};
+    asl::status s = asl::runtime_error();
     ASL_TEST_ASSERT(!s);
     ASL_TEST_ASSERT(!s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::runtime);
@@ -20,7 +22,7 @@ ASL_TEST(simple_code)
 
 ASL_TEST(with_message)
 {
-    asl::status s{asl::status_code::internal, "We done goofed"};
+    asl::status s = asl::internal_error("We done goofed");
     ASL_TEST_ASSERT(!s);
     ASL_TEST_ASSERT(!s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::internal);
@@ -29,8 +31,8 @@ ASL_TEST(with_message)
 
 ASL_TEST(copy_inline)
 {
-    asl::status s{asl::status_code::ok};
-    asl::status s2{asl::status_code::internal};
+    asl::status s = asl::ok();
+    asl::status s2 = asl::internal_error();
     
     asl::status s3 = s;
     ASL_TEST_ASSERT(s3.code() == asl::status_code::ok);
@@ -41,10 +43,10 @@ ASL_TEST(copy_inline)
 
 ASL_TEST(copy_message)
 {
-    asl::status s2;
+    asl::status s2 = asl::ok();
 
     {
-        asl::status s{asl::status_code::internal, "Oh no!"};
+        asl::status s = asl::internal_error("Oh no!");
         ASL_TEST_ASSERT(!s);
         ASL_TEST_ASSERT(!s.ok());
         ASL_TEST_ASSERT(s.code() == asl::status_code::internal);
@@ -67,4 +69,27 @@ ASL_TEST(copy_message)
     ASL_TEST_ASSERT(!s2.ok());
     ASL_TEST_ASSERT(s2.code() == asl::status_code::internal);
     ASL_TEST_ASSERT(s2.message() == "Oh no!"_sv);
+}
+
+static_assert(asl::formattable<asl::status>);
+
+ASL_TEST(format)
+{
+    StringSink sink;
+
+    asl::format(&sink, "-{}-", asl::ok());
+    ASL_TEST_EXPECT(sink.str() == "-[ok]-"_sv);
+
+    sink.reset();
+    asl::format(&sink, "-{}-", asl::internal_error("hello"));
+    ASL_TEST_EXPECT(sink.str() == "-[internal: hello]-"_sv);
+}
+
+ASL_TEST(make_with_format)
+{
+    StringSink sink;
+
+    sink.reset();
+    asl::format(&sink, "-{}-", asl::internal_error("hello, {}, {}", 45, "world"));
+    ASL_TEST_EXPECT(sink.str() == "-[internal: hello, 45, world]-"_sv);
 }

@@ -55,6 +55,8 @@ public:
     {
         m_writer->write(as_bytes(s.as_span()));
     }
+
+    constexpr Writer* writer() const { return m_writer; }
 };
 
 template<formattable... Args>

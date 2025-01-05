@@ -20,6 +20,7 @@ build --cxxopt=-Wno-extra-semi-stmt
 build --cxxopt=-Wno-extra-semi
 build --cxxopt=-Wno-global-constructors
 build --cxxopt=-Wno-unsafe-buffer-usage
+build --cxxopt=-Wno-covered-switch-default
 
 build:windows_san --config=windows
 build:windows_san --copt=-fno-sanitize-ignorelist

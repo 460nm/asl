@@ -1,6 +1,9 @@
 #pragma once
 
 #include "asl/utility.hpp"
+#include "asl/io.hpp"
+#include "asl/allocator.hpp"
+#include "asl/string_view.hpp"
 
 struct TrivialType
 {
@@ -88,3 +91,39 @@ struct DestructorObserver
     }
 };
 
+class StringSink : public asl::Writer
+{
+    // @Todo Use string, once we have it, or a buffer
+    isize_t m_current_len{};
+    char*   m_data{};
+    
+public:
+    ~StringSink() override
+    {
+        reset();
+    }
+    
+    void write(asl::span<const asl::byte> str) override
+    {
+        m_data = reinterpret_cast<char*>(asl::GlobalHeap::realloc(
+            m_data,
+            asl::layout::array<char>(m_current_len),
+            asl::layout::array<char>(m_current_len + str.size())));
+        
+        asl::memcpy(m_data + m_current_len, str.data(), str.size()); // NOLINT
+        
+        m_current_len += str.size();
+    }
+
+    constexpr asl::string_view str() const { return {m_data, m_current_len}; }
+
+    void reset()
+    {
+        if (m_data != nullptr)
+        {
+            m_current_len = 0;
+            asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
+            m_data = nullptr;
+        }
+    }
+};
