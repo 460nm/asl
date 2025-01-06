@@ -57,6 +57,12 @@ public:
     {
         return as_string_view() == other;
     }
+
+    template<typename H>
+    friend H AslHashValue(H h, const string& str)
+    {
+        return H::combine(h, str.as_string_view());
+    }
 };
 
 string() -> string<>;

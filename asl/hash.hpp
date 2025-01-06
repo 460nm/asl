@@ -2,7 +2,7 @@
 
 #include "asl/integers.hpp"
 #include "asl/meta.hpp"
-#include "asl/utility.hpp"
+#include "asl/span.hpp"
 
 namespace asl::city_hash
 {
@@ -68,6 +68,15 @@ struct HashState
     constexpr HashState() = default;
     explicit constexpr HashState(uint128_t s) : state{s} {}
 
+    static HashState combine_bytes(HashState h, span<const byte> bytes)
+    {
+        auto hashed = city_hash::CityHash128WithSeed(
+            reinterpret_cast<const char*>(bytes.data()),
+            static_cast<size_t>(bytes.size()),
+            h.state);
+        return HashState{hashed};
+    }
+
     static constexpr HashState combine(HashState h)
     {
         return h;
@@ -86,8 +95,20 @@ concept hashable = hashable_generic<T, HashState>;
 template<typename H, uniquely_represented T>
 constexpr H AslHashValue(H h, const T& value)
 {
-    auto hashed = city_hash::CityHash128WithSeed(reinterpret_cast<const char*>(&value), size_of<T>, h.state);
-    return HashState{hashed};
+    return H::combine_bytes(h, as_bytes(span<const T>{&value, 1}));
+}
+
+template<typename H>
+constexpr H AslHashValue(H h, bool value)
+{
+    return AslHashValue(h, value ? 1 : 0);
+}
+
+template<hashable T>
+constexpr uint64_t hash_value(const T& value)
+{
+    auto result = AslHashValue(HashState{}, value).state;
+    return city_hash::Hash128to64(result);
 }
 
 } // namespace asl

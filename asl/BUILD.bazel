@@ -58,6 +58,7 @@ cc_library(
     "float",
     "format",
     "functional",
+    "hash",
     "integers",
     "maybe_uninit",
     "meta",

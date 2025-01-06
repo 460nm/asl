@@ -85,6 +85,12 @@ public:
         if (m_size != other.m_size) { return false; }
         return memcmp(m_data, other.m_data, m_size) == 0;
     }
+
+    template<typename H>
+    friend H AslHashValue(H h, string_view sv)
+    {
+        return H::combine(H::combine_bytes(h, as_bytes(sv.as_span())), sv.size());
+    }
 };
 
 } // namespace asl
