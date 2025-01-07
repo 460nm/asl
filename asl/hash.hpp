@@ -68,13 +68,26 @@ struct HashState
     constexpr HashState() = default;
     explicit constexpr HashState(uint128_t s) : state{s} {}
 
-    static HashState combine_bytes(HashState h, span<const byte> bytes)
+    template<typename T>
+    static HashState combine_contiguous(HashState h, span<const T> s)
     {
-        auto hashed = city_hash::CityHash128WithSeed(
-            reinterpret_cast<const char*>(bytes.data()),
-            static_cast<size_t>(bytes.size()),
-            h.state);
-        return HashState{hashed};
+        if constexpr (uniquely_represented<T>)
+        {
+            auto bytes = as_bytes(s);
+            auto hashed = city_hash::CityHash128WithSeed(
+                reinterpret_cast<const char*>(bytes.data()),
+                static_cast<size_t>(bytes.size()),
+                h.state);
+            return HashState{hashed};
+        }
+        else
+        {
+            for (const auto& value: s)
+            {
+                h = AslHashValue(ASL_MOVE(h), value);
+            }
+            return h;
+        }
     }
 
     static constexpr HashState combine(HashState h)
@@ -85,7 +98,7 @@ struct HashState
     template<hashable_generic<HashState> Arg, hashable_generic<HashState>... Remaining>
     static constexpr HashState combine(HashState h, const Arg& arg, const Remaining&... remaining)
     {
-        return combine(AslHashValue(h, arg), remaining...);
+        return combine(AslHashValue(ASL_MOVE(h), arg), remaining...);
     }
 };
 
@@ -95,14 +108,17 @@ concept hashable = hashable_generic<T, HashState>;
 template<typename H, uniquely_represented T>
 constexpr H AslHashValue(H h, const T& value)
 {
-    return H::combine_bytes(h, as_bytes(span<const T>{&value, 1}));
+    return H::combine_contiguous(ASL_MOVE(h), span<const T>{&value, 1});
 }
 
 template<typename H>
 constexpr H AslHashValue(H h, bool value)
 {
-    return AslHashValue(h, value ? 1 : 0);
+    return AslHashValue(ASL_MOVE(h), value ? 1 : 0);
 }
+
+template<typename H, typename T>
+constexpr void AslHashValue(H h, T*); // Don't hash pointers
 
 template<hashable T>
 constexpr uint64_t hash_value(const T& value)

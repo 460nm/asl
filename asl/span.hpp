@@ -171,6 +171,12 @@ public:
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data() + size() - sub_size, sub_size };
     }
+
+    template<typename H>
+    friend H AslHashValue(H h, const span& s)
+    {
+        return H::combine_contiguous(ASL_MOVE(h), span<const T>{s.data(), s.size()});
+    }
 };
 
 template<is_object T, isize_t kSize>

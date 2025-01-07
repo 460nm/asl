@@ -89,7 +89,7 @@ public:
     template<typename H>
     friend H AslHashValue(H h, string_view sv)
     {
-        return H::combine(H::combine_bytes(h, as_bytes(sv.as_span())), sv.size());
+        return H::combine(H::combine_contiguous(h, as_bytes(sv.as_span())), sv.size());
     }
 };
 

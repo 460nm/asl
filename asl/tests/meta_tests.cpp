@@ -236,3 +236,14 @@ static_assert(!asl::is_floating_point<C>);
 static_assert(asl::uniquely_represented<int>);
 static_assert(asl::uniquely_represented<uint128_t>);
 static_assert(!asl::uniquely_represented<bool>);
+
+enum Enum1 {};
+enum class Enum2 {};
+
+static_assert(asl::uniquely_represented<Enum1>);
+static_assert(asl::uniquely_represented<Enum2>);
+
+static_assert(!asl::is_enum<int>);
+static_assert(asl::is_enum<Enum1>);
+static_assert(asl::is_enum<Enum2>);
+

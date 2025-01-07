@@ -189,8 +189,11 @@ template<>           struct _is_integer_helper<uint64_t> : true_type  {};
 
 template<typename T> concept is_integer = _is_integer_helper<un_cv_t<T>>::value;
 
+template<typename T> concept is_enum = __is_enum(T);
+
 template<typename T> struct is_uniquely_represented : false_type {};
 template<is_integer T> struct is_uniquely_represented<T> : true_type {};
+template<is_enum T> struct is_uniquely_represented<T> : true_type {};
 template<> struct is_uniquely_represented<uint128_t> : true_type {};
 template<> struct is_uniquely_represented<byte> : true_type {};
 

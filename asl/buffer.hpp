@@ -389,6 +389,12 @@ public:
         ASL_ASSERT(i >= 0 && i <= size());
         return data()[i];
     }
+
+    template<typename H>
+    friend H AslHashValue(H h, const buffer& b)
+    {
+        return H::combine_contiguous(ASL_MOVE(h), b.as_span());
+    }
 };
 
 } // namespace asl
