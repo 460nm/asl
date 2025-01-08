@@ -5,6 +5,7 @@
 #include "asl/maybe_uninit.hpp"
 #include "asl/functional.hpp"
 #include "asl/annotations.hpp"
+#include "asl/hash.hpp"
 
 namespace asl
 {
@@ -485,7 +486,22 @@ public:
     {
         return has_value() ? ASL_MOVE(*this) : invoke(ASL_FWD(f));
     }
+
+    template<typename H>
+    requires (!uniquely_represented<option>) && hashable<T>
+    friend H AslHashValue(H h, const option& opt)
+    {
+        if (!opt.has_value())
+        {
+            return H::combine(ASL_MOVE(h), 0);
+        }
+        return H::combine(ASL_MOVE(h), 1, opt.value());
+    }
 };
+
+template<typename T>
+requires has_niche<T> && uniquely_represented<T>
+struct is_uniquely_represented<option<T>> : true_type {};
 
 template<typename T>
 option(T) -> option<T>;

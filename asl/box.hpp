@@ -5,6 +5,7 @@
 #include "asl/annotations.hpp"
 #include "asl/memory.hpp"
 #include "asl/utility.hpp"
+#include "asl/hash.hpp"
 
 namespace asl
 {
@@ -81,6 +82,13 @@ public:
     constexpr bool operator==(niche_t) const
     {
         return m_ptr == nullptr;
+    }
+
+    template<typename H>
+    requires hashable<T>
+    friend H AslHashValue(H h, const box& b)
+    {
+        return H::combine(ASL_MOVE(h), *b);
     }
 };
 

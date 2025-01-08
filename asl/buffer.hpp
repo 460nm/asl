@@ -6,6 +6,7 @@
 #include "asl/memory.hpp"
 #include "asl/assert.hpp"
 #include "asl/span.hpp"
+#include "asl/hash.hpp"
 
 namespace asl
 {
@@ -391,6 +392,7 @@ public:
     }
 
     template<typename H>
+    requires hashable<T>
     friend H AslHashValue(H h, const buffer& b)
     {
         return H::combine_contiguous(ASL_MOVE(h), b.as_span());

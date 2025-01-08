@@ -197,7 +197,7 @@ template<is_enum T> struct is_uniquely_represented<T> : true_type {};
 template<> struct is_uniquely_represented<uint128_t> : true_type {};
 template<> struct is_uniquely_represented<byte> : true_type {};
 
-template<typename T> concept uniquely_represented = is_uniquely_represented<T>::value;
+template<typename T> concept uniquely_represented = is_uniquely_represented<un_cv_t<T>>::value;
 
 template<typename T, typename U>
 concept equality_comparable_with = requires (const un_cvref_t<T>& a, const un_cvref_t<U>& b)

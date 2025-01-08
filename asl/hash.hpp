@@ -120,6 +120,12 @@ constexpr H AslHashValue(H h, bool value)
 template<typename H, typename T>
 constexpr void AslHashValue(H h, T*); // Don't hash pointers
 
+template<typename H, hashable T>
+constexpr H AslHashValue(H h, const span<T>& s)
+{
+    return H::combine_contiguous(ASL_MOVE(h), span<const T>{s.data(), s.size()});
+}
+
 template<hashable T>
 constexpr uint64_t hash_value(const T& value)
 {

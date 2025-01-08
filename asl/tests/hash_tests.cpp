@@ -3,6 +3,10 @@
 #include "asl/string_view.hpp"
 #include "asl/string.hpp"
 #include "asl/buffer.hpp"
+#include "asl/box.hpp"
+#include "asl/option.hpp"
+#include "asl/status.hpp"
+#include "asl/status_or.hpp"
 
 static_assert(!asl::hashable<int*>);
 static_assert(!asl::hashable<int[]>);
@@ -57,6 +61,7 @@ ASL_TEST(strings)
 }
 
 static_assert(asl::hashable<asl::span<const int>>);
+static_assert(!asl::hashable<asl::span<const int*>>);
 static_assert(asl::hashable<asl::span<asl::string_view>>);
 
 ASL_TEST(span)
@@ -81,6 +86,7 @@ ASL_TEST(span)
 }
 
 static_assert(asl::hashable<asl::buffer<int>>);
+static_assert(!asl::hashable<asl::buffer<int*>>);
 
 ASL_TEST(buffer)
 {
@@ -137,6 +143,118 @@ enum class Enum2 {};
 static_assert(asl::hashable<Enum1>);
 static_assert(asl::hashable<Enum2>);
 
-// @Todo option (optimize uniquely_represented + has_niche)
-// @Todo status, status_or
-// @Todo box
+static_assert(!asl::hashable<asl::box<int*>>);
+static_assert(asl::hashable<asl::box<asl::string_view>>);
+
+ASL_TEST(box)
+{
+    auto b1 = asl::make_box<asl::string_view>("Hello, world!");
+    auto b2 = asl::make_box<asl::string_view>("Hello, world!");
+    auto b3 = asl::make_box<asl::string_view>("Hello, world! 2");
+
+    ASL_TEST_EXPECT(asl::hash_value(b1) == asl::hash_value(b2));
+    ASL_TEST_EXPECT(asl::hash_value(b1) != asl::hash_value(b3));
+    ASL_TEST_EXPECT(asl::hash_value(b1) == asl::hash_value("Hello, world!"_sv));
+}
+
+struct NonZero
+{
+    int value;
+
+    constexpr explicit NonZero(int x) : value(x)
+    {
+        ASL_ASSERT(x != 0);
+    }
+
+    constexpr explicit NonZero(asl::niche_t) : value(0) {}
+
+    constexpr bool operator==(asl::niche_t) const { return value == 0; }
+};
+
+namespace asl { template<> struct is_uniquely_represented<NonZero> : true_type {}; }
+static_assert(asl::has_niche<NonZero>);
+static_assert(asl::uniquely_represented<NonZero>);
+
+static_assert(asl::hashable<asl::option<int>>);
+static_assert(!asl::hashable<asl::option<int*>>);
+static_assert(asl::hashable<asl::option<asl::string_view>>);
+static_assert(asl::hashable<asl::option<NonZero>>);
+static_assert(asl::uniquely_represented<asl::option<NonZero>>);
+
+ASL_TEST(option)
+{
+    asl::option<int> int1 = 0;
+    asl::option<int> int2 = 0;
+    asl::option<int> int3 = 1;
+    asl::option<int> int4 = asl::nullopt;
+
+    ASL_TEST_EXPECT(asl::hash_value(int1) == asl::hash_value(int2));
+    ASL_TEST_EXPECT(asl::hash_value(int1) != asl::hash_value(int3));
+    ASL_TEST_EXPECT(asl::hash_value(int1) != asl::hash_value(int4));
+
+    asl::option<NonZero> noz1{8};
+    asl::option<NonZero> noz2{8};
+    asl::option<NonZero> noz3{9};
+    asl::option<NonZero> noz4 = asl::nullopt;
+
+    ASL_TEST_EXPECT(asl::hash_value(noz1) == asl::hash_value(noz2));
+    ASL_TEST_EXPECT(asl::hash_value(noz1) != asl::hash_value(noz3));
+    ASL_TEST_EXPECT(asl::hash_value(noz1) != asl::hash_value(noz4));
+}
+
+static_assert(asl::hashable<asl::status>);
+
+ASL_TEST(status)
+{
+    asl::status s1 = asl::ok();
+    asl::status s2 = asl::ok();
+    asl::status s3 = asl::internal_error();
+    asl::status s4 = asl::internal_error();
+    asl::status s5 = asl::runtime_error();
+    asl::status s6 = asl::internal_error("Oh, no!");
+    asl::status s7 = asl::internal_error("Oh, no!");
+    asl::status s8 = asl::internal_error("Oh, no");
+    asl::status s9 = asl::runtime_error("Oh, no!");
+
+    ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
+    ASL_TEST_EXPECT(asl::hash_value(s3) == asl::hash_value(s4));
+    ASL_TEST_EXPECT(asl::hash_value(s6) == asl::hash_value(s7));
+    
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s3));
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s5));
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s6));
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s9));
+    
+    ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s5));
+    ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s6));
+    ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s8));
+    ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s9));
+    
+    ASL_TEST_EXPECT(asl::hash_value(s6) != asl::hash_value(s8));
+    ASL_TEST_EXPECT(asl::hash_value(s6) != asl::hash_value(s9));
+}
+
+static_assert(asl::hashable<asl::status_or<int>>);
+static_assert(asl::hashable<asl::status_or<asl::string_view>>);
+static_assert(!asl::hashable<asl::status_or<int*>>);
+
+ASL_TEST(status_or)
+{
+    asl::status_or<int> s1 = 42;
+    asl::status_or<int> s2 = 42;
+    asl::status_or<int> s3 = 43;
+    asl::status_or<int> s4 = asl::runtime_error();
+    asl::status_or<int> s5 = asl::runtime_error();
+    asl::status_or<int> s6 = asl::runtime_error("Hello");
+    asl::status_or<int> s7 = asl::runtime_error("Hello");
+
+    ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
+    ASL_TEST_EXPECT(asl::hash_value(s4) == asl::hash_value(s5));
+    ASL_TEST_EXPECT(asl::hash_value(s6) == asl::hash_value(s7));
+    
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s3));
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s4));
+    ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s6));
+    
+    ASL_TEST_EXPECT(asl::hash_value(s4) != asl::hash_value(s6));
+}

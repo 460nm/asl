@@ -18,7 +18,6 @@ ASL_TEST(ok)
 {
     asl::status_or<int> s = 6;
     ASL_TEST_EXPECT(s.ok());
-    ASL_TEST_EXPECT(s);
     ASL_TEST_EXPECT(s.code() == asl::status_code::ok);
 }
 
@@ -26,19 +25,16 @@ ASL_TEST(from_status)
 {
     asl::status_or<char> s = asl::internal_error();
     ASL_TEST_EXPECT(!s.ok());
-    ASL_TEST_EXPECT(!s);
     ASL_TEST_EXPECT(s.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s.message() == ""_sv);
     
     asl::status_or<int> s2 = asl::internal_error("oh no");
     ASL_TEST_EXPECT(!s2.ok());
-    ASL_TEST_EXPECT(!s2);
     ASL_TEST_EXPECT(s2.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s2.message() == "oh no"_sv);
     
     asl::status_or<int> s3 = asl::internal_error("{} {}", 1, 2);
     ASL_TEST_EXPECT(!s3.ok());
-    ASL_TEST_EXPECT(!s3);
     ASL_TEST_EXPECT(s3.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s3.message() == "1 2"_sv);
 }

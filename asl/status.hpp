@@ -104,9 +104,6 @@ public:
         return m_payload == nullptr;
     }
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr operator bool() const { return ok(); }
-
     constexpr status_code code() const
     {
         return is_inline() ? code_inline() : code_internal();
@@ -122,6 +119,16 @@ public:
     }
 
     friend void AslFormat(Formatter& f, const status&);
+
+    template<typename H>
+    friend H AslHashValue(H h, const status& s)
+    {
+        if (s.is_inline())
+        {
+            return H::combine(ASL_MOVE(h), s.code());
+        }
+        return H::combine(ASL_MOVE(h), s.code(), s.message());
+    }
 };
 
 static constexpr status ok() { return status{status_code::ok}; }

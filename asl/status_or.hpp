@@ -2,6 +2,7 @@
 
 #include "asl/status.hpp"
 #include "asl/maybe_uninit.hpp"
+#include "asl/hash.hpp"
 
 namespace asl
 {
@@ -122,9 +123,6 @@ public:
 
     constexpr bool ok() const { return m_status.ok(); }
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
-    constexpr operator bool() const { return m_status; }
-
     constexpr status_code code() const { return m_status.code(); }
     
     constexpr string_view message() const { return m_status.message(); }
@@ -160,6 +158,17 @@ public:
         requires move_constructible<T> && convertible_from<T, U&&>
     {
         return ok() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
+    }
+
+    template<typename H>
+    requires hashable<T>
+    friend H AslHashValue(H h, const status_or& s)
+    {
+        if (s.ok())
+        {
+            return H::combine(ASL_MOVE(h), s.m_status, s.value());
+        }
+        return H::combine(ASL_MOVE(h), s.m_status);
     }
 };
 

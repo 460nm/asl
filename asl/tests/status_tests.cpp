@@ -6,7 +6,6 @@
 ASL_TEST(simple_ok)
 {
     asl::status s = asl::ok();
-    ASL_TEST_ASSERT(s);
     ASL_TEST_ASSERT(s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::ok);
 }
@@ -14,7 +13,6 @@ ASL_TEST(simple_ok)
 ASL_TEST(simple_code)
 {
     asl::status s = asl::runtime_error();
-    ASL_TEST_ASSERT(!s);
     ASL_TEST_ASSERT(!s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::runtime);
     ASL_TEST_ASSERT(s.message() == ""_sv);
@@ -23,7 +21,6 @@ ASL_TEST(simple_code)
 ASL_TEST(with_message)
 {
     asl::status s = asl::internal_error("We done goofed");
-    ASL_TEST_ASSERT(!s);
     ASL_TEST_ASSERT(!s.ok());
     ASL_TEST_ASSERT(s.code() == asl::status_code::internal);
     ASL_TEST_ASSERT(s.message() == "We done goofed"_sv);
@@ -47,25 +44,21 @@ ASL_TEST(copy_message)
 
     {
         asl::status s = asl::internal_error("Oh no!");
-        ASL_TEST_ASSERT(!s);
         ASL_TEST_ASSERT(!s.ok());
         ASL_TEST_ASSERT(s.code() == asl::status_code::internal);
         ASL_TEST_ASSERT(s.message() == "Oh no!"_sv);
 
         const asl::status s3{s}; // NOLINT
-        ASL_TEST_ASSERT(!s3);
         ASL_TEST_ASSERT(!s3.ok());
         ASL_TEST_ASSERT(s3.code() == asl::status_code::internal);
         ASL_TEST_ASSERT(s3.message() == "Oh no!"_sv);
 
         s2 = s;
-        ASL_TEST_ASSERT(!s2);
         ASL_TEST_ASSERT(!s2.ok());
         ASL_TEST_ASSERT(s2.code() == asl::status_code::internal);
         ASL_TEST_ASSERT(s2.message() == "Oh no!"_sv);
     }
 
-    ASL_TEST_ASSERT(!s2);
     ASL_TEST_ASSERT(!s2.ok());
     ASL_TEST_ASSERT(s2.code() == asl::status_code::internal);
     ASL_TEST_ASSERT(s2.message() == "Oh no!"_sv);
