@@ -37,9 +37,15 @@ constexpr U bit_cast(T value) requires (size_of<T> == size_of<U>)
 }
 
 template<typename T>
-T min(T a, T b)
+constexpr T min(T a, T b)
 {
     return (a <= b) ? a : b;
+}
+
+template<typename T>
+constexpr T max(T a, T b)
+{
+    return (a >= b) ? a : b;
 }
 
 constexpr uint64_t round_up_pow2(uint64_t v)
@@ -56,6 +62,11 @@ constexpr uint64_t round_up_pow2(uint64_t v)
     v |= v >> 32;
 
     return v + 1;
+}
+
+constexpr bool is_pow2(isize_t v)
+{
+    return v > 0 && ((v - 1) & v) == 0;
 }
 
 #define ASL_DELETE_COPY(T)                         \

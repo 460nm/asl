@@ -23,6 +23,11 @@ constexpr void memcpy(void* dst, const void* src, isize_t size)
     __builtin_memcpy(dst, src, static_cast<size_t>(size));
 }
 
+inline void memzero(void* dst, isize_t size)
+{
+    __builtin_memset(dst, 0, static_cast<size_t>(size));
+}
+
 constexpr isize_t strlen(const char* s)
 {
     return static_cast<isize_t>(__builtin_strlen(s));
