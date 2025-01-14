@@ -114,6 +114,8 @@ class hash_set
 
     isize_t find_slot(const T& value) const
     {
+        if (m_size <= 0) { return -1; };
+
         ASL_ASSERT(is_pow2(m_capacity));
 
         const isize_t capacity_mask = m_capacity - 1;
@@ -246,8 +248,21 @@ public:
 
     bool contains(const T& value) const
     {
-        if (m_size == 0) { return false; }
         return find_slot(value) >= 0;
+    }
+
+    // @Todo Remove with something comparable, but not equal? How to hash?
+    // @Todo Same with contains
+    bool remove(const T& value)
+    {
+        isize_t slot = find_slot(value);
+        if (slot < 0) { return false; }
+
+        m_values[slot].destroy_unsafe(); // NOLINT(*-pointer-arithmetic)
+        m_tags[slot] = kTombstone; // NOLINT(*-pointer-arithmetic)
+        m_size -= 1;
+
+        return true;
     }
 };
 

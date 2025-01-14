@@ -1,5 +1,6 @@
 #include "asl/hash_set.hpp"
 #include "asl/testing/testing.hpp"
+#include "asl/tests/test_types.hpp"
 #include "asl/string.hpp"
 #include "asl/string_view.hpp"
 
@@ -53,7 +54,65 @@ ASL_TEST(a_bunch_of_ints)
     }
 }
 
-// @Todo Remove elements
+struct HashWithDestructor: public DestructorObserver
+{
+    int x;
 
-// @Todo Test destructors
+    HashWithDestructor(int x_, bool* ptr)
+        : DestructorObserver{ptr}
+        , x{x_}
+    {}
+
+    constexpr bool operator==(const HashWithDestructor& other) const
+    {
+        return x == other.x;
+    }
+
+    template<typename H>
+    friend H AslHashValue(H h, const HashWithDestructor& value)
+    {
+        return H::combine(ASL_MOVE(h), value.x);
+    }
+};
+
+ASL_TEST(destructor_and_remove)
+{
+    static constexpr int kCount = 200;
+    bool destroyed[kCount]{};
+
+    {
+        asl::hash_set<HashWithDestructor> set;
+
+        for (int i = 0; i < kCount; ++i)
+        {
+            set.insert(i, &destroyed[i]); // NOLINT
+        }
+
+        ASL_TEST_EXPECT(set.size() == kCount);
+
+        for (int i = 0; i < kCount; ++i)
+        {
+            ASL_TEST_EXPECT(!destroyed[i]); // NOLINT
+        }
+
+        for (int i = 0; i < kCount; i += 2)
+        {
+            // @Todo Remove with something comparable
+            ASL_TEST_EXPECT(set.remove(HashWithDestructor{i, nullptr}));
+        }
+
+        for (int i = 0; i < kCount; i += 2)
+        {
+            ASL_TEST_EXPECT(!set.contains(HashWithDestructor{i, nullptr}));
+            ASL_TEST_EXPECT(set.contains(HashWithDestructor{i+1, nullptr}));
+            ASL_TEST_EXPECT(destroyed[i]); // NOLINT
+            ASL_TEST_EXPECT(!destroyed[i + 1]); // NOLINT
+        }
+    }
+
+    for (int i = 0; i < kCount; ++i)
+    {
+        ASL_TEST_EXPECT(destroyed[i]); // NOLINT
+    }
+}
 
