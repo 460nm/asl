@@ -134,3 +134,52 @@ ASL_TEST(destructor_and_remove)
     }
 }
 
+ASL_TEST(copy)
+{
+    asl::hash_set<int> set1;
+    
+    for (int i = 0; i < 100; ++i)
+    {
+        set1.insert(i);
+    }
+
+    asl::hash_set<int> set2 = set1;
+    asl::hash_set<int> set3;
+    set3 = set1;
+
+    ASL_TEST_EXPECT(set2.size() == 100);
+    ASL_TEST_EXPECT(set3.size() == 100);
+    
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(set2.contains(i));
+        ASL_TEST_EXPECT(set3.contains(i));
+    }
+}
+
+ASL_TEST(move)
+{
+    asl::hash_set<int> set1;
+    
+    for (int i = 0; i < 100; ++i)
+    {
+        set1.insert(i);
+    }
+
+    asl::hash_set<int> set2 = ASL_MOVE(set1);
+
+    ASL_TEST_EXPECT(set2.size() == 100);
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(set2.contains(i));
+    }
+
+    set1 = ASL_MOVE(set2);
+
+    ASL_TEST_EXPECT(set1.size() == 100);
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(set1.contains(i));
+    }
+}
+

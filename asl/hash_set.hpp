@@ -47,7 +47,7 @@ template<
     key_hasher<T> KeyHasher = default_key_hasher<T>,
     key_comparator<T> KeyComparator = default_key_comparator<T>
 >
-requires move_constructible<T> && move_assignable<T>
+requires moveable<T>
 class hash_set
 {
     static constexpr uint8_t kHasValue  = 0x80;
@@ -71,6 +71,14 @@ class hash_set
     {
         // Max load factor is 75%
         return (m_capacity >> 1) + (m_capacity >> 2);
+    }
+
+    static isize_t size_to_capacity(isize_t size)
+    {
+        ASL_ASSERT(size > 0);
+        return max<isize_t>(
+            kMinCapacity,
+            static_cast<isize_t>(round_up_pow2((static_cast<uint64_t>(size) * 4 + 2) / 3)));
     }
 
     static void insert_inner(
@@ -177,10 +185,15 @@ class hash_set
 
         return -1;
     }
-
+    
     void grow_and_rehash()
     {
-        isize_t new_capacity = max(kMinCapacity, m_capacity * 2);
+        grow_and_rehash(max(kMinCapacity, m_capacity * 2));
+    }
+
+    void grow_and_rehash(isize_t new_capacity)
+    {
+        ASL_ASSERT(new_capacity >= kMinCapacity && is_pow2(new_capacity) && new_capacity > m_capacity);
         
         auto* new_tags = reinterpret_cast<uint8_t*>(m_allocator.alloc(layout::array<uint8_t>(new_capacity)));
         auto* new_values = reinterpret_cast<maybe_uninit<T>*>(m_allocator.alloc(layout::array<maybe_uninit<T>>(new_capacity)));
@@ -188,18 +201,21 @@ class hash_set
 
         isize_t new_size = 0;
 
-        // NOLINTBEGIN(*-pointer-arithmetic)
-        for (isize_t i = 0; i < m_capacity; ++i)
+        if (m_size > 0)
         {
-            if ((m_tags[i] & kHasValue) == 0) { continue; }
+            // NOLINTBEGIN(*-pointer-arithmetic)
+            for (isize_t i = 0; i < m_capacity; ++i)
+            {
+                if ((m_tags[i] & kHasValue) == 0) { continue; }
 
-            insert_inner(ASL_MOVE(m_values[i].as_init_unsafe()), new_tags, new_values, new_capacity, &new_size);
+                insert_inner(ASL_MOVE(m_values[i].as_init_unsafe()), new_tags, new_values, new_capacity, &new_size);
 
-            // Destroy now so that destroy() has less things to do
-            m_values[i].destroy_unsafe();
-            m_tags[i] = kTombstone;
+                // Destroy now so that destroy() has less things to do
+                m_values[i].destroy_unsafe();
+                m_tags[i] = kTombstone;
+            }
+            // NOLINTEND(*-pointer-arithmetic)
         }
-        // NOLINTEND(*-pointer-arithmetic)
 
         ASL_ASSERT(new_size == m_size);
 
@@ -229,6 +245,27 @@ class hash_set
         }
     }
 
+    void copy_from(const hash_set& other)
+    {
+        if (other.size() > 0)
+        {
+            isize_t min_capacity = size_to_capacity(other.size());
+            if (m_capacity < min_capacity)
+            {
+                grow_and_rehash(min_capacity);
+            }
+            ASL_ASSERT(m_capacity >= min_capacity);
+
+            for (isize_t i = 0; i < other.m_capacity; ++i)
+            {
+                if ((other.m_tags[i] & kHasValue) != 0) // NOLINT(*-pointer-arithmetic)
+                {
+                    insert(other.m_values[i].as_init_unsafe()); // NOLINT(*-pointer-arithmetic)
+                }
+            }
+        }
+    }
+
 public:
     constexpr hash_set() requires default_constructible<Allocator>
         : m_allocator{}
@@ -238,7 +275,46 @@ public:
         : m_allocator{ASL_MOVE(allocator)}
     {}
 
-    // @Todo Copy, move
+    hash_set(const hash_set& other)
+        requires copy_constructible<Allocator> && copyable<T>
+        : hash_set{other.m_allocator}
+    {
+        copy_from(other);
+    }
+
+    hash_set& operator=(const hash_set& other)
+        requires copyable<T>
+    {
+        if (&other != this)
+        {
+            clear();
+            copy_from(other);
+        }
+        return *this;
+    }
+
+    hash_set(hash_set&& other)
+        requires move_constructible<Allocator>
+        : m_tags{exchange(other.m_tags, nullptr)}
+        , m_values{exchange(other.m_values, nullptr)}
+        , m_capacity{exchange(other.m_capacity, 0)}
+        , m_size{exchange(other.m_size, 0)}
+        , m_allocator{ASL_MOVE(other.m_allocator)}
+    {}
+
+    hash_set& operator=(hash_set&& other)
+    {
+        if (&other != this)
+        {
+            destroy();
+            m_tags = exchange(other.m_tags, nullptr);
+            m_values = exchange(other.m_values, nullptr);
+            m_capacity = exchange(other.m_capacity, 0);
+            m_size = exchange(other.m_size, 0);
+            m_allocator = ASL_MOVE(other.m_allocator);
+        }
+        return *this;
+    }
 
     ~hash_set()
     {
