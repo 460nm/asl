@@ -46,9 +46,10 @@ public:
 
     constexpr const char* data() const { return m_data; }
 
-    constexpr const char* begin() const { return m_data; }
-    
-    constexpr const char* end() const { return m_data + m_size; } // NOLINT(*-pointer-arithmetic)
+    constexpr contiguous_iterator<const char> begin() const { return contiguous_iterator{m_data}; }
+
+    // NOLINTNEXTLINE(*-pointer-arithmetic)
+    constexpr contiguous_iterator<const char> end() const { return contiguous_iterator{m_data + m_size}; }
 
     constexpr span<const char> as_span() const { return span<const char>(m_data, m_size); }
 

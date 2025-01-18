@@ -357,6 +357,13 @@ public:
         }
     }
 
+    // @Todo(C++23) Use deducing this
+    constexpr contiguous_iterator<const T> begin() const { return contiguous_iterator{data()}; }
+    constexpr contiguous_iterator<const T> end() const { return contiguous_iterator{data() + size()}; }
+    
+    constexpr contiguous_iterator<T> begin() { return contiguous_iterator{data()}; }
+    constexpr contiguous_iterator<T> end() { return contiguous_iterator{data() + size()}; }
+
     // @Todo(C++23) Deducing this
     constexpr operator span<const T>() const // NOLINT(*-explicit-conversions)
     {

@@ -10,8 +10,8 @@ void asl::format_internals::format(
 {
     Formatter f(writer);
 
-    const auto* arg_it = args.begin();
-    const auto* arg_end = args.end();
+    auto arg_it = args.begin();
+    auto arg_end = args.end();
     
     isize_t i = 0;
     while (i < fmt.size())
@@ -22,23 +22,19 @@ void asl::format_internals::format(
             {
                 if (fmt[i + 1] == '}')
                 {
-                    if (arg_it >= arg_end)
-                    {
-                        f.write(fmt.substr(0, i));
-                        fmt = fmt.substr(i + 2);
-                        i = 0;
-
-                        f.write("<ERROR>");
-
-                        continue;
-                    }
-                    
                     f.write(fmt.substr(0, i));
                     fmt = fmt.substr(i + 2);
                     i = 0;
 
-                    arg_it->fn(f, arg_it->data);
-                    arg_it++; // NOLINT(*-pointer-arithmetic)
+                    if (arg_it == arg_end)
+                    {
+                        f.write("<ERROR>");
+                    }
+                    else
+                    {
+                        arg_it->fn(f, arg_it->data);
+                        arg_it++;
+                    }
 
                     continue;
                 }

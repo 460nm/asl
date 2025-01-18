@@ -10,6 +10,38 @@ namespace asl
 
 static constexpr isize_t dynamic_size = -1;
 
+template<typename T>
+class contiguous_iterator
+{
+    T* m_ptr;
+
+public:
+    constexpr explicit contiguous_iterator(T* ptr) : m_ptr{ptr} {}
+
+    constexpr bool operator==(const contiguous_iterator& other) const
+    {
+        return other.m_ptr == m_ptr;
+    }
+
+    constexpr contiguous_iterator& operator++()
+    {
+        m_ptr += 1;
+        return *this;
+    }
+
+    constexpr contiguous_iterator operator++(int)
+    {
+        return contiguous_iterator{ exchange(m_ptr, m_ptr + 1) };
+    }
+
+    constexpr T& operator*() const { return *m_ptr; }
+
+    constexpr T* operator->() const { return m_ptr; }
+};
+
+template<typename T>
+contiguous_iterator(T) -> contiguous_iterator<T>;
+
 template<is_object T, isize_t kSize = dynamic_size>
 class span
 {
@@ -88,8 +120,15 @@ public:
 
     constexpr T* data() const { return m_data; }
 
-    constexpr T* begin() const { return m_data; }
-    constexpr T* end() const { return m_data + size(); }
+    constexpr contiguous_iterator<T> begin() const
+    {
+        return contiguous_iterator{m_data};
+    }
+    
+    constexpr contiguous_iterator<T> end() const
+    {
+        return contiguous_iterator{m_data + size()};
+    }
 
     constexpr T& operator[](isize_t i) const
     {

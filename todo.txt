@@ -1,5 +1,4 @@
-hashing
-hash_set
-hash_map
 logging
 dynlib
+
+warning compare with 0 in format_float.cpp

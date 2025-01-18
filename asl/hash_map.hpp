@@ -147,9 +147,23 @@ public:
         // NOLINTEND(*-pointer-arithmetic)
     }
     
+    // @Todo(C++23) Deducing this
     template<typename U>
     requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
-    V* get(const U& value) const
+    const V* get(const U& value) const
+    {
+        isize_t index = Base::find_slot_lookup(value);
+        if (index >= 0)
+        {
+            // NOLINTNEXTLINE(*-pointer-arithmetic)
+            return &Base::m_values[index].as_init_unsafe().value;
+        }
+        return nullptr;
+    }
+    
+    template<typename U>
+    requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
+    V* get(const U& value)
     {
         isize_t index = Base::find_slot_lookup(value);
         if (index >= 0)
