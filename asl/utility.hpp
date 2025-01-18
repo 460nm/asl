@@ -4,7 +4,7 @@
 #include "asl/layout.hpp"
 #include "asl/assert.hpp"
 
-#define ASL_MOVE(expr_) (static_cast<::asl::un_ref_t<decltype(expr_)>&&>(expr_))
+#define ASL_MOVE(...) (static_cast<::asl::un_ref_t<decltype(__VA_ARGS__)>&&>(__VA_ARGS__))
 
 #define ASL_FWD(expr_) (static_cast<decltype(expr_)&&>(expr_))
 
