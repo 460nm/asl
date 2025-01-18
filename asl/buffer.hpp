@@ -190,6 +190,25 @@ private:
         }
     }
 
+    template<typename... Args>
+    void resize_inner(isize_t new_size, Args&&... args)
+        requires constructible_from<T, Args&&...>
+    {
+        ASL_ASSERT(new_size >= 0);
+
+        isize_t old_size = size();
+        resize_uninit(new_size);
+
+        T* data_ptr = data();
+        T* end = data_ptr + new_size;
+
+        // NOLINTNEXTLINE(*-pointer-arithmetic)
+        for (T* it = data_ptr + old_size; it < end; ++it)
+        {
+            construct_at<T>(it, ASL_FWD(args)...);
+        }
+    }
+
 public:
     constexpr buffer() requires default_constructible<Allocator> = default;
     
@@ -322,6 +341,17 @@ public:
         m_data = new_data;
         m_capacity = new_capacity;
         store_size_encoded(encode_size_heap(current_size));
+    }
+
+    void resize(isize_t new_size)
+        requires default_constructible<T>
+    {
+        resize_inner(new_size);
+    }
+
+    void resize(isize_t new_size, const T& value)
+    {
+        resize_inner(new_size, value);
     }
 
     constexpr T& push(auto&&... args)

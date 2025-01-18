@@ -542,3 +542,44 @@ ASL_TEST(copy_assign_into_larger)
     ASL_TEST_EXPECT(buf[0] == 4);
     ASL_TEST_EXPECT(buf2[0] == 4);
 }
+
+ASL_TEST(resize_default)
+{
+    asl::buffer<int> buf;
+
+    buf.push(5);
+    buf.resize(4);
+
+    ASL_TEST_ASSERT(buf.size() == 4);
+    ASL_TEST_EXPECT(buf[0] == 5);
+    ASL_TEST_EXPECT(buf[1] == 0);
+    ASL_TEST_EXPECT(buf[2] == 0);
+    ASL_TEST_EXPECT(buf[3] == 0);
+
+    buf.resize(2);
+
+    ASL_TEST_ASSERT(buf.size() == 2);
+    ASL_TEST_EXPECT(buf[0] == 5);
+    ASL_TEST_EXPECT(buf[1] == 0);
+}
+
+ASL_TEST(resize)
+{
+    asl::buffer<int> buf;
+
+    buf.push(5);
+    buf.resize(4, 6);
+
+    ASL_TEST_ASSERT(buf.size() == 4);
+    ASL_TEST_EXPECT(buf[0] == 5);
+    ASL_TEST_EXPECT(buf[1] == 6);
+    ASL_TEST_EXPECT(buf[2] == 6);
+    ASL_TEST_EXPECT(buf[3] == 6);
+
+    buf.resize(2, 7);
+
+    ASL_TEST_ASSERT(buf.size() == 2);
+    ASL_TEST_EXPECT(buf[0] == 5);
+    ASL_TEST_EXPECT(buf[1] == 6);
+}
+
