@@ -1,3 +1,8 @@
+startup --windows_enable_symlinks
+build:windows --enable_runfiles=true
+
+build --build_python_zip=false
+
 build:windows  --extra_execution_platforms=//:x64_windows-clang-cl
 # @Todo(bazel) We should be able to use @local_config_cc...
 build:windows  --extra_toolchains=@@rules_cc++cc_configure_extension+local_config_cc//:cc-toolchain-x64_windows-clang-cl
@@ -6,8 +11,6 @@ build:linux    --repo_env=CC=clang
 
 build:windows  --cxxopt=-Xclang=-std=c++20
 build:linux    --cxxopt=-std=c++20
-
-common --incompatible_autoload_externally=+@rules_python
 
 build --cxxopt=-Wall
 build --cxxopt=-Wno-c++98-compat
