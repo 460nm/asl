@@ -26,6 +26,7 @@ cc_library(
         "status.hpp",
         "status_or.hpp",
         "string.hpp",
+        "string_builder.hpp",
         "string_view.hpp",
         "utility.hpp",
     ],
@@ -71,6 +72,7 @@ cc_library(
     "status",
     "status_or",
     "string",
+    "string_builder",
     "string_view",
     "utility",
 ]]

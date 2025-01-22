@@ -88,11 +88,11 @@ private:
     constexpr T* push_uninit()
     {
         isize_t sz = size();
-        resize_uninit(sz + 1);
+        resize_uninit_inner(sz + 1);
         return data() + sz;
     }
 
-    constexpr void resize_uninit(isize_t new_size)
+    constexpr void resize_uninit_inner(isize_t new_size)
     {
         isize_t old_size = size();
         if (!trivially_destructible<T> && new_size < old_size)
@@ -142,7 +142,7 @@ private:
         {
             isize_t other_n = other.size();
             isize_t this_n = size();
-            resize_uninit(other_n);
+            resize_uninit_inner(other_n);
             if (other_n <= this_n)
             {
                 relocate_assign_n(data(), other.data(), other_n);
@@ -175,7 +175,7 @@ private:
         isize_t this_size = size();
         isize_t new_size = to_copy.size();
         
-        resize_uninit(to_copy.size());
+        resize_uninit_inner(to_copy.size());
         ASL_ASSERT(capacity() >= new_size);
         ASL_ASSERT(size() == to_copy.size());
 
@@ -197,8 +197,8 @@ private:
         ASL_ASSERT(new_size >= 0);
 
         isize_t old_size = size();
-        resize_uninit(new_size);
-
+        resize_uninit_inner(new_size);
+    
         T* data_ptr = data();
         T* end = data_ptr + new_size;
 
@@ -341,6 +341,25 @@ public:
         m_data = new_data;
         m_capacity = new_capacity;
         store_size_encoded(encode_size_heap(current_size));
+    }
+
+    constexpr void resize_uninit(isize_t new_size)
+        requires trivially_default_constructible<T> && trivially_destructible<T>
+    {
+        reserve_capacity(new_size);
+        set_size(new_size);
+    }
+
+    constexpr void resize_zero(isize_t new_size)
+        requires trivially_default_constructible<T> && trivially_destructible<T>
+    {
+        isize_t old_size = size();
+        resize_uninit(new_size);
+
+        if (new_size > old_size)
+        {
+            memzero(data() + old_size, (new_size - old_size) * size_of<T>);
+        }
     }
 
     void resize(isize_t new_size)

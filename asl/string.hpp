@@ -11,6 +11,13 @@ class string
 {
     buffer<char, Allocator> m_buffer;
 
+    explicit constexpr string(buffer<char, Allocator>&& buffer) :
+        m_buffer{ASL_MOVE(buffer)}
+    {}
+
+    template<allocator A>
+    friend class string_builder;
+
 public:
     constexpr string() requires default_constructible<Allocator> = default;
     explicit constexpr string(Allocator allocator) : m_buffer{ASL_MOVE(allocator)} {}

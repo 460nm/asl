@@ -583,3 +583,21 @@ ASL_TEST(resize)
     ASL_TEST_EXPECT(buf[1] == 6);
 }
 
+ASL_TEST(resize_zero)
+{
+    asl::buffer<int> buf;
+    for (int i = 0; i < 100; ++i)
+    {
+        buf.push(i);
+    }
+    
+    buf.resize_zero(200);
+    ASL_TEST_ASSERT(buf.size() == 200);
+    
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(buf[i] == i);
+        ASL_TEST_EXPECT(buf[100 + i] == 0);
+    }
+}
+
