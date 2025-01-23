@@ -16,7 +16,7 @@ class string
     {}
 
     template<allocator A>
-    friend class string_builder;
+    friend class StringBuilder;
 
 public:
     constexpr string() requires default_constructible<Allocator> = default;

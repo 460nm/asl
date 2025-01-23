@@ -1,7 +1,7 @@
 #include "asl/status.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/format.hpp"
-#include "asl/tests/test_types.hpp"
+#include "asl/string_builder.hpp"
 
 ASL_TEST(simple_ok)
 {
@@ -68,21 +68,15 @@ static_assert(asl::formattable<asl::status>);
 
 ASL_TEST(format)
 {
-    StringSink sink;
+    auto s = asl::format_to_string("-{}-", asl::ok());
+    ASL_TEST_EXPECT(s == "-[ok]-"_sv);
 
-    asl::format(&sink, "-{}-", asl::ok());
-    ASL_TEST_EXPECT(sink.str() == "-[ok]-"_sv);
-
-    sink.reset();
-    asl::format(&sink, "-{}-", asl::internal_error("hello"));
-    ASL_TEST_EXPECT(sink.str() == "-[internal: hello]-"_sv);
+    s = asl::format_to_string("-{}-", asl::internal_error("hello"));
+    ASL_TEST_EXPECT(s == "-[internal: hello]-"_sv);
 }
 
 ASL_TEST(make_with_format)
 {
-    StringSink sink;
-
-    sink.reset();
-    asl::format(&sink, "-{}-", asl::internal_error("hello, {}, {}", 45, "world"));
-    ASL_TEST_EXPECT(sink.str() == "-[internal: hello, 45, world]-"_sv);
+    auto s = asl::format_to_string("-{}-", asl::internal_error("hello, {}, {}", 45, "world"));
+    ASL_TEST_EXPECT(s == "-[internal: hello, 45, world]-"_sv);
 }

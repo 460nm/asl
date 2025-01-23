@@ -3,26 +3,28 @@
 #include "asl/buffer.hpp"
 #include "asl/string.hpp"
 #include "asl/string_view.hpp"
+#include "asl/format.hpp"
+#include "asl/io.hpp"
 
 namespace asl
 {
 
 template<allocator Allocator = DefaultAllocator>
-class string_builder
+class StringBuilder
 {
     buffer<char, Allocator> m_buffer;
 
 public:
-    constexpr string_builder() requires default_constructible<Allocator> = default;
-    explicit constexpr string_builder(Allocator allocator) : m_buffer{ASL_MOVE(allocator)} {}
+    constexpr StringBuilder() requires default_constructible<Allocator> = default;
+    explicit constexpr StringBuilder(Allocator allocator) : m_buffer{ASL_MOVE(allocator)} {}
 
-    constexpr ~string_builder() = default;
+    constexpr ~StringBuilder() = default;
 
-    constexpr string_builder(const string_builder&) requires copy_constructible<Allocator> = default;
-    constexpr string_builder(string_builder&&) = default;
+    constexpr StringBuilder(const StringBuilder&) requires copy_constructible<Allocator> = default;
+    constexpr StringBuilder(StringBuilder&&) = default;
 
-    constexpr string_builder& operator=(const string_builder&) requires copy_assignable<Allocator> = default;
-    constexpr string_builder& operator=(string_builder&&) = default;
+    constexpr StringBuilder& operator=(const StringBuilder&) requires copy_assignable<Allocator> = default;
+    constexpr StringBuilder& operator=(StringBuilder&&) = default;
 
     constexpr string_view as_string_view() const
     {
@@ -37,7 +39,7 @@ public:
 
     // @Todo(C++23) Deducing this
 
-    string_builder& push(string_view sv) &
+    StringBuilder& push(string_view sv) &
     {
         isize_t old_size = m_buffer.size();
         m_buffer.resize_zero(old_size + sv.size());
@@ -45,7 +47,7 @@ public:
         return *this;
     }
 
-    string_builder&& push(string_view sv) &&
+    StringBuilder&& push(string_view sv) &&
     {
         isize_t old_size = m_buffer.size();
         m_buffer.resize_zero(old_size + sv.size());
@@ -53,13 +55,13 @@ public:
         return ASL_MOVE(*this);
     }
 
-    string_builder& push(char c) &
+    StringBuilder& push(char c) &
     {
         m_buffer.push(c);
         return *this;
     }
 
-    string_builder&& push(char c) &&
+    StringBuilder&& push(char c) &&
     {
         m_buffer.push(c);
         return ASL_MOVE(*this);
@@ -84,6 +86,71 @@ public:
     }
 };
 
-string_builder() -> string_builder<>;
+StringBuilder() -> StringBuilder<>;
+
+template<typename Allocator = DefaultAllocator>
+class StringWriter : public asl::Writer
+{
+    StringBuilder<Allocator> m_builder;
+
+public:
+    constexpr StringWriter() requires default_constructible<Allocator> = default;
+    explicit constexpr StringWriter(Allocator allocator) : m_builder{ASL_MOVE(allocator)} {}
+
+    constexpr ~StringWriter() override = default;
+
+    constexpr StringWriter(const StringWriter&) requires copy_constructible<Allocator> = default;
+    constexpr StringWriter(StringWriter&&) = default;
+
+    constexpr StringWriter& operator=(const StringWriter&) requires copy_assignable<Allocator> = default;
+    constexpr StringWriter& operator=(StringWriter&&) = default;
+    
+    void write(span<const byte> str) override
+    {
+        m_builder.push(string_view{reinterpret_cast<const char*>(str.data()), str.size()});
+    }
+
+    constexpr string_view as_string_view() const
+    {
+        return m_builder.as_string_view();
+    }
+
+    string<Allocator> finish() &&
+    {
+        return ASL_MOVE(m_builder).finish();
+    }
+
+    template<allocator StringAllocator = Allocator>
+    string<StringAllocator> as_string()
+        requires default_constructible<StringAllocator>
+    {
+        return m_builder.as_string();
+    }
+
+    template<allocator StringAllocator = Allocator>
+    string<StringAllocator> as_string(Allocator allocator)
+    {
+        return m_builder.as_string(ASL_MOVE(allocator));
+    }
+};
+
+StringWriter() -> StringWriter<>;
+
+template<allocator Allocator = DefaultAllocator, formattable... Args>
+string<Allocator> format_to_string(string_view fmt, const Args&... args)
+    requires default_constructible<Allocator>
+{
+    StringWriter writer{};
+    format(&writer, fmt, args...);
+    return ASL_MOVE(writer).finish();
+}
+
+template<allocator Allocator = DefaultAllocator, formattable... Args>
+string<Allocator> format_to_string(Allocator allocator, string_view fmt, const Args&... args)
+{
+    StringWriter writer{ASL_MOVE(allocator)};
+    format(&writer, fmt, args...);
+    return ASL_MOVE(writer).finish();
+}
 
 } // namespace asl

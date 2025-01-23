@@ -3,7 +3,7 @@
 
 ASL_TEST(string_builder)
 {
-    asl::string_builder b;
+    asl::StringBuilder b;
     b.push('a');
     b.push("bcdef");
     b.push('g');
@@ -16,7 +16,7 @@ ASL_TEST(string_builder)
 
 ASL_TEST(string_builder_rvalue)
 {
-    asl::string s = asl::string_builder{}.push('a').push("bcdef").push('g').finish();
+    asl::string s = asl::StringBuilder{}.push('a').push("bcdef").push('g').finish();
 
     ASL_TEST_EXPECT(s == "abcdefg");
 }

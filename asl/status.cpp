@@ -3,6 +3,7 @@
 #include "asl/string.hpp"
 #include "asl/atomic.hpp"
 #include "asl/format.hpp"
+#include "asl/string_builder.hpp"
 
 // @Todo Use custom allocator
 using Allocator = asl::DefaultAllocator;
@@ -11,53 +12,14 @@ static Allocator g_allocator{};
 namespace
 {
 
-// @Todo Make a proper string builder, replace the tests's StringSink too
-class StringSink : public asl::Writer
-{
-    isize_t m_current_len{};
-    char*   m_data{};
-    
-public:
-    ~StringSink() override
-    {
-        reset();
-    }
-    
-    void write(asl::span<const asl::byte> str) override
-    {
-        m_data = reinterpret_cast<char*>(asl::GlobalHeap::realloc(
-            m_data,
-            asl::layout::array<char>(m_current_len),
-            asl::layout::array<char>(m_current_len + str.size())));
-        
-        asl::memcpy(m_data + m_current_len, str.data(), str.size()); // NOLINT
-        
-        m_current_len += str.size();
-    }
-
-    constexpr asl::string_view str() const { return {m_data, m_current_len}; }
-
-    void reset()
-    {
-        if (m_data != nullptr)
-        {
-            m_current_len = 0;
-            asl::GlobalHeap::dealloc(m_data, asl::layout::array<char>(m_current_len));
-            m_data = nullptr;
-        }
-    }
-};
-
 struct StatusInternal
 {
     asl::string<Allocator> msg;
     asl::status_code code;
     asl::atomic<int32_t> ref_count;
 
-    // @Todo Once we have string builder, move the string instead
-
-    constexpr StatusInternal(asl::string_view msg_, asl::status_code code_)
-        : msg{msg_, g_allocator}
+    constexpr StatusInternal(asl::string<Allocator>&& msg_, asl::status_code code_)
+        : msg{ASL_MOVE(msg_)}
         , code{code_}
     {
         ASL_ASSERT(code != asl::status_code::ok);
@@ -73,9 +35,9 @@ asl::status::status(status_code code, string_view msg)
 
 asl::status::status(status_code code, string_view fmt, span<format_internals::type_erased_arg> args)
 {
-    StringSink sink;
+    StringWriter<Allocator> sink{g_allocator};
     format_internals::format(&sink, fmt, args);
-    m_payload = alloc_new<StatusInternal>(g_allocator, sink.str(), code);
+    m_payload = alloc_new<StatusInternal>(g_allocator, ASL_MOVE(sink).finish(), code);
 }
 
 asl::status_code asl::status::code_internal() const
