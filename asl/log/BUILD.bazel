@@ -1,0 +1,26 @@
+cc_library(
+    name = "log",
+    srcs = [
+        "log.hpp",
+    ],
+    hdrs = [
+        "log.cpp",
+    ],
+    deps = [
+        "//asl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "tests",
+    srcs = [
+        "log_tests.cpp"
+    ],
+    deps = [
+        ":log",
+        "//asl/testing",
+    ],
+    visibility = ["//visibility:public"],
+)
+    
