@@ -33,7 +33,7 @@ T exchange(T& obj, U&& new_value)
 template<trivially_copy_constructible U, trivially_copy_constructible T>
 constexpr U bit_cast(T value) requires (size_of<T> == size_of<U>)
 {
-    return __builtin_bit_cast(U, value); 
+    return __builtin_bit_cast(U, value);
 }
 
 template<typename T>
@@ -53,7 +53,7 @@ constexpr uint64_t round_up_pow2(uint64_t v)
     ASL_ASSERT(v <= 0x8000'0000'0000'0000);
 
     v -= 1;
-    
+
     v |= v >> 1;
     v |= v >> 2;
     v |= v >> 4;

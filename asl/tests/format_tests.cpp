@@ -62,7 +62,7 @@ ASL_TEST(format_floats)
 {
     auto s = asl::format_to_string("{} {} {}", 0.0F, 1.0, 2.0F);
     ASL_TEST_EXPECT(s == "0 1 2"_sv);
-    
+
     s = asl::format_to_string("{} {} {}", 0.1F, 0.001F, 0.123F);
     ASL_TEST_EXPECT(s == "0.1 0.001 0.123"_sv);
 

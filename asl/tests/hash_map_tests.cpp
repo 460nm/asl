@@ -23,9 +23,9 @@ ASL_TEST(default)
 
     ASL_TEST_EXPECT(map.remove(45));
     ASL_TEST_EXPECT(!map.remove(45));
-    
+
     ASL_TEST_EXPECT(map.size() == 1);
-    
+
     ASL_TEST_EXPECT(!map.contains(45));
     ASL_TEST_EXPECT(map.contains(46));
     ASL_TEST_EXPECT(!map.contains(47));
@@ -35,9 +35,9 @@ ASL_TEST(default)
     ASL_TEST_EXPECT(map.get(47) == nullptr);
 
     map.insert(46, 460);
-    
+
     ASL_TEST_EXPECT(map.size() == 1);
-    
+
     ASL_TEST_EXPECT(!map.contains(45));
     ASL_TEST_EXPECT(map.contains(46));
     ASL_TEST_EXPECT(!map.contains(47));

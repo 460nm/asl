@@ -41,7 +41,7 @@ public:
     ~string_view() = default;
 
     constexpr isize_t size() const { return m_size; }
-   
+
     constexpr bool is_empty() const { return m_size == 0; }
 
     constexpr const char* data() const { return m_data; }

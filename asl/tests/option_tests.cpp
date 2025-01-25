@@ -113,7 +113,7 @@ ASL_TEST(reset)
 {
     asl::option<int> b = 48;
     ASL_TEST_EXPECT(b.has_value());
-    
+
     b.reset();
     ASL_TEST_EXPECT(!b.has_value());
 }
@@ -121,13 +121,13 @@ ASL_TEST(reset)
 ASL_TEST(call_destructor)
 {
     bool destroyed = false;
-    
+
     {
         DestructorObserver obs(&destroyed);
-        
+
         asl::option<DestructorObserver> opt(ASL_MOVE(obs));
         ASL_TEST_EXPECT(!destroyed);
-    
+
         asl::option<DestructorObserver> opt2 = ASL_MOVE(opt);
         ASL_TEST_EXPECT(!destroyed);
     }
@@ -138,7 +138,7 @@ ASL_TEST(call_destructor)
 ASL_TEST(call_destructor_on_reset)
 {
     bool destroyed = false;
-    
+
     asl::option<DestructorObserver> opt(&destroyed);
     ASL_TEST_EXPECT(!destroyed);
 
@@ -163,7 +163,7 @@ ASL_TEST(value)
 ASL_TEST(value_move)
 {
     bool destroyed = false;
-    
+
     asl::option<DestructorObserver> opt(&destroyed);
     ASL_TEST_EXPECT(!destroyed);
 
@@ -171,7 +171,7 @@ ASL_TEST(value_move)
         auto x = ASL_MOVE(opt).value();
         ASL_TEST_EXPECT(!destroyed);
     }
-    
+
     ASL_TEST_EXPECT(destroyed);
 }
 
@@ -185,17 +185,17 @@ ASL_TEST(convert_copy)
 {
     asl::option<uint8_t> opt8 = uint8_t{8};
     asl::option<uint16_t> opt16 = opt8;
-    
+
     ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 8);
 
     opt8 = uint8_t{10};
     ASL_TEST_ASSERT(opt8.has_value());
     ASL_TEST_EXPECT(opt8.value() == 10);
-    
+
     opt16 = asl::nullopt;
     ASL_TEST_EXPECT(!opt16.has_value());
-    
+
     opt16 = opt8;
     ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 10);
@@ -205,17 +205,17 @@ ASL_TEST(convert_move)
 {
     asl::option<uint8_t> opt8 = uint8_t{8};
     asl::option<uint16_t> opt16 = ASL_MOVE(opt8);
-    
+
     ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 8);
 
     opt8 = ASL_MOVE(uint8_t{10});
     ASL_TEST_ASSERT(opt8.has_value());
     ASL_TEST_EXPECT(opt8.value() == 10);
-    
+
     opt16 = asl::nullopt;
     ASL_TEST_EXPECT(!opt16.has_value());
-    
+
     opt16 = ASL_MOVE(opt8);
     ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 10);
@@ -243,7 +243,7 @@ ASL_TEST(emplace_destroys_previous)
 {
     bool b1 = false;
     bool b2 = false;
-    
+
     {
         asl::option<DestructorObserver> a{&b1};
         ASL_TEST_EXPECT(!b1);
@@ -252,7 +252,7 @@ ASL_TEST(emplace_destroys_previous)
         ASL_TEST_EXPECT(b1);
         ASL_TEST_EXPECT(!b2);
     }
-    
+
     ASL_TEST_EXPECT(b2);
 }
 

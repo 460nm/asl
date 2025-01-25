@@ -73,7 +73,7 @@ void asl::status::unref()
 void asl::AslFormat(asl::Formatter& f, const asl::status& s)
 {
     string_view status_str{};
-    
+
     switch (s.code())
     {
         case status_code::ok: status_str = "ok"_sv; break;

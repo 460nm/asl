@@ -40,7 +40,7 @@ ASL_TEST(invoke_member_function)
 ASL_TEST(invoke_member_data)
 {
     HasMember c;
-    
+
     asl::invoke(&HasMember::member, c);
     asl::invoke(&HasMember::member_array, c);
     asl::invoke(&HasMember::member_fn, c);

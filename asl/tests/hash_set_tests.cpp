@@ -7,9 +7,9 @@
 ASL_TEST(empty)
 {
     asl::hash_set<int> set;
-    
+
     ASL_TEST_EXPECT(set.size() == 0);
-    
+
     for (int i = 0; i < 100; ++i)
     {
         ASL_TEST_EXPECT(!set.contains(i));
@@ -22,10 +22,10 @@ ASL_TEST(a_bunch_of_strings)
 
     set.insert("Hello, world!");
     ASL_TEST_EXPECT(set.size() == 1);
-    
+
     set.insert("Hello, puppy!");
     ASL_TEST_EXPECT(set.size() == 2);
-    
+
     set.insert("Hello, puppy!");
     ASL_TEST_EXPECT(set.size() == 2);
 
@@ -74,7 +74,7 @@ struct CustomComparator
     {
         return a.x == b.x;
     }
-    
+
     static bool eq(const HashWithDestructor& a, int b)
     {
         return a.x == b;
@@ -87,7 +87,7 @@ struct CustomHasher
     {
         return asl::hash_value(b.x);
     }
-    
+
     static uint64_t hash(int x)
     {
         return asl::hash_value(x);
@@ -137,7 +137,7 @@ ASL_TEST(destructor_and_remove)
 ASL_TEST(copy)
 {
     asl::hash_set<int> set1;
-    
+
     for (int i = 0; i < 100; ++i)
     {
         set1.insert(i);
@@ -149,7 +149,7 @@ ASL_TEST(copy)
 
     ASL_TEST_EXPECT(set2.size() == 100);
     ASL_TEST_EXPECT(set3.size() == 100);
-    
+
     for (int i = 0; i < 100; ++i)
     {
         ASL_TEST_EXPECT(set2.contains(i));
@@ -160,7 +160,7 @@ ASL_TEST(copy)
 ASL_TEST(move)
 {
     asl::hash_set<int> set1;
-    
+
     for (int i = 0; i < 100; ++i)
     {
         set1.insert(i);

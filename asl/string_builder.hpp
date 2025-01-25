@@ -104,7 +104,7 @@ public:
 
     constexpr StringWriter& operator=(const StringWriter&) requires copy_assignable<Allocator> = default;
     constexpr StringWriter& operator=(StringWriter&&) = default;
-    
+
     void write(span<const byte> str) override
     {
         m_builder.push(string_view{reinterpret_cast<const char*>(str.data()), str.size()});

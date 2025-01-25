@@ -6,12 +6,12 @@
 class ConsoleWriter : public asl::Writer
 {
     FILE* m_handle;
-    
+
 public:
     explicit ConsoleWriter(FILE* handle)
         : m_handle{handle}
     {}
-    
+
     void write(asl::span<const asl::byte> s) override
     {
         fwrite(s.data(), 1, static_cast<size_t>(s.size()), m_handle);

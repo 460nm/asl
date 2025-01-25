@@ -18,16 +18,16 @@ class buffer
     isize_t    m_capacity{};
 
     static constexpr size_t kOnHeapMask = 0x8000'0000'0000'0000ULL;
-    
+
     // bit 63       : 1 = on heap, 0 = inline
     // bits [62:56] : size when inline
     // bits [62:0]  : size when on heap
     size_t     m_size_encoded_{};
-    
+
     ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
 
     static constexpr isize_t kInlineRegionSize = size_of<T*> + size_of<isize_t> + size_of<size_t>;
-    
+
 public:
     static constexpr isize_t kInlineCapacity = []() {
         // 1 byte is used for size inline in m_size_encoded.
@@ -163,7 +163,7 @@ private:
         }
 
         other.set_size_inline(0);
-        
+
         if (assign)
         {
             m_allocator = ASL_MOVE(other.m_allocator);
@@ -174,7 +174,7 @@ private:
     {
         isize_t this_size = size();
         isize_t new_size = to_copy.size();
-        
+
         resize_uninit_inner(to_copy.size());
         ASL_ASSERT(capacity() >= new_size);
         ASL_ASSERT(size() == to_copy.size());
@@ -198,7 +198,7 @@ private:
 
         isize_t old_size = size();
         resize_uninit_inner(new_size);
-    
+
         T* data_ptr = data();
         T* end = data_ptr + new_size;
 
@@ -211,7 +211,7 @@ private:
 
 public:
     constexpr buffer() requires default_constructible<Allocator> = default;
-    
+
     explicit constexpr buffer(span<const T> s)
         requires default_constructible<Allocator>
         : buffer{}
@@ -222,7 +222,7 @@ public:
     explicit constexpr buffer(Allocator allocator)
         : m_allocator{ASL_MOVE(allocator)}
     {}
-    
+
     explicit constexpr buffer(span<const T> s, Allocator allocator)
         : m_allocator{ASL_MOVE(allocator)}
     {
@@ -242,7 +242,7 @@ public:
     {
         move_from_other(ASL_MOVE(other), false);
     }
-    
+
     constexpr buffer& operator=(const buffer& other)
         requires copyable<T>
     {
@@ -285,7 +285,7 @@ public:
     {
         isize_t current_size = size();
         if (current_size == 0) { return; }
-        
+
         destroy_n(data(), current_size);
         set_size(0);
     }
@@ -308,7 +308,7 @@ public:
     {
         ASL_ASSERT(new_capacity >= 0);
         ASL_ASSERT_RELEASE(new_capacity <= 0x4000'0000'0000'0000);
-        
+
         if (new_capacity <= capacity()) { return; }
         ASL_ASSERT(new_capacity > kInlineCapacity);
 
@@ -321,7 +321,7 @@ public:
 
         auto old_layout = layout::array<T>(old_capacity);
         auto new_layout = layout::array<T>(new_capacity);
-            
+
         if (currently_on_heap && trivially_move_constructible<T>)
         {
             m_data = reinterpret_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
@@ -409,7 +409,7 @@ public:
     // @Todo(C++23) Use deducing this
     constexpr contiguous_iterator<const T> begin() const { return contiguous_iterator{data()}; }
     constexpr contiguous_iterator<const T> end() const { return contiguous_iterator{data() + size()}; }
-    
+
     constexpr contiguous_iterator<T> begin() { return contiguous_iterator{data()}; }
     constexpr contiguous_iterator<T> end() { return contiguous_iterator{data() + size()}; }
 
@@ -418,17 +418,17 @@ public:
     {
         return as_span();
     }
-    
+
     constexpr operator span<T>() // NOLINT(*-explicit-conversions)
     {
         return as_span();
     }
-    
+
     constexpr span<const T> as_span() const
     {
         return span<const T>{data(), size()};
     }
-    
+
     constexpr span<T> as_span()
     {
         return span<T>{data(), size()};
@@ -440,7 +440,7 @@ public:
         ASL_ASSERT(i >= 0 && i <= size());
         return data()[i];
     }
-    
+
     constexpr const T& operator[](isize_t i) const
     {
         ASL_ASSERT(i >= 0 && i <= size());

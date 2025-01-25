@@ -13,7 +13,7 @@ public:
     Writer() = default;
     ASL_DELETE_COPY_MOVE(Writer);
     virtual ~Writer() = default;
-    
+
     virtual void write(span<const byte>) = 0;
 };
 

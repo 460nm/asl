@@ -60,12 +60,12 @@ protected:
 
     // Important so we can memzero the tags
     static_assert(kEmpty == 0);
-    
+
     uint8_t*         m_tags{};
     maybe_uninit<T>* m_values{};
     isize_t          m_capacity{};
     isize_t          m_size{};
-    
+
     ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
 
     constexpr isize_t max_size() const
@@ -81,7 +81,7 @@ protected:
             kMinCapacity,
             static_cast<isize_t>(round_up_pow2((static_cast<uint64_t>(size) * 4 + 2) / 3)));
     }
-    
+
     static void insert_inner(
         T&& value,
         uint8_t* tags,
@@ -92,7 +92,7 @@ protected:
         ASL_ASSERT(*size < capacity);
 
         const auto result = find_slot_insert(value, tags, values, capacity);
-        
+
         // NOLINTBEGIN(*-pointer-arithmetic)
 
         ASL_ASSERT(result.first_available_index >= 0);
@@ -114,10 +114,10 @@ protected:
             values[result.first_available_index].construct_unsafe(ASL_MOVE(value));
             tags[result.first_available_index] = result.tag;
         }
-        
+
         // NOLINTEND(*-pointer-arithmetic)
     }
-    
+
     void grow_and_rehash()
     {
         grow_and_rehash(max(kMinCapacity, m_capacity * 2));
@@ -126,7 +126,7 @@ protected:
     void grow_and_rehash(isize_t new_capacity)
     {
         ASL_ASSERT(new_capacity >= kMinCapacity && is_pow2(new_capacity) && new_capacity > m_capacity);
-        
+
         auto* new_tags = reinterpret_cast<uint8_t*>(m_allocator.alloc(layout::array<uint8_t>(new_capacity)));
         auto* new_values = reinterpret_cast<maybe_uninit<T>*>(m_allocator.alloc(layout::array<maybe_uninit<T>>(new_capacity)));
         asl::memzero(new_tags, new_capacity);
@@ -222,7 +222,7 @@ protected:
         const auto starting_index = static_cast<isize_t>(hash >> 7) & capacity_mask;
 
         result.tag = static_cast<uint8_t>(hash & kHashMask) | kHasValue;
-        
+
         // NOLINTBEGIN(*-pointer-arithmetic)
 
         for (
@@ -231,7 +231,7 @@ protected:
             i = (i + 1) & capacity_mask)
         {
             uint8_t t = tags[i];
-            
+
             if ((t & kHasValue) == 0 && result.first_available_index < 0)
             {
                 result.first_available_index = i;
@@ -250,7 +250,7 @@ protected:
 
             if (t == kEmpty) { break; }
         }
-        
+
         // NOLINTEND(*-pointer-arithmetic)
 
         return result;
@@ -275,13 +275,13 @@ protected:
         do
         {
             const uint8_t t = m_tags[i];
-            
+
             if (t == tag && KeyComparator::eq(m_values[i].as_init_unsafe(), value)) { return i; }
             if (t == kEmpty) { break; }
-            
+
             i = (i + 1) & capacity_mask;
         } while (i != starting_index);
-        
+
         // NOLINTEND(*-pointer-arithmetic)
 
         return -1;
@@ -301,7 +301,7 @@ protected:
             grow_and_rehash();
         }
     }
-    
+
 public:
     constexpr hash_set() requires default_constructible<Allocator>
         : m_allocator{}
@@ -374,7 +374,7 @@ public:
     {
         clear_values();
         m_size = 0;
-        
+
         if (m_capacity > 0)
         {
             asl::memzero(m_tags, m_capacity);

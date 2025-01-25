@@ -23,14 +23,14 @@ namespace option_internal
 {
 
 template<typename T, typename U>
-concept not_constructible_from_option = 
+concept not_constructible_from_option =
     !constructible_from<T, option<U>&> &&
     !constructible_from<T, const option<U>&> &&
     !constructible_from<T, option<U>&&> &&
     !constructible_from<T, const option<U>&&>;
 
 template<typename T, typename U>
-concept not_assignable_from_option = 
+concept not_assignable_from_option =
     !assignable_from<T&, option<U>&> &&
     !assignable_from<T&, const option<U>&> &&
     !assignable_from<T&, option<U>&&> &&
@@ -98,10 +98,10 @@ public:
     using type = T;
 
     constexpr option() : option{nullopt} {}
-    
+
      // NOLINTNEXTLINE(*-explicit-conversions)
     constexpr option(nullopt_t) requires (!kHasNiche) {}
-    
+
      // NOLINTNEXTLINE(*-explicit-conversions)
     constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place, niche_t{}} {}
 
@@ -117,7 +117,7 @@ public:
     {}
 
     template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)        
+    constexpr explicit (!convertible_from<T, U&&>)
     option(U&& value)
         requires (
             !kHasNiche &&
@@ -127,11 +127,11 @@ public:
         : m_payload{in_place, ASL_FWD(value)}
         , m_has_value{true}
     {}
-    
+
     constexpr option(const option& other) requires trivially_copy_constructible<T> = default;
     constexpr option(const option& other) requires (!copy_constructible<T>) = delete;
 
-    constexpr option(const option& other)    
+    constexpr option(const option& other)
         requires copy_constructible<T> && (!trivially_copy_constructible<T>)
         : option{nullopt}
     {
@@ -140,11 +140,11 @@ public:
             construct(other.m_payload.as_init_unsafe());
         }
     }
-    
+
     constexpr option(option&& other) requires trivially_move_constructible<T> = default;
     constexpr option(option&& other) requires (!move_constructible<T>) = delete;
 
-    constexpr option(option&& other)    
+    constexpr option(option&& other)
         requires move_constructible<T> && (!trivially_move_constructible<T>)
         : option{nullopt}
     {
@@ -158,7 +158,7 @@ public:
     constexpr explicit (!convertible_from<T, const U&>)
     option(const option<U>& other)
         requires (
-            constructible_from<T, const U&> && 
+            constructible_from<T, const U&> &&
             option_internal::not_constructible_from_option<T, U>
         )
         : option{nullopt}
@@ -194,7 +194,7 @@ public:
     constexpr option& operator=(U&& value) &
         requires (
             assignable_from<T&, U&&> &&
-            constructible_from<T, U&&> && 
+            constructible_from<T, U&&> &&
             !is_option<U>
         )
     {
@@ -212,7 +212,7 @@ public:
 
     constexpr option& operator=(const option& other) &
         requires (!copy_assignable<T>) = delete;
-        
+
     constexpr option& operator=(const option& other) &
         requires trivially_copy_assignable<T> = default;
 
@@ -236,13 +236,13 @@ public:
         {
             reset();
         }
-        
+
         return *this;
     }
-    
+
     constexpr option& operator=(option&& other) &
         requires (!move_assignable<T>) = delete;
-        
+
     constexpr option& operator=(option&& other) &
         requires trivially_move_assignable<T> = default;
 
@@ -266,7 +266,7 @@ public:
         {
             reset();
         }
-        
+
         return *this;
     }
 
@@ -296,7 +296,7 @@ public:
 
         return *this;
     }
-    
+
     template<typename U = T>
     constexpr option& operator=(option<U>&& other) &
         requires (
@@ -323,7 +323,7 @@ public:
 
         return *this;
     }
-       
+
     constexpr ~option() requires trivially_destructible<T> = default;
     constexpr ~option() requires (!trivially_destructible<T>)
     {
@@ -333,7 +333,7 @@ public:
     constexpr void reset()
     {
         if (!has_value()) { return; }
-        
+
         if constexpr (kHasNiche)
         {
             if constexpr (move_assignable<T>)

@@ -16,25 +16,25 @@ private:
 public:
     constexpr maybe_uninit() requires trivially_default_constructible<T> = default;
     constexpr maybe_uninit() requires (!trivially_default_constructible<T>) {} // NOLINT
-    
+
     template<typename... Args>
     explicit constexpr maybe_uninit(in_place_t, Args&&... args)
         requires constructible_from<T, Args&&...>
         : m_value{ASL_FWD(args)...}
     {}
-    
+
     constexpr maybe_uninit(const maybe_uninit&) requires trivially_copy_constructible<T> = default;
     constexpr maybe_uninit(const maybe_uninit&) requires (!trivially_copy_constructible<T>) {} // NOLINT
-    
+
     constexpr maybe_uninit(maybe_uninit&&) requires trivially_move_constructible<T> = default;
     constexpr maybe_uninit(maybe_uninit&&) requires (!trivially_move_constructible<T>) {} // NOLINT
-    
+
     constexpr maybe_uninit& operator=(const maybe_uninit&) requires trivially_copy_assignable<T> = default;
     constexpr maybe_uninit& operator=(const maybe_uninit&) requires (!trivially_copy_assignable<T>) {}
-    
+
     constexpr maybe_uninit& operator=(maybe_uninit&&) requires trivially_move_assignable<T> = default;
     constexpr maybe_uninit& operator=(maybe_uninit&&) requires (!trivially_move_assignable<T>) {}
-    
+
     constexpr ~maybe_uninit() requires trivially_destructible<T> = default;
     constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {} // NOLINT
 

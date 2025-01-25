@@ -15,7 +15,7 @@ class box
 {
     T* m_ptr;
     ASL_NO_UNIQUE_ADDRESS Allocator m_alloc;
-    
+
 public:
     explicit constexpr box(niche_t)
         requires default_constructible<Allocator>

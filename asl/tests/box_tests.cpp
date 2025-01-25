@@ -56,7 +56,7 @@ ASL_TEST(arrow)
 ASL_TEST(niche)
 {
     static_assert(sizeof(asl::box<int>) == sizeof(asl::option<asl::box<int>>));
-    
+
     asl::option<asl::box<int>> opt;
     ASL_TEST_EXPECT(!opt.has_value());
 

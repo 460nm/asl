@@ -54,13 +54,13 @@ class status
 
     void ref();
     void unref();
-    
+
 public:
     constexpr ~status()
     {
         if (!is_inline()) { unref(); }
     }
-    
+
     explicit constexpr status(status_code code)
         : m_payload{status_to_payload(code)}
     {}

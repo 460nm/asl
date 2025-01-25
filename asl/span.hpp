@@ -49,7 +49,7 @@ class span
     {
         return size < 0;
     }
-    
+
     static constexpr bool kIsDynamic = is_dynamic(kSize);
 
     using SizeType = select_t<kIsDynamic, isize_t, empty>;
@@ -102,7 +102,7 @@ public:
 
     constexpr span(const span&) = default;
     constexpr span(span&&) = default;
-    
+
     constexpr span& operator=(const span&) = default;
     constexpr span& operator=(span&&) = default;
 
@@ -124,7 +124,7 @@ public:
     {
         return contiguous_iterator{m_data};
     }
-    
+
     constexpr contiguous_iterator<T> end() const
     {
         return contiguous_iterator{m_data + size()};

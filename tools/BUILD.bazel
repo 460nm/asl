@@ -1,0 +1,8 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+py_binary(
+    name = "fix_line_endings",
+    srcs = [
+        "fix_line_endings.py",
+    ],
+)

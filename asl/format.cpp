@@ -12,7 +12,7 @@ void asl::format_internals::format(
 
     auto arg_it = args.begin();
     auto arg_end = args.end();
-    
+
     isize_t i = 0;
     while (i < fmt.size())
     {
@@ -38,7 +38,7 @@ void asl::format_internals::format(
 
                     continue;
                 }
-                
+
                 if (fmt[i + 1] == '{')
                 {
                     f.write(fmt.substr(0, i + 1));
@@ -48,7 +48,7 @@ void asl::format_internals::format(
                     continue;
                 }
             }
-            
+
             f.write(fmt.substr(0, i));
             fmt = fmt.substr(i + 1);
             i = 0;

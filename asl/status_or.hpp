@@ -100,7 +100,7 @@ public:
     {
         ASL_ASSERT_RELEASE(!m_status.ok());
     }
-    
+
     // NOLINTNEXTLINE(*-explicit-conversions)
     constexpr status_or(status&& status) : m_status{ASL_MOVE(status)}
     {
@@ -108,7 +108,7 @@ public:
     }
 
     status_or& operator=(status status) = delete;
-    
+
     template<typename U = T>
     constexpr explicit (!convertible_from<T, U&&>)
     status_or(U&& value)
@@ -124,7 +124,7 @@ public:
     constexpr bool ok() const { return m_status.ok(); }
 
     constexpr status_code code() const { return m_status.code(); }
-    
+
     constexpr string_view message() const { return m_status.message(); }
 
     // @Todo(C++23) Deducing this
@@ -133,13 +133,13 @@ public:
         ASL_ASSERT_RELEASE(ok());
         return m_value.as_init_unsafe();
     }
-    
+
     constexpr T& value() &
     {
         ASL_ASSERT_RELEASE(ok());
         return m_value.as_init_unsafe();
     }
-    
+
     constexpr T&& value() &&
     {
         ASL_ASSERT_RELEASE(ok());

@@ -59,7 +59,7 @@ public:
     {
         return as_string_view() == other.as_string_view();
     }
-    
+
     constexpr bool operator==(string_view other) const
     {
         return as_string_view() == other;

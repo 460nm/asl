@@ -23,7 +23,7 @@ template<hashable K, typename V, key_hasher<K> KeyHasher>
 struct SlotHasher : public KeyHasher
 {
     using KeyHasher::hash;
-    
+
     constexpr static uint64_t hash(const Slot<K, V>& slot)
     {
         return KeyHasher::hash(slot.key);
@@ -62,7 +62,7 @@ class hash_map : protected hash_set<
     hash_map_internal::SlotHasher<K, V, KeyHasher>,
     hash_map_internal::SlotComparator<K, V, KeyComparator>>
 {
-    using Base = 
+    using Base =
         hash_set<
             hash_map_internal::Slot<K, V>,
             Allocator,
@@ -77,19 +77,19 @@ public:
     {}
 
     hash_map(const hash_map&) requires copyable<K> && copyable<V> = default;
-    
+
     hash_map& operator=(const hash_map&) requires copyable<K> && copyable<V> = default;
 
     hash_map(hash_map&&) = default;
-    
+
     hash_map& operator=(hash_map&&) = default;
 
     ~hash_map() = default;
 
     using Base::destroy;
-    
+
     using Base::clear;
-    
+
     using Base::size;
 
     using Base::remove;
@@ -105,9 +105,9 @@ public:
     void insert(U&& key, Arg0&& arg0, Args1&&... args1)
     {
         Base::maybe_grow_to_fit_one_more();
-        
+
         auto result = Base::find_slot_insert(key);
-        
+
         // NOLINTBEGIN(*-pointer-arithmetic)
 
         ASL_ASSERT(result.first_available_index >= 0);
@@ -117,14 +117,14 @@ public:
             if (result.already_present_index != result.first_available_index)
             {
                 ASL_ASSERT((Base::m_tags[result.first_available_index] & Base::kHasValue) == 0);
-            
+
                 Base::m_values[result.first_available_index].construct_unsafe(ASL_MOVE(Base::m_values[result.already_present_index].as_init_unsafe()));
                 Base::m_values[result.already_present_index].destroy_unsafe();
 
                 Base::m_tags[result.first_available_index] = result.tag;
                 Base::m_tags[result.already_present_index] = Base::kTombstone;
             }
-            
+
             ASL_ASSERT(Base::m_tags[result.first_available_index] == result.tag);
 
             if constexpr (sizeof...(Args1) == 0 && assignable_from<V&, Arg0&&>)
@@ -143,10 +143,10 @@ public:
             Base::m_tags[result.first_available_index] = result.tag;
             Base::m_size += 1;
         }
-        
+
         // NOLINTEND(*-pointer-arithmetic)
     }
-    
+
     // @Todo(C++23) Deducing this
     template<typename U>
     requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
@@ -160,7 +160,7 @@ public:
         }
         return nullptr;
     }
-    
+
     template<typename U>
     requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
     V* get(const U& value)

@@ -22,7 +22,7 @@ public:
     static void* alloc(const layout&);
     static void* realloc(void* ptr, const layout& old, const layout& new_layout);
     static void dealloc(void* ptr, const layout&);
-    
+
     constexpr bool operator==(const GlobalHeap&) const { return true; }
 };
 static_assert(allocator<GlobalHeap>);

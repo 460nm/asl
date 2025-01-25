@@ -30,10 +30,10 @@ ASL_TEST(copy_inline)
 {
     asl::status s = asl::ok();
     asl::status s2 = asl::internal_error();
-    
+
     asl::status s3 = s;
     ASL_TEST_ASSERT(s3.code() == asl::status_code::ok);
-    
+
     s3 = s2;
     ASL_TEST_ASSERT(s3.code() == asl::status_code::internal);
 }

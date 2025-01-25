@@ -34,23 +34,23 @@ static void format_float(asl::Formatter& f, T value)
         }
         return;
     }
-    
+
     if (value == static_cast<T>(0))
     {
         f.write("0"_sv);
         return;
     }
-    
+
     if (asl::is_nan(value))
     {
         f.write("NaN"_sv);
         return;
     }
-    
+
     auto decimal = jkj::dragonbox::to_decimal(value);
 
     if (decimal.is_negative) { f.write("-"); }
-    
+
     char buffer[20];
     asl::string_view digits = asl::format_uint64(decimal.significand, buffer);
 

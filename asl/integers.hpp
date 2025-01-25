@@ -33,7 +33,7 @@ using uintptr_t = size_t;
 
 namespace asl
 {
-    
+
 enum class byte : uint8_t {};
 
 } // namespace asl

@@ -29,19 +29,19 @@ ASL_TEST(default_size)
 struct CounterAllocator
 {
     isize_t* count;
-    
+
     void* alloc(const asl::layout& layout) const
     {
         *count += 1;
         return asl::GlobalHeap::alloc(layout);
     }
-    
+
     void* realloc(void* ptr, const asl::layout& old, const asl::layout& new_layout) const
     {
         *count += 1;
         return asl::GlobalHeap::realloc(ptr, old, new_layout);
     }
-    
+
     static void dealloc(void* ptr, const asl::layout& layout)
     {
         asl::GlobalHeap::dealloc(ptr, layout);
@@ -57,12 +57,12 @@ struct IncompatibleAllocator
     {
         return asl::GlobalHeap::alloc(layout);
     }
-    
+
     static void* realloc(void* ptr, const asl::layout& old, const asl::layout& new_layout)
     {
         return asl::GlobalHeap::realloc(ptr, old, new_layout);
     }
-    
+
     static void dealloc(void* ptr, const asl::layout& layout)
     {
         asl::GlobalHeap::dealloc(ptr, layout);
@@ -168,13 +168,13 @@ ASL_TEST(push_move)
     b.push(0);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 0);
-    
+
     b.push(1);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 0);
     ASL_TEST_EXPECT(b[1].value == 1);
     ASL_TEST_EXPECT(b[1].moved == 0);
-    
+
     b.push(2);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 1);
@@ -182,7 +182,7 @@ ASL_TEST(push_move)
     ASL_TEST_EXPECT(b[1].moved == 1);
     ASL_TEST_EXPECT(b[2].value == 2);
     ASL_TEST_EXPECT(b[2].moved == 0);
-    
+
     b.push(3);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 1);
@@ -192,7 +192,7 @@ ASL_TEST(push_move)
     ASL_TEST_EXPECT(b[2].moved == 0);
     ASL_TEST_EXPECT(b[3].value == 3);
     ASL_TEST_EXPECT(b[3].moved == 0);
-    
+
     b.push(4);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 2);
@@ -232,7 +232,7 @@ ASL_TEST(clear_destructor_small)
     bool d1 = false;
 
     asl::buffer<DestructorObserver> buf;
-    
+
     buf.push(&d0);
     buf.push(&d1);
 
@@ -248,7 +248,7 @@ ASL_TEST(clear_destructor_heap)
     bool d2 = false;
 
     asl::buffer<DestructorObserver> buf;
-    
+
     buf.push(&d0);
     buf.push(&d1);
     buf.push(&d2);
@@ -277,7 +277,7 @@ ASL_TEST(move_construct_from_heap)
         ASL_TEST_EXPECT(d[1] == false);
         ASL_TEST_EXPECT(d[2] == false);
     }
-    
+
     ASL_TEST_EXPECT(buf.size() == 0);
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
@@ -293,7 +293,7 @@ ASL_TEST(move_construct_inline_trivial)
     asl::buffer<uint64_t> buf2(ASL_MOVE(buf));
     ASL_TEST_EXPECT(buf2[0] == 1U);
     ASL_TEST_EXPECT(buf2[1] == 2U);
-    
+
     ASL_TEST_EXPECT(buf2.size() == 2);
     ASL_TEST_EXPECT(buf.size() == 0);
 }
@@ -320,15 +320,15 @@ ASL_TEST(move_construct_from_inline_non_trivial)
 ASL_TEST(move_assign_from_heap)
 {
     bool d[6]{};
-    
+
     {
         asl::buffer<DestructorObserver> buf;
         asl::buffer<DestructorObserver> buf2;
-    
+
         buf.push(&d[0]);
         buf.push(&d[1]);
         buf.push(&d[2]);
-    
+
         buf2.push(&d[3]);
         buf2.push(&d[4]);
         buf2.push(&d[5]);
@@ -341,10 +341,10 @@ ASL_TEST(move_assign_from_heap)
         ASL_TEST_EXPECT(d[5] == false);
 
         buf2 = ASL_MOVE(buf);
-    
+
         ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 3);
-        
+
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
         ASL_TEST_EXPECT(d[2] == false);
@@ -352,7 +352,7 @@ ASL_TEST(move_assign_from_heap)
         ASL_TEST_EXPECT(d[4] == true);
         ASL_TEST_EXPECT(d[5] == true);
     }
-    
+
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
     ASL_TEST_EXPECT(d[2] == true);
@@ -437,7 +437,7 @@ ASL_TEST(move_assign_inline_to_heap)
         ASL_TEST_EXPECT(d[4] == true);
         ASL_TEST_EXPECT(d[5] == true);
     }
-    
+
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
     ASL_TEST_EXPECT(d[2] == false); // moved but not destroyed
@@ -473,7 +473,7 @@ ASL_TEST(move_assign_from_inline_incompatible_allocator)
         ASL_TEST_EXPECT(d[4] == true);
         ASL_TEST_EXPECT(d[5] == true);
     }
-    
+
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
     ASL_TEST_EXPECT(d[2] == true);
@@ -590,10 +590,10 @@ ASL_TEST(resize_zero)
     {
         buf.push(i);
     }
-    
+
     buf.resize_zero(200);
     ASL_TEST_ASSERT(buf.size() == 200);
-    
+
     for (int i = 0; i < 100; ++i)
     {
         ASL_TEST_EXPECT(buf[i] == i);

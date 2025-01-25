@@ -52,7 +52,7 @@ ASL_TEST(strings)
     ASL_TEST_EXPECT(asl::hash_value("hello"_sv) == asl::hash_value("hello"_sv));
     ASL_TEST_EXPECT(asl::hash_value("hello"_sv) != asl::hash_value("hello "_sv));
     ASL_TEST_EXPECT(asl::hash_value("hello"_sv) != asl::hash_value("HELLO"_sv));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(asl::string("hello"_sv)) == asl::hash_value(asl::string("hello"_sv)));
     ASL_TEST_EXPECT(asl::hash_value(asl::string("hello"_sv)) != asl::hash_value(asl::string("hello "_sv)));
     ASL_TEST_EXPECT(asl::hash_value(asl::string("hello"_sv)) != asl::hash_value(asl::string("HELLO"_sv)));
@@ -94,16 +94,16 @@ ASL_TEST(buffer)
     ints1.push(1);
     ints1.push(2);
     ints1.push(3);
-    
+
     asl::buffer<int> ints2;
     ints2.push(1);
     ints2.push(2);
     ints2.push(3);
-    
+
     asl::buffer<int> ints3;
     ints3.push(1);
     ints3.push(2);
-    
+
     asl::buffer<int> ints4;
     ints4.push(1);
     ints4.push(2);
@@ -117,15 +117,15 @@ ASL_TEST(buffer)
     asl::buffer<asl::string_view> strs1;
     strs1.push("Hello");
     strs1.push("World");
-    
+
     asl::buffer<asl::string_view> strs2;
     strs2.push("Hello");
     strs2.push("World");
-    
+
     asl::buffer<asl::string_view> strs3;
     strs3.push("Hello");
     strs3.push("world");
-    
+
     asl::buffer<asl::string_view> strs4;
     strs4.push("Hello");
     strs4.push("World");
@@ -219,17 +219,17 @@ ASL_TEST(status)
     ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
     ASL_TEST_EXPECT(asl::hash_value(s3) == asl::hash_value(s4));
     ASL_TEST_EXPECT(asl::hash_value(s6) == asl::hash_value(s7));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s3));
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s5));
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s6));
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s9));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s5));
     ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s6));
     ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s8));
     ASL_TEST_EXPECT(asl::hash_value(s3) != asl::hash_value(s9));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(s6) != asl::hash_value(s8));
     ASL_TEST_EXPECT(asl::hash_value(s6) != asl::hash_value(s9));
 }
@@ -251,10 +251,10 @@ ASL_TEST(status_or)
     ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
     ASL_TEST_EXPECT(asl::hash_value(s4) == asl::hash_value(s5));
     ASL_TEST_EXPECT(asl::hash_value(s6) == asl::hash_value(s7));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s3));
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s4));
     ASL_TEST_EXPECT(asl::hash_value(s1) != asl::hash_value(s6));
-    
+
     ASL_TEST_EXPECT(asl::hash_value(s4) != asl::hash_value(s6));
 }
