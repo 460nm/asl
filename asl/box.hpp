@@ -90,6 +90,9 @@ public:
     {
         return H::combine(ASL_MOVE(h), *b);
     }
+
+    template<is_object U, allocator A>
+    friend constexpr U* leak(box<U, A>&&);
 };
 
 template<is_object T, allocator Allocator = DefaultAllocator, typename... Args>
@@ -109,6 +112,12 @@ constexpr box<T, Allocator> make_box(Args&&... args)
     void* raw_ptr = allocator.alloc(layout::of<T>());
     auto* ptr = construct_at<T>(raw_ptr, ASL_FWD(args)...);
     return box<T>(ptr, ASL_MOVE(allocator));
+}
+
+template<is_object T, allocator A>
+constexpr T* leak(box<T, A>&& b)
+{
+    return exchange(b.m_ptr, nullptr);
 }
 
 } // namespace asl

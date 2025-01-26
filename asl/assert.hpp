@@ -6,7 +6,7 @@
 namespace asl
 {
 
-void report_assert_failure( const char* msg, const source_location& sl = source_location{});
+void report_assert_failure(const char* msg, const source_location& sl = source_location{});
 
 } // namespace asl
 

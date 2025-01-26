@@ -81,4 +81,16 @@ constexpr bool is_pow2(isize_t v)
     ASL_DELETE_COPY(T)                             \
     ASL_DELETE_MOVE(T)
 
+#define ASL_DEFAULT_COPY(T)                         \
+    T(const T&) = default;                          \
+    T& operator=(const T&) = default;
+
+#define ASL_DEFAULT_MOVE(T)                         \
+    T(T&&) = default;                               \
+    T& operator=(T&&) = default;
+
+#define ASL_DEFAULT_COPY_MOVE(T)                    \
+    ASL_DEFAULT_COPY(T)                             \
+    ASL_DEFAULT_MOVE(T)
+
 } // namespace asl

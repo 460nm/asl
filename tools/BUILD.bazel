@@ -5,4 +5,5 @@ py_binary(
     srcs = [
         "fix_line_endings.py",
     ],
+    visibility = ["//:__subpackages__"],
 )
