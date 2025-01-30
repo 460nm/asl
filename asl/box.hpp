@@ -35,6 +35,13 @@ public:
         , m_alloc{ASL_MOVE(other.m_alloc)}
     {}
 
+    template<is_object U>
+    requires convertible_from<T*, U*>
+    constexpr box(box<U, Allocator>&& other) // NOLINT(*-explicit-conversions)
+        : m_ptr{exchange(other.m_ptr, nullptr)}
+        , m_alloc{ASL_MOVE(other.m_alloc)}
+    {}
+
     constexpr box& operator=(box&& other)
     {
         if (this == &other) { return *this; }
@@ -93,6 +100,9 @@ public:
 
     template<is_object U, allocator A>
     friend constexpr U* leak(box<U, A>&&);
+
+    template<is_object U, allocator A>
+    friend class box;
 };
 
 template<is_object T, allocator Allocator = DefaultAllocator, typename... Args>

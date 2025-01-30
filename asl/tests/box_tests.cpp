@@ -76,3 +76,27 @@ ASL_TEST(niche)
     ASL_TEST_EXPECT(!opt2.has_value());
     ASL_TEST_EXPECT(destroyed);
 }
+
+class Base
+{
+public:
+    virtual ~Base() = default;
+    virtual int number() { return 1; }
+};
+
+class Derived : public Base
+{
+public:
+    int number() override { return 2; }
+};
+
+static_assert(asl::convertible_from<asl::box<Base>, asl::box<Derived>>);
+static_assert(asl::convertible_from<asl::box<Base>, asl::box<Base>>);
+static_assert(!asl::convertible_from<asl::box<Derived>, asl::box<Base>>);
+static_assert(!asl::convertible_from<asl::box<int>, asl::box<float>>);
+
+ASL_TEST(derived)
+{
+    asl::box<Base> obj = asl::make_box<Derived>();
+    ASL_TEST_ASSERT(obj->number() == 2);
+}
