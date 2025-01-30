@@ -67,10 +67,17 @@ void log_inner(level l, string_view fmt, span<const format_internals::type_erase
 template<formattable... Args>
 void log(level l, const source_location& sl, string_view fmt, const Args&... args)
 {
-    format_internals::type_erased_arg type_erased_args[] = {
-        format_internals::type_erased_arg(args)...
-    };
-    log_inner(l, fmt, type_erased_args, sl);
+    if constexpr (sizeof...(Args) == 0)
+    {
+        log_inner(l, fmt, {}, sl);
+    }
+    else
+    {
+        format_internals::type_erased_arg type_erased_args[] = {
+            format_internals::type_erased_arg(args)...
+        };
+        log_inner(l, fmt, type_erased_args, sl);
+    }
 }
 
 } // namespace asl::log
