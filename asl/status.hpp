@@ -118,6 +118,8 @@ public:
         return {};
     }
 
+    constexpr status&& throw_status() && { return ASL_MOVE(*this); }
+
     friend void AslFormat(Formatter& f, const status&);
 
     template<typename H>
@@ -149,5 +151,7 @@ ASL_DEFINE_ERROR_(unknown)
 ASL_DEFINE_ERROR_(internal)
 ASL_DEFINE_ERROR_(runtime)
 ASL_DEFINE_ERROR_(invalid_argument)
+
+#define ASL_TRY(VALUE) if (VALUE.ok()) {} else { return ASL_MOVE(VALUE).throw_status(); }
 
 } // namespace asl

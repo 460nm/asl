@@ -127,6 +127,8 @@ public:
 
     constexpr string_view message() const { return m_status.message(); }
 
+    constexpr status&& throw_status() && { return ASL_MOVE(m_status); }
+
     // @Todo(C++23) Deducing this
     constexpr const T& value() const&
     {
@@ -158,6 +160,11 @@ public:
         requires move_constructible<T> && convertible_from<T, U&&>
     {
         return ok() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
+    }
+
+    friend void AslFormat(Formatter& f, const status_or& status)
+    {
+        AslFormat(f, status.m_status);
     }
 
     template<typename H>
