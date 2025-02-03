@@ -1,5 +1,7 @@
 #include "asl/meta.hpp"
 #include "asl/tests/test_types.hpp"
+#include "asl/testing/testing.hpp"
+#include "asl/box.hpp"
 
 struct Struct {};
 union Union {};
@@ -246,4 +248,42 @@ static_assert(asl::uniquely_represented<Enum2>);
 static_assert(!asl::is_enum<int>);
 static_assert(asl::is_enum<Enum1>);
 static_assert(asl::is_enum<Enum2>);
+
+static_assert(asl::derefs_as<int, int>);
+static_assert(asl::derefs_as<int*, int>);
+static_assert(asl::derefs_as<int&, int>);
+static_assert(asl::derefs_as<asl::box<int>, int>);
+
+static_assert(asl::derefs_as<Derived, Base>);
+static_assert(asl::derefs_as<Derived*, Base>);
+static_assert(asl::derefs_as<Derived&, Base>);
+static_assert(asl::derefs_as<asl::box<Derived>, Base>);
+
+static void wants_int(int) {}
+static void wants_base(Base&) {}
+static void wants_base_ptr(Base*) {}
+
+ASL_TEST(deref)
+{
+    int a = 4;
+    auto b = asl::make_box<int>(5);
+    
+    wants_int(asl::deref<int>(5));
+    wants_int(asl::deref<int>(a));
+    wants_int(asl::deref<int>(&a));
+    wants_int(asl::deref<int>(b));
+
+    Derived c{};
+    auto d = asl::make_box<Derived>();
+
+    wants_base(asl::deref<Base>(Derived{}));
+    wants_base(asl::deref<Base>(c));
+    wants_base(asl::deref<Base>(&c));
+    wants_base(asl::deref<Base>(d));
+
+    wants_base_ptr(&asl::deref<Base>(Derived{}));
+    wants_base_ptr(&asl::deref<Base>(c));
+    wants_base_ptr(&asl::deref<Base>(&c));
+    wants_base_ptr(&asl::deref<Base>(d));
+}
 

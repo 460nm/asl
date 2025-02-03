@@ -4,7 +4,7 @@
 
 // @Todo Don't use internal get_stdout_writer, make console module
 
-static asl::log::DefaultLogger g_default_logger{asl::print_internals::get_stdout_writer()};
+static asl::log::DefaultLogger<asl::Writer*> g_default_logger{asl::print_internals::get_stdout_writer()};
 static asl::log::Logger* g_head = &g_default_logger;
 
 static constexpr asl::string_view kLevelName[] = {
@@ -20,9 +20,9 @@ void asl::log::register_logger(box<Logger> logger_box)
     logger->m_next = exchange(g_head, logger);
 }
 
-void asl::log::DefaultLogger::log(const message& msg)
+void asl::log::DefaultLoggerBase::log_inner(Writer& writer, const message& msg)
 {
-    asl::format(m_writer, "[{}] {}:{}: {}\n",
+    asl::format(&writer, "[{}] {}:{}: {}\n",
         kLevelName[msg.level], // NOLINT
         msg.location.file,
         msg.location.line,

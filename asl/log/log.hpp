@@ -39,16 +39,24 @@ public:
     constexpr Logger* next_logger() const { return m_next; }
 };
 
-// @Todo Make a deref_as trait & deref utility
-// @Todo Accept writer as box, pointer, reference, or value
-class DefaultLogger : public Logger
+class DefaultLoggerBase : public Logger
 {
-    Writer* m_writer;
+protected:
+    static void log_inner(Writer&, const message&);
+};
+
+template<derefs_as<Writer> W>
+class DefaultLogger : public DefaultLoggerBase
+{
+    W m_writer;
 
 public:
-    explicit constexpr DefaultLogger(Writer* writer) : m_writer{writer} {}
+    explicit constexpr DefaultLogger(W&& writer) : m_writer{ASL_FWD(writer)} {}
 
-    void log(const message&) override;
+    constexpr void log(const message& m) override
+    {
+        log_inner(deref<Writer>(m_writer), m);
+    }
 };
 
 void register_logger(box<Logger>);

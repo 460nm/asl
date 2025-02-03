@@ -117,6 +117,8 @@ template<typename T> struct _is_ref_helper<T&>  { static constexpr bool l = true
 template<typename T> struct _is_ref_helper<T&&> { static constexpr bool l = false; static constexpr bool r = true;  };
 
 template<typename T> concept is_ref = _is_ref_helper<T>::l || _is_ref_helper<T>::r;
+template<typename T> concept is_rref = _is_ref_helper<T>::r;
+template<typename T> concept is_lref = _is_ref_helper<T>::l;
 
 template<typename T> struct _is_ptr_helper     : false_type {};
 template<typename T> struct _is_ptr_helper<T*> : true_type {};
@@ -217,5 +219,30 @@ concept has_niche = constructible_from<T, niche_t> && equality_comparable_with<T
 
 template<typename T>
 concept is_niche = same_as<un_cvref_t<T>, niche_t>;
+
+template<typename T, typename U>
+concept _derefs_with_indirection_as = requires(T& t)
+{
+    *t;
+    requires convertible_from<U&, decltype(*t)>;
+};
+
+template<typename T, typename U>
+concept _derefs_reference_as = is_ref<T> && convertible_from<U&, T>;
+
+template<typename T, typename U>
+concept _derefs_value_as = !is_ref<T> && convertible_from<U&, T&>;
+
+template<typename U, _derefs_with_indirection_as<U> T>
+constexpr U& deref(T&& t) { return static_cast<U&>(*t); }
+
+template<typename U, _derefs_reference_as<U> T>
+constexpr U& deref(T&& t) { return static_cast<U&>(t); }
+
+template<typename U, _derefs_value_as<U> T>
+constexpr U& deref(T&& t) { return static_cast<U&>(t); }
+
+template<typename T, typename U>
+concept derefs_as = _derefs_with_indirection_as<T, U> || _derefs_reference_as<T, U> || _derefs_value_as<T, U>;
 
 } // namespace asl
