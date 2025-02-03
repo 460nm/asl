@@ -32,6 +32,11 @@ public:
         ASL_ASSERT(m_data[kSize - 1] == '\0'); // NOLINT(*-pointer-arithmetic)
     }
 
+    static constexpr string_view from_zstr(const char* str)
+    {
+        return string_view(str, asl::strlen(str));
+    }
+
     constexpr string_view(const string_view&) = default;
     constexpr string_view(string_view&&) = default;
 

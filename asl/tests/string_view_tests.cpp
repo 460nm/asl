@@ -23,6 +23,24 @@ ASL_TEST(from_literal)
     ASL_TEST_EXPECT(s2.is_empty());
 }
 
+ASL_TEST(from_zstr)
+{
+    const char* s1 = "";
+    const char* s2 = "abc";
+    const char* s3 = "abc\0def";
+
+    auto sv1 = asl::string_view::from_zstr(s1);
+    auto sv2 = asl::string_view::from_zstr(s2);
+    auto sv3 = asl::string_view::from_zstr(s3);
+
+    ASL_TEST_ASSERT(sv1.size() == 0);
+    ASL_TEST_ASSERT(sv2.size() == 3);
+    ASL_TEST_ASSERT(sv3.size() == 3);
+
+    ASL_TEST_ASSERT(sv2 == "abc"_sv);
+    ASL_TEST_ASSERT(sv3 == "abc"_sv);
+}
+
 ASL_TEST(substr1)
 {
     asl::string_view s1 = "abcd";
