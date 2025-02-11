@@ -267,7 +267,7 @@ ASL_TEST(deref)
 {
     int a = 4;
     auto b = asl::make_box<int>(5);
-    
+
     wants_int(asl::deref<int>(5));
     wants_int(asl::deref<int>(a));
     wants_int(asl::deref<int>(&a));
