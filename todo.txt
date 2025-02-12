@@ -1,3 +1,2 @@
 warning compare with 0 in format_float.cpp
-rename log to logging
 split asl into multiple sublibraries

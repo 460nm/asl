@@ -1,4 +1,4 @@
-#include "asl/log/log.hpp"
+#include "asl/logging/logging.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/string_builder.hpp"
 
@@ -18,6 +18,6 @@ ASL_TEST(custom_writer)
     ASL_LOG_INFO("Hello");
     auto sv = g_string_writer.as_string_view();
 
-    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/log/log_tests.cpp:18: Hello\n");
+    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:18: Hello\n");
 }
 
