@@ -1,6 +1,6 @@
 #include "asl/logging/logging.hpp"
-#include "asl/print.hpp"
-#include "asl/string_builder.hpp"
+#include "asl/io/print.hpp"
+#include "asl/strings/string_builder.hpp"
 
 // @Todo Don't use internal get_stdout_writer, make console module
 

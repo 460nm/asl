@@ -1,0 +1,58 @@
+cc_library(
+    name = "buffer",
+    hdrs = [
+        "buffer.hpp",
+    ],
+    deps = [
+        "//asl/memory",
+        "//asl/base",
+        "//asl/types:span",
+        "//asl/hashing",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "hash_set",
+    hdrs = [
+        "hash_set.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+        "//asl/types:maybe_uninit",
+        "//asl/hashing",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "hash_map",
+    hdrs = [
+        "hash_map.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+        "//asl/hashing",
+        ":hash_set",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":%s" % name,
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/strings:string",
+    ],
+) for name in [
+    "buffer",
+    "hash_map",
+    "hash_set",
+]]

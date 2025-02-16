@@ -7,7 +7,11 @@ cc_library(
         "logging.hpp",
     ],
     deps = [
-        "//asl",
+        "//asl/base",
+        "//asl/types:box",
+        "//asl/formatting",
+        "//asl/io:print",
+        "//asl/strings:string_builder",
     ],
     visibility = ["//visibility:public"],
 )

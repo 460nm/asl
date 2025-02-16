@@ -1,0 +1,56 @@
+cc_library(
+    name = "string_view",
+    hdrs = [
+        "string_view.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+        "//asl/types:span",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "string",
+    hdrs = [
+        "string.hpp",
+    ],
+    deps = [
+        "//asl/containers:buffer",
+        ":string_view",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "string_builder",
+    hdrs = [
+        "string_builder.hpp",
+    ],
+    deps = [
+        "//asl/containers:buffer",
+        "//asl/formatting",
+        ":string",
+        "//asl/io:writer",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":string",
+        ":string_builder",
+        ":string_view",
+        "//asl/tests:utils",
+        "//asl/testing",
+    ],
+) for name in [
+    "string",
+    "string_view",
+    "string_builder",
+]]

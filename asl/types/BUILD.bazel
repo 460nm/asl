@@ -1,0 +1,135 @@
+cc_library(
+    name = "box",
+    hdrs = [
+        "box.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+        "//asl/hashing",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "span",
+    hdrs = [
+        "span.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "maybe_uninit",
+    hdrs = [
+        "maybe_uninit.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "option",
+    hdrs = [
+        "option.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/types:maybe_uninit",
+        "//asl/hashing",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "status",
+    hdrs = [
+        "status.hpp",
+        "status_or.hpp",
+    ],
+    srcs = [
+        "status.cpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/strings:string",
+        "//asl/strings:string_builder",
+        "//asl/formatting",
+        "//asl/memory",
+        "//asl/synchronization:atomic",
+        "//asl/types:maybe_uninit",
+        "//asl/hashing",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "box_tests",
+    srcs = ["box_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:box",
+        "//asl/types:option",
+        "//asl/types:maybe_uninit",
+        "//asl/hashing",
+    ],
+)
+
+cc_test(
+    name = "maybe_uninit_tests",
+    srcs = ["maybe_uninit_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:maybe_uninit",
+    ],
+)
+
+cc_test(
+    name = "span_tests",
+    srcs = ["span_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:span",
+    ],
+)
+
+cc_test(
+    name = "option_tests",
+    srcs = ["option_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:option",
+    ],
+)
+
+cc_test(
+    name = "status_tests",
+    srcs = ["status_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:status",
+    ],
+)
+
+cc_test(
+    name = "status_or_tests",
+    srcs = ["status_or_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:status",
+    ],
+)
+

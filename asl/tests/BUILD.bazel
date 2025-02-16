@@ -1,0 +1,10 @@
+cc_library(
+    name = "utils",
+    hdrs = [
+        "types.hpp",
+    ],
+    deps = [
+        "//asl/base",
+    ],
+    visibility = ["//asl:__subpackages__"],
+)

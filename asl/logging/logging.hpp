@@ -1,8 +1,8 @@
 #pragma once
 
-#include "asl/format.hpp"
-#include "asl/utility.hpp"
-#include "asl/box.hpp"
+#include "asl/base/utility.hpp"
+#include "asl/types/box.hpp"
+#include "asl/formatting/format.hpp"
 
 namespace asl::log
 {

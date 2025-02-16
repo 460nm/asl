@@ -1,15 +1,16 @@
 cc_library(
-    name = "testing",
+    name = "memory",
     hdrs = [
-        "testing.hpp",
+        "allocator.hpp",
+        "layout.hpp",
+        "memory.hpp",
     ],
     srcs = [
-        "testing.cpp",
+        "allocator.cpp",
     ],
     deps = [
         "//asl/base",
-        "//asl/formatting",
-        "//asl/io:print",
     ],
     visibility = ["//visibility:public"],
 )
+

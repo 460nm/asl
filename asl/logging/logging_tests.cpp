@@ -1,6 +1,6 @@
 #include "asl/logging/logging.hpp"
 #include "asl/testing/testing.hpp"
-#include "asl/string_builder.hpp"
+#include "asl/strings/string_builder.hpp"
 
 ASL_TEST(log)
 {
