@@ -1,0 +1,36 @@
+cc_library(
+    name = "base",
+    hdrs = [
+        "annotations.hpp",
+        "assert.hpp",
+        "config.hpp",
+        "float.hpp",
+        "functional.hpp",
+        "integers.hpp",
+        "meta.hpp",
+        "utility.hpp",
+    ],
+    srcs = [
+        "assert.cpp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":base",
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:box",
+    ],
+) for name in [
+    "float",
+    "functional",
+    "integers",
+    "meta",
+    "utility",
+]]

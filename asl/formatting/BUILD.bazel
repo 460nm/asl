@@ -1,0 +1,32 @@
+cc_library(
+    name = "formatting",
+    hdrs = [
+        "format.hpp",
+    ],
+    srcs = [
+        "format.cpp",
+        "format_float.cpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+        "//asl/strings:string_view",
+        "//asl/types:span",
+        "//asl/io:writer",
+        "//vendor/dragonbox",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "tests",
+    srcs = [
+        "format_tests.cpp",
+    ],
+    deps = [
+        ":formatting",
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/strings:string_builder",
+    ],
+)

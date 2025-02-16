@@ -1,6 +1,6 @@
 #include "asl/testing/testing.hpp"
 
-#include "asl/print.hpp"
+#include "asl/io/print.hpp"
 
 static asl::testing::Test* g_head = nullptr;
 static asl::testing::Test* g_tail = nullptr;

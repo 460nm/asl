@@ -1,0 +1,51 @@
+cc_library(
+    name = "box",
+    hdrs = [
+        "box.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "span",
+    hdrs = [
+        "span.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "maybe_uninit",
+    hdrs = [
+        "maybe_uninit.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "tests/%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":%s" % name,
+        ":tests_utils",
+        "//asl/testing",
+    ],
+) for name in [
+    "box",
+    "maybe_uninit",
+    "span",
+]]
