@@ -40,6 +40,17 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "intrusive_list",
+    hdrs = [
+        "intrusive_list.hpp",
+    ],
+    deps = [
+        "//asl/base",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 [cc_test(
     name = "%s_tests" % name,
     srcs = [
@@ -55,4 +66,5 @@ cc_library(
     "buffer",
     "hash_map",
     "hash_set",
+    "intrusive_list",
 ]]

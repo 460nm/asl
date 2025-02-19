@@ -18,10 +18,7 @@ class contiguous_iterator
 public:
     constexpr explicit contiguous_iterator(T* ptr) : m_ptr{ptr} {}
 
-    constexpr bool operator==(const contiguous_iterator& other) const
-    {
-        return other.m_ptr == m_ptr;
-    }
+    constexpr bool operator==(const contiguous_iterator& other) const = default;
 
     constexpr contiguous_iterator& operator++()
     {
