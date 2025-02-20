@@ -1,8 +1,8 @@
 #pragma once
 
 #include "asl/base/utility.hpp"
-#include "asl/types/box.hpp"
 #include "asl/formatting/format.hpp"
+#include "asl/containers/intrusive_list.hpp"
 
 namespace asl::log
 {
@@ -22,21 +22,14 @@ struct message
     source_location location;
 };
 
-// @Todo Write and use an intrusive doubly-linked list
-class Logger
+class Logger : public intrusive_list_node<Logger>
 {
-    Logger* m_next{};
-
 public:
     Logger() = default;
     ASL_DEFAULT_COPY_MOVE(Logger);
     virtual ~Logger() = default;
 
     virtual void log(const message&) = 0;
-
-    friend void register_logger(box<Logger>);
-
-    constexpr Logger* next_logger() const { return m_next; }
 };
 
 class DefaultLoggerBase : public Logger
@@ -59,16 +52,12 @@ public:
     }
 };
 
-void register_logger(box<Logger>);
+void register_logger(Logger*);
+void unregister_logger(Logger*);
+
+void remove_default_logger();
 
 // @Todo Add a way to remove loggers (including all)
-
-template<typename T, typename... Args>
-requires constructible_from<T, Args&&...> && convertible_from<Logger*, T*>
-void register_logger(Args&&... args)
-{
-    register_logger(make_box<T>(ASL_FWD(args)...));
-}
 
 void log_inner(level l, string_view fmt, span<const format_internals::type_erased_arg> args, const source_location& sl);
 

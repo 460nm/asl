@@ -5,7 +5,27 @@
 // @Todo Don't use internal get_stdout_writer, make console module
 
 static asl::log::DefaultLogger<asl::Writer*> g_default_logger{asl::print_internals::get_stdout_writer()};
-static asl::log::Logger* g_head = &g_default_logger;
+
+// @Todo Protect the loggers list being a mutex
+static asl::IntrusiveList<asl::log::Logger> g_loggers(&g_default_logger);
+
+void asl::log::register_logger(Logger* logger)
+{
+    g_loggers.push_front(logger);
+}
+
+void asl::log::unregister_logger(Logger* logger)
+{
+    g_loggers.detach(logger);
+}
+
+void asl::log::remove_default_logger()
+{
+    if (g_default_logger.m_next != nullptr)
+    {
+        g_loggers.detach(&g_default_logger);
+    }
+}
 
 static constexpr asl::string_view kLevelName[] = {
     "  DEBUG  ",
@@ -13,12 +33,6 @@ static constexpr asl::string_view kLevelName[] = {
     " WARNING ",
     "  ERROR  ",
 };
-
-void asl::log::register_logger(box<Logger> logger_box)
-{
-    auto* logger = leak(ASL_MOVE(logger_box));
-    logger->m_next = exchange(g_head, logger);
-}
 
 void asl::log::DefaultLoggerBase::log_inner(Writer& writer, const message& msg)
 {
@@ -44,9 +58,9 @@ void asl::log::log_inner(
         .location = sl,
     };
 
-    for (auto* it = g_head; it != nullptr; it = it->next_logger())
+    for (auto& logger: g_loggers)
     {
-        it->log(m);
+        logger.log(m);
     }
 }
 

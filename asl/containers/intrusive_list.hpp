@@ -34,6 +34,11 @@ class IntrusiveList
 public:
     constexpr IntrusiveList() = default;
 
+    explicit IntrusiveList(T* head)
+    {
+        push_front(head);
+    }
+
     ASL_DELETE_COPY(IntrusiveList)
     ASL_DEFAULT_MOVE(IntrusiveList)
     ~IntrusiveList() = default;
@@ -121,7 +126,7 @@ public:
     {
         if (!is_empty())
         {
-            T* node = m_head->prev;
+            T* node = m_head->m_prev;
             detach(node);
             return node;
         }

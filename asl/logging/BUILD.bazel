@@ -8,7 +8,7 @@ cc_library(
     ],
     deps = [
         "//asl/base",
-        "//asl/types:box",
+        "//asl/containers:intrusive_list",
         "//asl/formatting",
         "//asl/io:print",
         "//asl/strings:string_builder",

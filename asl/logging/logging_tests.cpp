@@ -1,6 +1,7 @@
 #include "asl/logging/logging.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/strings/string_builder.hpp"
+#include "asl/base/defer.hpp"
 
 ASL_TEST(log)
 {
@@ -9,15 +10,19 @@ ASL_TEST(log)
     ASL_LOG_ERROR("Oh no! {}", 42);
 }
 
-static asl::StringWriter g_string_writer{};
-
 ASL_TEST(custom_writer)
 {
-    asl::log::register_logger<asl::log::DefaultLogger<asl::StringWriter<>&>>(g_string_writer);
-
+    asl::StringWriter string_writer{};
+    asl::log::DefaultLogger<asl::StringWriter<>&> logger(string_writer);
+    
+    asl::log::register_logger(&logger);
+    ASL_DEFER [&logger]() {
+        asl::log::unregister_logger(&logger);
+    };
+    
     ASL_LOG_INFO("Hello");
-    auto sv = g_string_writer.as_string_view();
+    auto sv = string_writer.as_string_view();
 
-    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:18: Hello\n");
+    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:23: Hello\n");
 }
 

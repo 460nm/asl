@@ -4,6 +4,7 @@ cc_library(
         "annotations.hpp",
         "assert.hpp",
         "config.hpp",
+        "defer.hpp",
         "float.hpp",
         "functional.hpp",
         "integers.hpp",
@@ -28,6 +29,7 @@ cc_library(
         "//asl/types:box",
     ],
 ) for name in [
+    "defer",
     "float",
     "functional",
     "integers",

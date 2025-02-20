@@ -92,4 +92,7 @@ constexpr bool is_pow2(isize_t v)
     ASL_DEFAULT_COPY(T)                             \
     ASL_DEFAULT_MOVE(T)
 
+#define ASL_CONCAT2(A, B) A##B
+#define ASL_CONCAT(A, B) ASL_CONCAT2(A, B)
+
 } // namespace asl
