@@ -9,7 +9,7 @@ struct Test;
 
 void register_test(Test*);
 
-void report_failure(const char* msg, const char* file, int line);
+void report_failure(const char* msg, const asl::source_location& = asl::source_location{});
 
 using TestFunction = void();
 
@@ -39,8 +39,8 @@ struct Test
 
 #define ASL_TEST_ASSERT(EXPR) \
     if (EXPR) {}              \
-    else { ::asl::testing::report_failure(#EXPR, __FILE__, __LINE__); return; }
+    else { ::asl::testing::report_failure(#EXPR); return; }
 
 #define ASL_TEST_EXPECT(EXPR) \
     if (EXPR) {}              \
-    else { ::asl::testing::report_failure(#EXPR, __FILE__, __LINE__); }
+    else { ::asl::testing::report_failure(#EXPR); }

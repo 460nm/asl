@@ -21,13 +21,21 @@ void asl::testing::register_test(Test* test)
 
 static bool g_current_test_fail = false;
 
-void asl::testing::report_failure(const char* msg, const char* file, int line)
+void asl::testing::report_failure(const char* msg, const asl::source_location& sl)
 {
     asl::eprint("--------------------------------------------------------------\n");
-    asl::eprint("Test assertion failed at {}, line {}:\n", file, line);
+    asl::eprint("Test assertion failed at {}, line {}:\n", sl.file, sl.line);
     asl::eprint("    {}\n", msg);
     asl::eprint("--------------------------------------------------------------\n");
     g_current_test_fail = true;
+}
+
+static void report_assert_failure(const char* msg, const asl::source_location& sl, void*)
+{
+    asl::eprint("------------------------------------------------------------\n");
+    asl::eprint("Assertion failure at {}, line {}:\n", sl.file, sl.line);
+    asl::eprint("{}\n", msg);
+    asl::eprint("------------------------------------------------------------\n");
 }
 
 #define RESET "\x1b[0m"
@@ -36,6 +44,8 @@ void asl::testing::report_failure(const char* msg, const char* file, int line)
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
+    asl::set_assert_failure_handler(report_assert_failure, nullptr);
+    
     int fail = 0;
     int pass = 0;
 

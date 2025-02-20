@@ -6,6 +6,10 @@
 namespace asl
 {
 
+using AssertFailureHandler = void (const char* msg, const source_location&, void* user);
+
+void set_assert_failure_handler(AssertFailureHandler handler, void* user);
+
 void report_assert_failure(const char* msg, const source_location& sl = source_location{});
 
 } // namespace asl
@@ -15,6 +19,8 @@ void report_assert_failure(const char* msg, const source_location& sl = source_l
 #elif ASL_COMPILER_CLANG
     #define ASL_DEBUG_BREAK() __builtin_debugtrap()
 #endif
+
+// @Todo Configure asserts at build time
 
 #define ASL_ASSERT(...)                                                 \
     if (__VA_ARGS__) {}                                                 \
