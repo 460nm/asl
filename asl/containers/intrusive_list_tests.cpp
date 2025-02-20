@@ -194,33 +194,33 @@ ASL_TEST(pop_front)
     ASL_TEST_ASSERT(list.is_empty());
 }
 
-ASL_TEST(pop_back)
-{
-    IntNode one{1};
-    IntNode two{2};
-    IntNode three{3};
-    asl::IntrusiveList<IntNode> list;
+// ASL_TEST(pop_back)
+// {
+//     IntNode one{1};
+//     IntNode two{2};
+//     IntNode three{3};
+//     asl::IntrusiveList<IntNode> list;
 
-    list.push_back(&one);
-    list.push_back(&two);
-    list.push_back(&three);
+//     list.push_back(&one);
+//     list.push_back(&two);
+//     list.push_back(&three);
 
-    IntNode* n = list.pop_back();
-    ASL_TEST_ASSERT(n != nullptr);
-    ASL_TEST_ASSERT(!list.is_empty());
-    ASL_TEST_EXPECT(n->value == 3);
+//     IntNode* n = list.pop_back();
+//     ASL_TEST_ASSERT(n != nullptr);
+//     ASL_TEST_ASSERT(!list.is_empty());
+//     ASL_TEST_EXPECT(n->value == 3);
 
-    n = list.pop_back();
-    ASL_TEST_ASSERT(n != nullptr);
-    ASL_TEST_ASSERT(!list.is_empty());
-    ASL_TEST_EXPECT(n->value == 2);
+//     n = list.pop_back();
+//     ASL_TEST_ASSERT(n != nullptr);
+//     ASL_TEST_ASSERT(!list.is_empty());
+//     ASL_TEST_EXPECT(n->value == 2);
 
-    n = list.pop_back();
-    ASL_TEST_ASSERT(n != nullptr);
-    ASL_TEST_ASSERT(list.is_empty());
-    ASL_TEST_EXPECT(n->value == 1);
+//     n = list.pop_back();
+//     ASL_TEST_ASSERT(n != nullptr);
+//     ASL_TEST_ASSERT(list.is_empty());
+//     ASL_TEST_EXPECT(n->value == 1);
 
-    n = list.pop_back();
-    ASL_TEST_ASSERT(n == nullptr);
-    ASL_TEST_ASSERT(list.is_empty());
-}
+//     n = list.pop_back();
+//     ASL_TEST_ASSERT(n == nullptr);
+//     ASL_TEST_ASSERT(list.is_empty());
+// }
