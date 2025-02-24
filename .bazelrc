@@ -9,8 +9,8 @@ build:windows  --extra_toolchains=@@rules_cc++cc_configure_extension+local_confi
 
 build:linux    --repo_env=CC=clang
 
-build:windows  --cxxopt=-Xclang=-std=c++20
-build:linux    --cxxopt=-std=c++20
+build:windows  --cxxopt=-Xclang=-std=c++23
+build:linux    --cxxopt=-std=c++23
 
 build --cxxopt=-Wall
 build --cxxopt=-Wno-c++98-compat

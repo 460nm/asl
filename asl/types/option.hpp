@@ -365,23 +365,11 @@ public:
         }
     }
 
-    // @Todo(C++23) Deducing this
-    constexpr T&& value() &&
+    template<typename Self>
+    constexpr auto&& value(this Self&& self)
     {
-        ASL_ASSERT_RELEASE(has_value());
-        return ASL_MOVE(m_payload).as_init_unsafe();
-    }
-
-    constexpr T& value() &
-    {
-        ASL_ASSERT_RELEASE(has_value());
-        return m_payload.as_init_unsafe();
-    }
-
-    constexpr const T& value() const&
-    {
-        ASL_ASSERT_RELEASE(has_value());
-        return m_payload.as_init_unsafe();
+        ASL_ASSERT_RELEASE(self.has_value());
+        return ASL_FWD(self).m_payload.as_init_unsafe();
     }
 
     template<typename U>
