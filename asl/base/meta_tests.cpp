@@ -287,3 +287,23 @@ ASL_TEST(deref)
     wants_base_ptr(&asl::deref<Base>(d));
 }
 
+static_assert(asl::same_as<asl::copy_cref_t<int, float>, float>);
+static_assert(asl::same_as<asl::copy_cref_t<int, const float>, float>);
+static_assert(asl::same_as<asl::copy_cref_t<int, float&&>, float>);
+static_assert(asl::same_as<asl::copy_cref_t<int, const float&>, float>);
+
+static_assert(asl::same_as<asl::copy_cref_t<int&&, float>, float&&>);
+static_assert(asl::same_as<asl::copy_cref_t<int&&, const float>, float&&>);
+static_assert(asl::same_as<asl::copy_cref_t<int&&, float&&>, float&&>);
+static_assert(asl::same_as<asl::copy_cref_t<int&&, const float&>, float&&>);
+
+static_assert(asl::same_as<asl::copy_cref_t<const int, float>, const float>);
+static_assert(asl::same_as<asl::copy_cref_t<const int, const float>, const float>);
+static_assert(asl::same_as<asl::copy_cref_t<const int, float&&>, const float>);
+static_assert(asl::same_as<asl::copy_cref_t<const int, const float&>, const float>);
+
+static_assert(asl::same_as<asl::copy_cref_t<const int&, float>, const float&>);
+static_assert(asl::same_as<asl::copy_cref_t<const int&, const float>, const float&>);
+static_assert(asl::same_as<asl::copy_cref_t<const int&, float&&>, const float&>);
+static_assert(asl::same_as<asl::copy_cref_t<const int&, const float&>, const float&>);
+

@@ -96,6 +96,8 @@ template<typename T> struct _un_const_helper<const T> { using type = T; };
 
 template<typename T> using un_const_t = _un_const_helper<T>::type;
 
+template<typename T> using as_const_t = const T;
+
 template<typename T> struct _is_const_helper          : false_type {};
 template<typename T> struct _is_const_helper<const T> : true_type {};
 
@@ -108,7 +110,7 @@ template<typename T> using un_volatile_t = _un_volatile_helper<T>::type;
 
 template<typename T> using un_cv_t = un_volatile_t<un_const_t<T>>;
 
-template<typename T> using un_cvref_t = un_ref_t<un_cv_t<T>>;
+template<typename T> using un_cvref_t = un_cv_t<un_ref_t<T>>;
 
 template<typename T> concept is_void = same_as<void, un_cv_t<T>>;
 
@@ -119,6 +121,24 @@ template<typename T> struct _is_ref_helper<T&&> { static constexpr bool l = fals
 template<typename T> concept is_ref = _is_ref_helper<T>::l || _is_ref_helper<T>::r;
 template<typename T> concept is_rref = _is_ref_helper<T>::r;
 template<typename T> concept is_lref = _is_ref_helper<T>::l;
+
+template<typename From, typename To, bool kLref = is_lref<From>, bool kRref = is_rref<From>>
+struct _copy_ref_helper { using type = To; };
+
+template<typename From, typename To>
+struct _copy_ref_helper<From, To, true, false> { using type = as_lref_t<To>; };
+
+template<typename From, typename To>
+struct _copy_ref_helper<From, To, false, true> { using type = as_rref_t<To>; };
+
+template<typename From, typename To, bool kIsConst = is_const<un_ref_t<From>>>
+struct _copy_const_helper { using type = To; };
+
+template<typename From, typename To>
+struct _copy_const_helper<From, To, true> { using type = const To; };
+
+template<typename From, typename To> using copy_cref_t =
+    _copy_ref_helper<From, typename _copy_const_helper<From, un_cvref_t<To>>::type>::type;
 
 template<typename T> struct _is_ptr_helper     : false_type {};
 template<typename T> struct _is_ptr_helper<T*> : true_type {};
