@@ -19,6 +19,16 @@ static constexpr char kZeros[kZeroCount] = {
     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 };
 
+static constexpr bool is_zero(float x)
+{
+    return (asl::bit_cast<uint32_t>(x) & 0x7fff'ffff) == 0;
+}
+
+static constexpr bool is_zero(double x)
+{
+    return (asl::bit_cast<uint64_t>(x) & 0x7fff'ffff'ffff'ffff) == 0;
+}
+
 template<asl::is_floating_point T>
 static void format_float(asl::Formatter& f, T value)
 {
@@ -35,7 +45,7 @@ static void format_float(asl::Formatter& f, T value)
         return;
     }
 
-    if (value == static_cast<T>(0))
+    if (is_zero(value))
     {
         f.write("0"_sv);
         return;
