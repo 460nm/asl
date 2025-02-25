@@ -7,6 +7,8 @@
 
 #define ASL_FWD(expr_) (static_cast<decltype(expr_)&&>(expr_))
 
+#define ASL_FWD_LIKE(ref_, expr_) (static_cast<::asl::copy_cref_t<ref_, decltype(expr_)&&>>(expr_))
+
 namespace asl
 {
 
