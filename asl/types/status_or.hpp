@@ -129,23 +129,11 @@ public:
 
     constexpr status&& throw_status() && { return ASL_MOVE(m_status); }
 
-    // @Todo(C++23) Deducing this
-    constexpr const T& value() const&
+    template<typename Self>
+    constexpr auto&& value(this Self&& self)
     {
-        ASL_ASSERT_RELEASE(ok());
-        return m_value.as_init_unsafe();
-    }
-
-    constexpr T& value() &
-    {
-        ASL_ASSERT_RELEASE(ok());
-        return m_value.as_init_unsafe();
-    }
-
-    constexpr T&& value() &&
-    {
-        ASL_ASSERT_RELEASE(ok());
-        return ASL_MOVE(m_value.as_init_unsafe());
+        ASL_ASSERT_RELEASE(self.ok());
+        return ASL_FWD(self).m_value.as_init_unsafe();
     }
 
     template<typename U>

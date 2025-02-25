@@ -64,9 +64,11 @@ public:
     }
 
     // @Safety Value must have been initialized
-    constexpr const T& as_init_unsafe() const& { return m_value; }
-    constexpr T&       as_init_unsafe() &      { return m_value; }
-    constexpr T&&      as_init_unsafe() &&     { return ASL_MOVE(m_value); }
+    template<typename Self>
+    constexpr auto&& as_init_unsafe(this Self&& self)
+    {
+        return ASL_FWD_LIKE(decltype(self), ASL_FWD(self).m_value);
+    }
 };
 
 } // namespace asl

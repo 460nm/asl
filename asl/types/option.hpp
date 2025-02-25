@@ -395,70 +395,35 @@ public:
         return value();
     }
 
-    template<typename F>
-    constexpr auto and_then(F&& f) &
-        requires is_option<result_of_t<F(T&)>>
+    template<
+        typename F,
+        typename Self,
+        typename Result = result_of_t<F(copy_cref_t<Self&&, T>)>
+    >
+    constexpr auto and_then(this Self&& self, F&& f)
+        requires is_option<Result>
     {
-        if (has_value())
+        if (self.has_value())
         {
-            return invoke(ASL_FWD(f), value());
+            return invoke(ASL_FWD(f), ASL_FWD_LIKE(decltype(self), ASL_FWD(self).value()));
         }
-        return un_cvref_t<result_of_t<F(T&)>>{};
+        return Result{ asl::nullopt };
     }
 
-    template<typename F>
-    constexpr auto and_then(F&& f) const&
-        requires is_option<result_of_t<F(const T&)>>
+    template<
+        typename F,
+        typename Self,
+        typename Result = result_of_t<F(copy_cref_t<Self&&, T>)>
+    >
+    constexpr auto transform(this Self&& self, F&& f)
     {
-        if (has_value())
+        if (self.has_value())
         {
-            return invoke(ASL_FWD(f), value());
+            return option<un_cvref_t<Result>>{
+                invoke(ASL_FWD(f), ASL_FWD_LIKE(decltype(self), ASL_FWD(self).value()))
+            };
         }
-        return un_cvref_t<result_of_t<F(const T&)>>{};
-    }
-
-    template<typename F>
-    constexpr auto and_then(F&& f) &&
-        requires is_option<result_of_t<F(T)>>
-    {
-        if (has_value())
-        {
-            return invoke(ASL_FWD(f), ASL_MOVE(value()));
-        }
-        return un_cvref_t<result_of_t<F(T)>>{};
-    }
-
-    template<typename F>
-    constexpr auto transform(F&& f) &
-    {
-        using U = un_cvref_t<result_of_t<F(T&)>>;
-        if (has_value())
-        {
-            return option<U>{ invoke(ASL_FWD(f), value()) };
-        }
-        return option<U>{};
-    }
-
-    template<typename F>
-    constexpr auto transform(F&& f) const&
-    {
-        using U = un_cvref_t<result_of_t<F(const T&)>>;
-        if (has_value())
-        {
-            return option<U>{ invoke(ASL_FWD(f), value()) };
-        }
-        return option<U>{};
-    }
-
-    template<typename F>
-    constexpr auto transform(F&& f) &&
-    {
-        using U = un_cvref_t<result_of_t<F(T)>>;
-        if (has_value())
-        {
-            return option<U>{ invoke(ASL_FWD(f), ASL_MOVE(value())) };
-        }
-        return option<U>{};
+        return option<un_cvref_t<Result>>{ asl::nullopt };
     }
 
     template<typename F>

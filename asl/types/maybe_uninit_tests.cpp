@@ -20,3 +20,8 @@ TEST_TYPE_PROPERTIES(trivially_copy_assignable);
 TEST_TYPE_PROPERTIES(trivially_move_assignable);
 TEST_TYPE_PROPERTIES(trivially_destructible);
 
+static_assert(asl::same_as<int&, decltype(asl::declval<asl::maybe_uninit<int>&>().as_init_unsafe())>);
+static_assert(asl::same_as<int&&, decltype(asl::declval<asl::maybe_uninit<int>&&>().as_init_unsafe())>);
+static_assert(asl::same_as<const int&, decltype(asl::declval<const asl::maybe_uninit<int>&>().as_init_unsafe())>);
+static_assert(asl::same_as<const int&&, decltype(asl::declval<const asl::maybe_uninit<int>>().as_init_unsafe())>);
+static_assert(asl::same_as<int&&, decltype(asl::declval<asl::maybe_uninit<int>>().as_init_unsafe())>);
