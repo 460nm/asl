@@ -7,6 +7,7 @@ namespace asl {
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
+    -> decltype((self.*f)(ASL_FWD(args)...))
     requires requires {
         (self.*f)(ASL_FWD(args)...);
     }
@@ -16,6 +17,7 @@ constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_func auto C::* f, auto* self, Args&&... args)
+    -> decltype((self->*f)(ASL_FWD(args)...))
     requires requires {
         (self->*f)(ASL_FWD(args)...);
     }
@@ -25,6 +27,7 @@ constexpr auto invoke(is_func auto C::* f, auto* self, Args&&... args)
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_object auto C::* m, auto&& self, Args&&...)
+    -> decltype(self.*m)
     requires (
         sizeof...(Args) == 0 &&
         requires { self.*m; }
@@ -35,6 +38,7 @@ constexpr auto invoke(is_object auto C::* m, auto&& self, Args&&...)
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_object auto C::* m, auto* self, Args&&...)
+    -> decltype(self->*m)
     requires (
         sizeof...(Args) == 0 &&
         requires { self->*m; }
@@ -45,6 +49,7 @@ constexpr auto invoke(is_object auto C::* m, auto* self, Args&&...)
 
 template<typename... Args>
 constexpr auto invoke(auto&& f, Args&&... args)
+    -> decltype(f(ASL_FWD(args)...))
     requires requires {
         f(ASL_FWD(args)...);
     }
@@ -52,14 +57,22 @@ constexpr auto invoke(auto&& f, Args&&... args)
     return ASL_FWD(f)(ASL_FWD(args)...);
 }
 
-template<typename F> struct _result_of_helper;
+template<typename Void, typename F, typename... Args>
+struct _invoke_result_helper;
 
 template<typename R, typename... Args>
-struct _result_of_helper<R(Args...)>
+struct _invoke_result_helper<void, R, Args...>
 {
     using type = decltype(invoke(declval<R>(), declval<Args>()...));
 };
 
-template<typename F> using result_of_t = _result_of_helper<F>::type;
+template<typename F, typename... Args>
+using invoke_result_t = _invoke_result_helper<void, F, Args...>::type;
+
+template<typename F, typename... Args>
+concept invocable = requires (F&& f, Args&&... args)
+{
+    invoke(ASL_FWD(f), ASL_FWD(args)...);
+};
 
 } // namespace asl

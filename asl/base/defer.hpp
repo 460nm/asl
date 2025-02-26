@@ -6,8 +6,7 @@
 namespace asl
 {
 
-// @Todo Add invokable check
-template<typename Callback>
+template<invocable Callback>
 class DeferCallback
 {
     Callback m_callback;
@@ -36,8 +35,7 @@ public:
 
 struct DeferFactory
 {
-    // @Todo Add invokable check
-    template<typename Callback>
+    template<invocable Callback>
     DeferCallback<Callback> operator<<(Callback&& callback) const
     {
         return DeferCallback<Callback>(ASL_FWD(callback));

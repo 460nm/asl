@@ -24,11 +24,25 @@ static int some_func1(int x) { return x + 1; }
 [[maybe_unused]] static float some_func1(float x) { return x + 1; }
 static int some_func2(int x, int b) { return x + b; }
 
-static_assert(asl::same_as<asl::result_of_t<Functor()>, int64_t>);
-static_assert(asl::same_as<asl::result_of_t<Functor(int)>, int>);
-static_assert(asl::same_as<asl::result_of_t<decltype(static_cast<float(*)(float)>(some_func1))(float)>, float>);
-static_assert(asl::same_as<asl::result_of_t<decltype(&HasFunction::do_something)(HasFunction, int, float)>, void>);
-static_assert(asl::same_as<asl::result_of_t<decltype(&HasMember::member)(HasMember)>, int>);
+static_assert(asl::same_as<asl::invoke_result_t<int()>, int>);
+static_assert(asl::same_as<asl::invoke_result_t<int(float), float>, int>);
+static_assert(asl::same_as<asl::invoke_result_t<Functor>, int64_t>);
+static_assert(asl::same_as<asl::invoke_result_t<Functor, int>, int>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(static_cast<float(*)(float)>(some_func1)), float>, float>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something), HasFunction, int, float>, void>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasMember::member), const HasMember>, const int&>);
+
+static_assert(asl::invocable<int()>);
+static_assert(!asl::invocable<int(), int>);
+static_assert(asl::invocable<int(float), float>);
+static_assert(!asl::invocable<int(float), int*>);
+static_assert(asl::invocable<Functor>);
+static_assert(asl::invocable<Functor, int>);
+static_assert(!asl::invocable<Functor, void*>);
+static_assert(asl::invocable<decltype(static_cast<float(*)(float)>(some_func1)), float>);
+static_assert(asl::invocable<decltype(&HasFunction::do_something), HasFunction, int, float>);
+static_assert(!asl::invocable<decltype(&HasFunction::do_something), HasFunction, int, int*>);
+static_assert(asl::invocable<decltype(&HasMember::member), const HasMember>);
 
 ASL_TEST(invoke_member_function)
 {
