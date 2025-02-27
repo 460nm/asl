@@ -76,14 +76,16 @@ public:
         }
     }
 
-    constexpr T* head() const
+    constexpr auto head(this auto&& self)
     {
-        return m_head;
+        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        return return_type{ self.m_head };
     }
 
-    constexpr T* tail() const
+    constexpr auto tail(this auto&& self)
     {
-        return m_head != nullptr ? m_head->m_prev : nullptr;
+        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        return return_type{ self.m_head != nullptr ? self.m_head->m_prev : nullptr };
     }
 
     void detach(T* node)
@@ -169,25 +171,16 @@ public:
     using iterator = generic_iterator<T>;
     using const_iterator = generic_iterator<const T>;
 
-    // @Todo(C++23) Deduplicate with deducing-this maybe
-    const_iterator begin() const
+    auto begin(this auto&& self)
     {
-        return const_iterator{ head(), is_empty() };
-    }
-    
-    const_iterator end() const
-    {
-        return const_iterator{ head(), true };
+        using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
+        return iterator_type{ self.head(), self.is_empty() };
     }
 
-    iterator begin()
+    auto end(this auto&& self)
     {
-        return iterator{ head(), is_empty() };
-    }
-    
-    iterator end()
-    {
-        return iterator{ head(), true };
+        using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
+        return iterator_type{ self.head(), true };
     }
 };
 

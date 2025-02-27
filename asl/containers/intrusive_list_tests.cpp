@@ -13,7 +13,7 @@ struct IntNode : public asl::intrusive_list_node<IntNode>
 
 ASL_TEST(empty_list)
 {
-    asl::IntrusiveList<IntNode> list;
+    const asl::IntrusiveList<IntNode> list;
     ASL_TEST_EXPECT(list.is_empty());
     ASL_TEST_EXPECT(list.head() == nullptr);
     ASL_TEST_EXPECT(list.tail() == nullptr);

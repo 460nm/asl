@@ -365,8 +365,7 @@ public:
         }
     }
 
-    template<typename Self>
-    constexpr auto&& value(this Self&& self)
+    constexpr auto&& value(this auto&& self)
     {
         ASL_ASSERT_RELEASE(self.has_value());
         return ASL_FWD(self).m_payload.as_init_unsafe();
@@ -386,19 +385,18 @@ public:
         return has_value() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
     }
 
-    template<typename... Args>
-    constexpr T& emplace(Args&&... args) &
-        requires constructible_from<T, Args&&...>
+    constexpr T& emplace(auto&&... args) &
+        requires constructible_from<T, decltype(args)...>
     {
         if (has_value()) { reset(); }
         construct(ASL_FWD(args)...);
         return value();
     }
 
-    template<typename F, typename Self>
-    constexpr auto and_then(this Self&& self, F&& f)
+    template<typename F>
+    constexpr auto and_then(this auto&& self, F&& f)
     {
-        using Result = invoke_result_t<F, copy_cref_t<Self&&, T>>;
+        using Result = invoke_result_t<F, copy_cref_t<decltype(self), T>>;
         static_assert(is_option<Result>);
 
         if (self.has_value())
@@ -408,10 +406,10 @@ public:
         return Result{ asl::nullopt };
     }
 
-    template<typename F, typename Self>
-    constexpr auto transform(this Self&& self, F&& f)
+    template<typename F>
+    constexpr auto transform(this auto&& self, F&& f)
     {
-        using Result = invoke_result_t<F, copy_cref_t<Self&&, T>>;
+        using Result = invoke_result_t<F, copy_cref_t<decltype(self), T>>;
         if (self.has_value())
         {
             return option<un_cvref_t<Result>>{

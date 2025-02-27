@@ -381,39 +381,31 @@ public:
         return *init;
     }
 
-    // @Todo(C++23) Use deducing this
-    const T* data() const
+    auto data(this auto&& self)
     {
+        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
         if constexpr (kInlineCapacity == 0)
         {
-            return m_data;
+            return return_type{ self.m_data };
         }
         else
         {
-            return is_on_heap() ? m_data : reinterpret_cast<const T*>(this);
+            return self.is_on_heap() ? return_type{ self.m_data } : reinterpret_cast<return_type>(&self);
         }
     }
 
-    T* data()
+    constexpr auto begin(this auto&& self)
     {
-        if constexpr (kInlineCapacity == 0)
-        {
-            return m_data;
-        }
-        else
-        {
-            return is_on_heap() ? m_data : reinterpret_cast<T*>(this);
-        }
+        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        return contiguous_iterator<type>{self.data()};
     }
 
-    // @Todo(C++23) Use deducing this
-    constexpr contiguous_iterator<const T> begin() const { return contiguous_iterator{data()}; }
-    constexpr contiguous_iterator<const T> end() const { return contiguous_iterator{data() + size()}; }
+    constexpr auto end(this auto&& self)
+    {
+        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        return contiguous_iterator<type>{self.data() + self.size()};
+    }
 
-    constexpr contiguous_iterator<T> begin() { return contiguous_iterator{data()}; }
-    constexpr contiguous_iterator<T> end() { return contiguous_iterator{data() + size()}; }
-
-    // @Todo(C++23) Deducing this
     constexpr operator span<const T>() const // NOLINT(*-explicit-conversions)
     {
         return as_span();
@@ -424,27 +416,16 @@ public:
         return as_span();
     }
 
-    constexpr span<const T> as_span() const
+    constexpr auto as_span(this auto&& self)
     {
-        return span<const T>{data(), size()};
+        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        return span<type>{self.data(), self.size()};
     }
 
-    constexpr span<T> as_span()
+    constexpr auto&& operator[](this auto&& self, isize_t i)
     {
-        return span<T>{data(), size()};
-    }
-
-    // @Todo(C++23) Use deducing this
-    constexpr T& operator[](isize_t i)
-    {
-        ASL_ASSERT(i >= 0 && i <= size());
-        return data()[i];
-    }
-
-    constexpr const T& operator[](isize_t i) const
-    {
-        ASL_ASSERT(i >= 0 && i <= size());
-        return data()[i];
+        ASL_ASSERT(i >= 0 && i <= self.size());
+        return ASL_FWD_LIKE(decltype(self), ASL_FWD(self).data()[i]);
     }
 
     template<typename H>

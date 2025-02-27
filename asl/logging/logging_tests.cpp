@@ -14,12 +14,12 @@ ASL_TEST(custom_writer)
 {
     asl::StringWriter string_writer{};
     asl::log::DefaultLogger<asl::StringWriter<>&> logger(string_writer);
-    
+
     asl::log::register_logger(&logger);
     ASL_DEFER [&logger]() {
         asl::log::unregister_logger(&logger);
     };
-    
+
     ASL_LOG_INFO("Hello");
     auto sv = string_writer.as_string_view();
 

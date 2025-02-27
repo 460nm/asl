@@ -8,8 +8,7 @@ template<typename T> static constexpr int identify(T&&)       { return 4; }
 
 struct IdentifySelf
 {
-    template<typename Self>
-    constexpr int get(this Self&& self) { return identify(ASL_FWD(self)); }
+    constexpr int get(this auto&& self) { return identify(ASL_FWD(self)); }
 };
 
 static int get_const_lref(const IdentifySelf& i)  { return ASL_FWD(i).get(); }

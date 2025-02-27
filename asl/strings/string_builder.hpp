@@ -37,34 +37,21 @@ public:
         m_buffer.clear();
     }
 
-    // @Todo(C++23) Deducing this
-
-    StringBuilder& push(string_view sv) &
+    auto push(this auto&& self, string_view sv) -> decltype(self)
+        requires (!is_const<un_ref_t<decltype(self)>>)
     {
-        isize_t old_size = m_buffer.size();
-        m_buffer.resize_zero(old_size + sv.size());
-        asl::memcpy(m_buffer.data() + old_size, sv.data(), sv.size());
-        return *this;
+        isize_t old_size = self.m_buffer.size();
+        self.m_buffer.resize_zero(old_size + sv.size());
+        // NOLINTNEXTLINE(*-pointer-arithmetic)
+        asl::memcpy(self.m_buffer.data() + old_size, sv.data(), sv.size());
+        return ASL_FWD(self);
     }
 
-    StringBuilder&& push(string_view sv) &&
+    auto push(this auto&& self, char c) -> decltype(self)
+        requires (!is_const<un_ref_t<decltype(self)>>)
     {
-        isize_t old_size = m_buffer.size();
-        m_buffer.resize_zero(old_size + sv.size());
-        asl::memcpy(m_buffer.data() + old_size, sv.data(), sv.size());
-        return ASL_MOVE(*this);
-    }
-
-    StringBuilder& push(char c) &
-    {
-        m_buffer.push(c);
-        return *this;
-    }
-
-    StringBuilder&& push(char c) &&
-    {
-        m_buffer.push(c);
-        return ASL_MOVE(*this);
+        self.m_buffer.push(c);
+        return ASL_FWD(self);
     }
 
     string<Allocator> finish() &&
@@ -73,14 +60,14 @@ public:
     }
 
     template<allocator StringAllocator = Allocator>
-    string<StringAllocator> as_string()
+    string<StringAllocator> as_string() const
         requires default_constructible<StringAllocator>
     {
         return string<StringAllocator>{as_string_view()};
     }
 
     template<allocator StringAllocator = Allocator>
-    string<StringAllocator> as_string(Allocator allocator)
+    string<StringAllocator> as_string(Allocator allocator) const
     {
         return string<StringAllocator>{as_string_view(), ASL_MOVE(allocator)};
     }
@@ -121,14 +108,14 @@ public:
     }
 
     template<allocator StringAllocator = Allocator>
-    string<StringAllocator> as_string()
+    string<StringAllocator> as_string() const
         requires default_constructible<StringAllocator>
     {
         return m_builder.as_string();
     }
 
     template<allocator StringAllocator = Allocator>
-    string<StringAllocator> as_string(Allocator allocator)
+    string<StringAllocator> as_string(Allocator allocator) const
     {
         return m_builder.as_string(ASL_MOVE(allocator));
     }
@@ -136,8 +123,8 @@ public:
 
 StringWriter() -> StringWriter<>;
 
-template<allocator Allocator = DefaultAllocator, formattable... Args>
-string<Allocator> format_to_string(string_view fmt, const Args&... args)
+template<allocator Allocator = DefaultAllocator>
+string<Allocator> format_to_string(string_view fmt, const formattable auto&... args)
     requires default_constructible<Allocator>
 {
     StringWriter writer{};
@@ -145,8 +132,8 @@ string<Allocator> format_to_string(string_view fmt, const Args&... args)
     return ASL_MOVE(writer).finish();
 }
 
-template<allocator Allocator = DefaultAllocator, formattable... Args>
-string<Allocator> format_to_string(Allocator allocator, string_view fmt, const Args&... args)
+template<allocator Allocator = DefaultAllocator>
+string<Allocator> format_to_string(Allocator allocator, string_view fmt, const formattable auto&... args)
 {
     StringWriter writer{ASL_MOVE(allocator)};
     format(&writer, fmt, args...);

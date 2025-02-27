@@ -17,9 +17,8 @@ public:
     constexpr maybe_uninit() requires trivially_default_constructible<T> = default;
     constexpr maybe_uninit() requires (!trivially_default_constructible<T>) {} // NOLINT
 
-    template<typename... Args>
-    explicit constexpr maybe_uninit(in_place_t, Args&&... args)
-        requires constructible_from<T, Args&&...>
+    explicit constexpr maybe_uninit(in_place_t, auto&&... args)
+        requires constructible_from<T, decltype(args)...>
         : m_value{ASL_FWD(args)...}
     {}
 
@@ -39,17 +38,15 @@ public:
     constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {} // NOLINT
 
     // @Safety Value must not have been initialized yet
-    template<typename... Args>
-    constexpr void construct_unsafe(Args&&... args)
-        requires constructible_from<T, Args&&...>
+    constexpr void construct_unsafe(auto&&... args)
+        requires constructible_from<T, decltype(args)...>
     {
         construct_at<T>(&m_value, ASL_FWD(args)...);
     }
 
     // @Safety Value must have been initialized
-    template<typename U>
-    constexpr void assign_unsafe(U&& value)
-        requires assignable_from<T&, U&&>
+    constexpr void assign_unsafe(auto&& value)
+        requires assignable_from<T&, decltype(value)>
     {
         m_value = ASL_FWD(value);
     }
@@ -64,10 +61,9 @@ public:
     }
 
     // @Safety Value must have been initialized
-    template<typename Self>
-    constexpr auto&& as_init_unsafe(this Self&& self)
+    constexpr auto&& as_init_unsafe(this auto&& self)
     {
-        return ASL_FWD_LIKE(decltype(self), ASL_FWD(self).m_value);
+        return ASL_FWD(self).m_value;
     }
 };
 

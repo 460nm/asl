@@ -147,31 +147,18 @@ public:
         // NOLINTEND(*-pointer-arithmetic)
     }
 
-    // @Todo(C++23) Deducing this
     template<typename U>
-    requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
-    const V* get(const U& value) const
+    auto get(this auto&& self, const U& value)
+        requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
     {
-        isize_t index = Base::find_slot_lookup(value);
+        using return_type = un_ref_t<copy_cref_t<decltype(self), V>>*;
+        isize_t index = self.find_slot_lookup(value);
         if (index >= 0)
         {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return &Base::m_values[index].as_init_unsafe().value;
+            return return_type{ &self.m_values[index].as_init_unsafe().value };
         }
-        return nullptr;
-    }
-
-    template<typename U>
-    requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
-    V* get(const U& value)
-    {
-        isize_t index = Base::find_slot_lookup(value);
-        if (index >= 0)
-        {
-            // NOLINTNEXTLINE(*-pointer-arithmetic)
-            return &Base::m_values[index].as_init_unsafe().value;
-        }
-        return nullptr;
+        return return_type{ nullptr };
     }
 };
 

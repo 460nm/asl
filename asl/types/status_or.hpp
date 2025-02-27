@@ -129,8 +129,7 @@ public:
 
     constexpr status&& throw_status() && { return ASL_MOVE(m_status); }
 
-    template<typename Self>
-    constexpr auto&& value(this Self&& self)
+    constexpr auto&& value(this auto&& self)
     {
         ASL_ASSERT_RELEASE(self.ok());
         return ASL_FWD(self).m_value.as_init_unsafe();

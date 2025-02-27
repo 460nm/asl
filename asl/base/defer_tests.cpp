@@ -14,7 +14,7 @@ ASL_TEST(defer)
             ASL_DEFER [&a]() { a |= 4; };
             ASL_TEST_EXPECT(a == 0);
         }
-        
+
         ASL_TEST_EXPECT(a == 6);
 
         {
@@ -23,10 +23,10 @@ ASL_TEST(defer)
         }
 
         ASL_TEST_EXPECT(a == 14);
-        
+
         ASL_DEFER [&a]() { a |= 16; };
         ASL_TEST_EXPECT(a == 14);
     }
-    
+
     ASL_TEST_EXPECT(a == 31);
 }

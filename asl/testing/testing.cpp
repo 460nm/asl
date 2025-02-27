@@ -45,7 +45,7 @@ static void report_assert_failure(const char* msg, const asl::source_location& s
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
     asl::set_assert_failure_handler(report_assert_failure, nullptr);
-    
+
     int fail = 0;
     int pass = 0;
 
