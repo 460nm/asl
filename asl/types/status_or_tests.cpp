@@ -1,3 +1,7 @@
+// Copyright 2025 Steven Le Rouzic
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "asl/types/status_or.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/tests/types.hpp"

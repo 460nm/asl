@@ -1,3 +1,7 @@
+// Copyright 2025 Steven Le Rouzic
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "asl/logging/logging.hpp"
 #include "asl/io/print.hpp"
 #include "asl/strings/string_builder.hpp"

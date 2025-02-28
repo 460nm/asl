@@ -1,3 +1,7 @@
+// Copyright 2025 Steven Le Rouzic
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "asl/formatting/format.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/base/float.hpp"

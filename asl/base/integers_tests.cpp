@@ -1,3 +1,7 @@
+// Copyright 2025 Steven Le Rouzic
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include "asl/base/integers.hpp"
 
 static_assert(sizeof(int8_t)  == 1);
