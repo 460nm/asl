@@ -1,0 +1,15 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_license//rules:license.bzl", "license")
+
+license(
+    name = "license",
+    license_kinds = [
+        "@rules_license//licenses/spdx:MIT",
+    ],
+    license_text = "LICENSE.txt",
+    package_name = "CityHash",
+    package_url = "https://github.com/google/cityhash",
+)

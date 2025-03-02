@@ -2,11 +2,15 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@rules_license//rules:license.bzl", "license")
 
-refresh_compile_commands(
-    name = "refresh_clangd",
-    targets = "//...",
+license(
+    name = "license",
+    license_kinds = [
+        "@rules_license//licenses/spdx:BSD-3-Clause",
+    ],
+    license_text = "LICENSE.txt",
+    package_name = "ASL",
 )
 
 platform(

@@ -2,6 +2,10 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+package(
+    default_applicable_licenses = ["//:license"],
+)
+
 cc_library(
     name = "hashing",
     hdrs = [
@@ -13,6 +17,9 @@ cc_library(
     deps = [
         "//asl/base",
         "//asl/types:span",
+    ],
+    applicable_licenses = [
+        "//vendor/cityhash:license",
     ],
     visibility = ["//visibility:public"],
 )
