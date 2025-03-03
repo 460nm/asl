@@ -19,8 +19,8 @@ ASL_TEST(empty_list)
 {
     const asl::IntrusiveList<IntNode> list;
     ASL_TEST_EXPECT(list.is_empty());
-    ASL_TEST_EXPECT(list.head() == nullptr);
-    ASL_TEST_EXPECT(list.tail() == nullptr);
+    ASL_TEST_EXPECT(list.front() == nullptr);
+    ASL_TEST_EXPECT(list.back() == nullptr);
 }
 
 ASL_TEST(push_front)
@@ -32,8 +32,8 @@ ASL_TEST(push_front)
 
     list.push_front(&one);
     ASL_TEST_EXPECT(!list.is_empty());
-    ASL_TEST_EXPECT(list.head() == &one);
-    ASL_TEST_EXPECT(list.tail() == &one);
+    ASL_TEST_EXPECT(list.front() == &one);
+    ASL_TEST_EXPECT(list.back() == &one);
 
     auto it = list.begin();
     auto end = list.end();
@@ -44,8 +44,8 @@ ASL_TEST(push_front)
     ASL_TEST_ASSERT(it == end);
 
     list.push_front(&two);
-    ASL_TEST_EXPECT(list.head() == &two);
-    ASL_TEST_EXPECT(list.tail() == &one);
+    ASL_TEST_EXPECT(list.front() == &two);
+    ASL_TEST_EXPECT(list.back() == &one);
     it = list.begin();
     end = list.end();
 
@@ -58,8 +58,8 @@ ASL_TEST(push_front)
     ASL_TEST_ASSERT(it == end);
 
     list.push_front(&three);
-    ASL_TEST_EXPECT(list.head() == &three);
-    ASL_TEST_EXPECT(list.tail() == &one);
+    ASL_TEST_EXPECT(list.front() == &three);
+    ASL_TEST_EXPECT(list.back() == &one);
     it = list.begin();
     end = list.end();
 
@@ -84,8 +84,8 @@ ASL_TEST(push_back)
 
     list.push_back(&one);
     ASL_TEST_EXPECT(!list.is_empty());
-    ASL_TEST_EXPECT(list.head() == &one);
-    ASL_TEST_EXPECT(list.tail() == &one);
+    ASL_TEST_EXPECT(list.front() == &one);
+    ASL_TEST_EXPECT(list.back() == &one);
 
     auto it = list.begin();
     auto end = list.end();
@@ -96,8 +96,8 @@ ASL_TEST(push_back)
     ASL_TEST_ASSERT(it == end);
 
     list.push_back(&two);
-    ASL_TEST_EXPECT(list.head() == &one);
-    ASL_TEST_EXPECT(list.tail() == &two);
+    ASL_TEST_EXPECT(list.front() == &one);
+    ASL_TEST_EXPECT(list.back() == &two);
     it = list.begin();
     end = list.end();
 
@@ -110,8 +110,8 @@ ASL_TEST(push_back)
     ASL_TEST_ASSERT(it == end);
 
     list.push_back(&three);
-    ASL_TEST_EXPECT(list.head() == &one);
-    ASL_TEST_EXPECT(list.tail() == &three);
+    ASL_TEST_EXPECT(list.front() == &one);
+    ASL_TEST_EXPECT(list.back() == &three);
     it = list.begin();
     end = list.end();
 

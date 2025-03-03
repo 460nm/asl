@@ -80,13 +80,13 @@ public:
         }
     }
 
-    constexpr auto head(this auto&& self)
+    constexpr auto front(this auto&& self)
     {
         using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
         return return_type{ self.m_head };
     }
 
-    constexpr auto tail(this auto&& self)
+    constexpr auto back(this auto&& self)
     {
         using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
         return return_type{ self.m_head != nullptr ? self.m_head->m_prev : nullptr };
@@ -178,13 +178,13 @@ public:
     auto begin(this auto&& self)
     {
         using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
-        return iterator_type{ self.head(), self.is_empty() };
+        return iterator_type{ self.front(), self.is_empty() };
     }
 
     auto end(this auto&& self)
     {
         using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
-        return iterator_type{ self.head(), true };
+        return iterator_type{ self.front(), true };
     }
 };
 
