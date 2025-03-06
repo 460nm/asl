@@ -1,0 +1,7 @@
+---
+CompilerFlags:
+  Add:
+    - "-Wall"
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: None

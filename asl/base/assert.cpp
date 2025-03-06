@@ -4,7 +4,12 @@
 
 #include "asl/base/assert.hpp"
 
+#include "asl/base/meta.hpp"
+
+// NOLINTNEXTLINE(*-non-const-global-variables)
 static asl::AssertFailureHandler* s_handler = nullptr;
+
+// NOLINTNEXTLINE(*-non-const-global-variables)
 static void* s_user = nullptr;
 
 void asl::set_assert_failure_handler(AssertFailureHandler handler, void* user)

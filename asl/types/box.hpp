@@ -29,21 +29,21 @@ public:
 
     constexpr box(T* ptr, Allocator alloc)
         : m_ptr{ptr}
-        , m_alloc{ASL_MOVE(alloc)}
+        , m_alloc{std::move(alloc)}
     {
         ASL_ASSERT(m_ptr != nullptr);
     }
 
     constexpr box(box&& other)
         : m_ptr{exchange(other.m_ptr, nullptr)}
-        , m_alloc{ASL_MOVE(other.m_alloc)}
+        , m_alloc{std::move(other.m_alloc)}
     {}
 
     template<is_object U>
     requires convertible_from<T*, U*>
-    constexpr box(box<U, Allocator>&& other) // NOLINT(*-explicit-conversions)
+    constexpr box(box<U, Allocator>&& other) // NOLINT(*explicit*,*-not-moved)
         : m_ptr{exchange(other.m_ptr, nullptr)}
-        , m_alloc{ASL_MOVE(other.m_alloc)}
+        , m_alloc{std::move(other.m_alloc)}
     {}
 
     constexpr box& operator=(box&& other)
@@ -53,7 +53,7 @@ public:
         if (m_ptr != nullptr) { reset(); }
 
         m_ptr = exchange(other.m_ptr, nullptr);
-        m_alloc = ASL_MOVE(other.m_alloc);
+        m_alloc = std::move(other.m_alloc);
 
         return *this;
     }
@@ -99,7 +99,7 @@ public:
     requires hashable<T>
     friend H AslHashValue(H h, const box& b)
     {
-        return H::combine(ASL_MOVE(h), *b);
+        return H::combine(std::move(h), *b);
     }
 
     template<is_object U, allocator A>
@@ -114,8 +114,8 @@ constexpr box<T, Allocator> make_box_in(Allocator allocator, Args&&... args)
     requires constructible_from<T, Args&&...>
 {
     void* raw_ptr = allocator.alloc(layout::of<T>());
-    auto* ptr = construct_at<T>(raw_ptr, ASL_FWD(args)...);
-    return box(ptr, ASL_MOVE(allocator));
+    auto* ptr = construct_at<T>(raw_ptr, std::forward<Args>(args)...);
+    return box(ptr, std::move(allocator));
 }
 
 template<is_object T, allocator Allocator = DefaultAllocator, typename... Args>
@@ -124,14 +124,14 @@ constexpr box<T, Allocator> make_box(Args&&... args)
 {
     Allocator allocator{};
     void* raw_ptr = allocator.alloc(layout::of<T>());
-    auto* ptr = construct_at<T>(raw_ptr, ASL_FWD(args)...);
-    return box<T>(ptr, ASL_MOVE(allocator));
+    auto* ptr = construct_at<T>(raw_ptr, std::forward<Args>(args)...);
+    return box<T>(ptr, std::move(allocator));
 }
 
 template<is_object T, allocator A>
 constexpr T* leak(box<T, A>&& b)
 {
-    return exchange(b.m_ptr, nullptr);
+    return exchange(std::move(b).m_ptr, nullptr);
 }
 
 } // namespace asl

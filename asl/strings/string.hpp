@@ -16,7 +16,7 @@ class string
     buffer<char, Allocator> m_buffer;
 
     explicit constexpr string(buffer<char, Allocator>&& buffer) :
-        m_buffer{ASL_MOVE(buffer)}
+        m_buffer{std::move(buffer)}
     {}
 
     template<allocator A>
@@ -24,7 +24,7 @@ class string
 
 public:
     constexpr string() requires default_constructible<Allocator> = default;
-    explicit constexpr string(Allocator allocator) : m_buffer{ASL_MOVE(allocator)} {}
+    explicit constexpr string(Allocator allocator) : m_buffer{std::move(allocator)} {}
 
     // NOLINTNEXTLINE(*-explicit-conversions)
     constexpr string(string_view sv)
@@ -33,7 +33,7 @@ public:
     {}
 
     constexpr string(string_view sv, Allocator allocator)
-        : m_buffer{sv.as_span(), ASL_MOVE(allocator)}
+        : m_buffer{sv.as_span(), std::move(allocator)}
     {}
 
     constexpr ~string() = default;

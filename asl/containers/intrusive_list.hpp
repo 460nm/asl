@@ -43,8 +43,8 @@ public:
         push_front(head);
     }
 
-    ASL_DELETE_COPY(IntrusiveList)
-    ASL_DEFAULT_MOVE(IntrusiveList)
+    ASL_DELETE_COPY(IntrusiveList);
+    ASL_DEFAULT_MOVE(IntrusiveList);
     ~IntrusiveList() = default;
 
     constexpr bool is_empty() const { return m_head == nullptr; }

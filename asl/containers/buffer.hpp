@@ -170,7 +170,7 @@ private:
 
         if (assign)
         {
-            m_allocator = ASL_MOVE(other.m_allocator);
+            m_allocator = std::move(other.m_allocator);
         }
     }
 
@@ -209,7 +209,7 @@ private:
         // NOLINTNEXTLINE(*-pointer-arithmetic)
         for (T* it = data_ptr + old_size; it < end; ++it)
         {
-            construct_at<T>(it, ASL_FWD(args)...);
+            construct_at<T>(it, std::forward<Args>(args)...);
         }
     }
 
@@ -224,11 +224,11 @@ public:
     }
 
     explicit constexpr buffer(Allocator allocator)
-        : m_allocator{ASL_MOVE(allocator)}
+        : m_allocator{std::move(allocator)}
     {}
 
     explicit constexpr buffer(span<const T> s, Allocator allocator)
-        : m_allocator{ASL_MOVE(allocator)}
+        : m_allocator{std::move(allocator)}
     {
         copy_range(s);
     }
@@ -242,9 +242,9 @@ public:
 
     constexpr buffer(buffer&& other)
         requires moveable<T>
-        : buffer(ASL_MOVE(other.m_allocator))
+        : buffer(std::move(other.m_allocator))
     {
-        move_from_other(ASL_MOVE(other), false);
+        move_from_other(std::move(other), false);
     }
 
     constexpr buffer& operator=(const buffer& other)
@@ -259,7 +259,7 @@ public:
         requires moveable<T>
     {
         if (&other == this) { return *this; }
-        move_from_other(ASL_MOVE(other), true);
+        move_from_other(std::move(other), true);
         return *this;
     }
 
@@ -381,7 +381,7 @@ public:
         requires constructible_from<T, decltype(args)&&...>
     {
         T* uninit = push_uninit();
-        T* init = construct_at<T>(uninit, ASL_FWD(args)...);
+        T* init = construct_at<T>(uninit, std::forward<decltype(args)>(args)...);
         return *init;
     }
 
@@ -410,12 +410,12 @@ public:
         return contiguous_iterator<type>{self.data() + self.size()};
     }
 
-    constexpr operator span<const T>() const // NOLINT(*-explicit-conversions)
+    constexpr operator span<const T>() const // NOLINT(*explicit*)
     {
         return as_span();
     }
 
-    constexpr operator span<T>() // NOLINT(*-explicit-conversions)
+    constexpr operator span<T>() // NOLINT(*explicit*)
     {
         return as_span();
     }
@@ -429,14 +429,14 @@ public:
     constexpr auto&& operator[](this auto&& self, isize_t i)
     {
         ASL_ASSERT(i >= 0 && i <= self.size());
-        return ASL_FWD_LIKE(decltype(self), ASL_FWD(self).data()[i]);
+        return std::forward_like<decltype(self)>(std::forward<decltype(self)>(self).data()[i]);
     }
 
     template<typename H>
     requires hashable<T>
     friend H AslHashValue(H h, const buffer& b)
     {
-        return H::combine_contiguous(ASL_MOVE(h), b.as_span());
+        return H::combine_contiguous(std::move(h), b.as_span());
     }
 };
 

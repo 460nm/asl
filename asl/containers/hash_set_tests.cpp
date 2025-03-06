@@ -170,7 +170,7 @@ ASL_TEST(move)
         set1.insert(i);
     }
 
-    asl::hash_set<int> set2 = ASL_MOVE(set1);
+    asl::hash_set<int> set2 = std::move(set1);
 
     ASL_TEST_EXPECT(set2.size() == 100);
     for (int i = 0; i < 100; ++i)
@@ -178,7 +178,7 @@ ASL_TEST(move)
         ASL_TEST_EXPECT(set2.contains(i));
     }
 
-    set1 = ASL_MOVE(set2);
+    set1 = std::move(set2);
 
     ASL_TEST_EXPECT(set1.size() == 100);
     for (int i = 0; i < 100; ++i)

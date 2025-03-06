@@ -18,14 +18,14 @@ class DeferCallback
 
 public:
     template<typename T>
-    explicit DeferCallback(T&& callback) : m_callback(ASL_FWD(callback))
+    explicit DeferCallback(T&& callback) : m_callback(std::forward<T>(callback))
     {
     }
 
     ASL_DELETE_COPY(DeferCallback);
 
     DeferCallback(DeferCallback&& other) :
-        m_callback(ASL_MOVE(other.m_callback)), m_moved(exchange(other.m_moved, true))
+        m_callback(std::move(other.m_callback)), m_moved(exchange(other.m_moved, true))
     {
     }
 
@@ -42,7 +42,7 @@ struct DeferFactory
     template<invocable Callback>
     DeferCallback<Callback> operator<<(Callback&& callback) const
     {
-        return DeferCallback<Callback>(ASL_FWD(callback));
+        return DeferCallback<Callback>(std::forward<Callback>(callback));
     }
 };
 

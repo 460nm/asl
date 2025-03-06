@@ -89,7 +89,7 @@ struct HashState
         {
             for (const auto& value: s)
             {
-                h = AslHashValue(ASL_MOVE(h), value);
+                h = AslHashValue(std::move(h), value);
             }
             return h;
         }
@@ -103,7 +103,7 @@ struct HashState
     template<hashable_generic<HashState> Arg, hashable_generic<HashState>... Remaining>
     static constexpr HashState combine(HashState h, const Arg& arg, const Remaining&... remaining)
     {
-        return combine(AslHashValue(ASL_MOVE(h), arg), remaining...);
+        return combine(AslHashValue(std::move(h), arg), remaining...);
     }
 };
 
@@ -113,13 +113,13 @@ concept hashable = hashable_generic<T, HashState>;
 template<typename H, uniquely_represented T>
 constexpr H AslHashValue(H h, const T& value)
 {
-    return H::combine_contiguous(ASL_MOVE(h), span<const T>{&value, 1});
+    return H::combine_contiguous(std::move(h), span<const T>{&value, 1});
 }
 
 template<typename H>
 constexpr H AslHashValue(H h, bool value)
 {
-    return AslHashValue(ASL_MOVE(h), value ? 1 : 0);
+    return AslHashValue(std::move(h), value ? 1 : 0);
 }
 
 template<typename H, typename T>
@@ -128,7 +128,7 @@ constexpr void AslHashValue(H h, T*); // Don't hash pointers
 template<typename H, hashable T>
 constexpr H AslHashValue(H h, const span<T>& s)
 {
-    return H::combine_contiguous(ASL_MOVE(h), span<const T>{s.data(), s.size()});
+    return H::combine_contiguous(std::move(h), span<const T>{s.data(), s.size()});
 }
 
 template<hashable T>

@@ -74,19 +74,19 @@ class option
 
         if constexpr (!kHasNiche)
         {
-            m_payload.construct_unsafe(ASL_FWD(args)...);
+            m_payload.construct_unsafe(std::forward<Args>(args)...);
             m_has_value = true;
         }
         else
         {
             if constexpr (move_assignable<T>)
             {
-                m_payload.assign_unsafe(ASL_MOVE(T{ASL_FWD(args)...}));
+                m_payload.assign_unsafe(T{std::forward<Args>(args)...});
             }
             else
             {
                 m_payload.destroy_unsafe();
-                m_payload.construct_unsafe(ASL_FWD(args)...);
+                m_payload.construct_unsafe(std::forward<Args>(args)...);
             }
         }
     }
@@ -95,7 +95,7 @@ class option
     constexpr void assign(U&& arg)
     {
         ASL_ASSERT(has_value());
-        m_payload.assign_unsafe(ASL_FWD(arg));
+        m_payload.assign_unsafe(std::forward<U>(arg));
     }
 
 public:
@@ -103,10 +103,10 @@ public:
 
     constexpr option() : option{nullopt} {}
 
-     // NOLINTNEXTLINE(*-explicit-conversions)
+     // NOLINTNEXTLINE(*explicit*)
     constexpr option(nullopt_t) requires (!kHasNiche) {}
 
-     // NOLINTNEXTLINE(*-explicit-conversions)
+     // NOLINTNEXTLINE(*explicit*)
     constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place, niche_t{}} {}
 
     template<typename U = T>
@@ -117,7 +117,7 @@ public:
             constructible_from<T, U&&> &&
             !same_as<un_cvref_t<U>, option>
         )
-        : m_payload{in_place, ASL_FWD(value)}
+        : m_payload{in_place, std::forward<U>(value)}
     {}
 
     template<typename U = T>
@@ -128,7 +128,7 @@ public:
             constructible_from<T, U&&> &&
             !is_option<U>
         )
-        : m_payload{in_place, ASL_FWD(value)}
+        : m_payload{in_place, std::forward<U>(value)}
         , m_has_value{true}
     {}
 
@@ -154,7 +154,7 @@ public:
     {
         if (other.has_value())
         {
-            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
+            construct(std::move(other.m_payload.as_init_unsafe()));
         }
     }
 
@@ -184,7 +184,7 @@ public:
     {
         if (other.has_value())
         {
-            construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
+            construct(std::move(other).m_payload.as_init_unsafe());
         }
     }
 
@@ -204,11 +204,11 @@ public:
     {
         if (has_value())
         {
-            assign(ASL_FWD(value));
+            assign(std::forward<U>(value));
         }
         else
         {
-            construct(ASL_FWD(value));
+            construct(std::forward<U>(value));
         }
 
         return *this;
@@ -259,11 +259,11 @@ public:
         {
             if (has_value())
             {
-                assign(ASL_MOVE(other.m_payload.as_init_unsafe()));
+                assign(std::move(other.m_payload.as_init_unsafe()));
             }
             else
             {
-                construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
+                construct(std::move(other.m_payload.as_init_unsafe()));
             }
         }
         else if (has_value())
@@ -313,11 +313,11 @@ public:
         {
             if (has_value())
             {
-                assign(ASL_MOVE(other.m_payload.as_init_unsafe()));
+                assign(std::move(other).m_payload.as_init_unsafe());
             }
             else
             {
-                construct(ASL_MOVE(other.m_payload.as_init_unsafe()));
+                construct(std::move(other).m_payload.as_init_unsafe());
             }
         }
         else if (has_value())
@@ -342,7 +342,7 @@ public:
         {
             if constexpr (move_assignable<T>)
             {
-                m_payload.assign_unsafe(ASL_MOVE(T{niche_t{}}));
+                m_payload.assign_unsafe(std::move(T{niche_t{}}));
             }
             else
             {
@@ -357,7 +357,7 @@ public:
         }
     }
 
-    constexpr bool has_value() const
+    [[nodiscard]] constexpr bool has_value() const
     {
         if constexpr (kHasNiche)
         {
@@ -372,28 +372,28 @@ public:
     constexpr auto&& value(this auto&& self)
     {
         ASL_ASSERT_RELEASE(self.has_value());
-        return ASL_FWD(self).m_payload.as_init_unsafe();
+        return std::forward<decltype(self)>(self).m_payload.as_init_unsafe();
     }
 
     template<typename U>
     constexpr T value_or(U&& other_value) const&
         requires copy_constructible<T> && convertible_from<T, U&&>
     {
-        return has_value() ? value() : static_cast<T>(ASL_FWD(other_value));
+        return has_value() ? value() : static_cast<T>(std::forward<U>(other_value));
     }
 
     template<typename U>
     constexpr T value_or(U&& other_value) &&
         requires move_constructible<T> && convertible_from<T, U&&>
     {
-        return has_value() ? ASL_MOVE(value()) : static_cast<T>(ASL_FWD(other_value));
+        return has_value() ? std::move(value()) : static_cast<T>(std::forward<U>(other_value));
     }
 
     constexpr T& emplace(auto&&... args) &
         requires constructible_from<T, decltype(args)...>
     {
         if (has_value()) { reset(); }
-        construct(ASL_FWD(args)...);
+        construct(std::forward<decltype(args)>(args)...);
         return value();
     }
 
@@ -405,7 +405,7 @@ public:
 
         if (self.has_value())
         {
-            return invoke(ASL_FWD(f), ASL_FWD(self).value());
+            return invoke(std::forward<F>(f), std::forward<decltype(self)>(self).value());
         }
         return Result{ asl::nullopt };
     }
@@ -417,7 +417,7 @@ public:
         if (self.has_value())
         {
             return option<un_cvref_t<Result>>{
-                invoke(ASL_FWD(f), ASL_FWD(self).value())
+                invoke(std::forward<F>(f), std::forward<decltype(self)>(self).value())
             };
         }
         return option<un_cvref_t<Result>>{ asl::nullopt };
@@ -427,14 +427,14 @@ public:
     constexpr option or_else(F&& f) const&
         requires same_as<un_cvref_t<invoke_result_t<F>>, option>
     {
-        return has_value() ? *this : invoke(ASL_FWD(f));
+        return has_value() ? *this : invoke(std::forward<F>(f));
     }
 
     template<typename F>
     constexpr option or_else(F&& f) &&
         requires same_as<un_cvref_t<invoke_result_t<F>>, option>
     {
-        return has_value() ? ASL_MOVE(*this) : invoke(ASL_FWD(f));
+        return has_value() ? std::move(*this) : invoke(std::forward<F>(f));
     }
 
     template<typename H>
@@ -443,9 +443,9 @@ public:
     {
         if (!opt.has_value())
         {
-            return H::combine(ASL_MOVE(h), 0);
+            return H::combine(std::move(h), 0);
         }
-        return H::combine(ASL_MOVE(h), 1, opt.value());
+        return H::combine(std::move(h), 1, opt.value());
     }
 };
 

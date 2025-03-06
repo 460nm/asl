@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "asl/logging/logging.hpp"
-#include "asl/testing/testing.hpp"
-#include "asl/strings/string_builder.hpp"
 #include "asl/base/defer.hpp"
+#include "asl/logging/logging.hpp"
+#include "asl/strings/string_builder.hpp"
+#include "asl/strings/string_view.hpp"
+#include "asl/testing/testing.hpp"
 
 ASL_TEST(log)
 {
@@ -27,6 +28,6 @@ ASL_TEST(custom_writer)
     ASL_LOG_INFO("Hello");
     auto sv = string_writer.as_string_view();
 
-    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:27: Hello\n");
+    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:28: Hello\n");
 }
 

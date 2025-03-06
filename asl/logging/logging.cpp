@@ -3,14 +3,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/logging/logging.hpp"
+
+#include "asl/containers/intrusive_list.hpp"
+#include "asl/formatting/format.hpp"
 #include "asl/io/print.hpp"
+#include "asl/io/writer.hpp"
 #include "asl/strings/string_builder.hpp"
+#include "asl/strings/string_view.hpp"
+#include "asl/types/span.hpp"
 
 // @Todo Don't use internal get_stdout_writer, make console module
 
+// NOLINTNEXTLINE(*-avoid-non-const-global-variables)
 static asl::log::DefaultLogger<asl::Writer*> g_default_logger{asl::print_internals::get_stdout_writer()};
 
 // @Todo Protect the loggers list being a mutex
+// NOLINTNEXTLINE(*-avoid-non-const-global-variables)
 static asl::IntrusiveList<asl::log::Logger> g_loggers(&g_default_logger);
 
 void asl::log::register_logger(Logger* logger)
@@ -56,7 +64,7 @@ void asl::log::log_inner(
     StringWriter msg_writer{};
     asl::format_internals::format(&msg_writer, fmt, args);
 
-    message m{
+    const message m{
         .level = l,
         .message = msg_writer.as_string_view(),
         .location = sl,

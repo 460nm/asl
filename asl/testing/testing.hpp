@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/meta.hpp"
 
 namespace asl::testing
 {
@@ -35,7 +35,8 @@ struct Test
 } // namespace asl::testing
 
 #define ASL_TEST(CASE)                              \
-    static void asl_test_fn_##CASE();               \
+    static void asl_test_fn_##CASE(); /* NOLINT */  \
+    /* NOLINTNEXTLINE */                            \
     static ::asl::testing::Test asl_test_##CASE(    \
         #CASE,                                      \
         asl_test_fn_##CASE);                        \

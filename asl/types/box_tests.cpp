@@ -23,7 +23,7 @@ ASL_TEST(destructor)
         ASL_TEST_ASSERT(!d);
 
 
-        auto box3 = ASL_MOVE(box);
+        auto box3 = std::move(box);
         ASL_TEST_ASSERT(!d);
     }
 
@@ -35,7 +35,7 @@ ASL_TEST(value)
     auto b = asl::make_box<int>(24);
     ASL_TEST_EXPECT(*b == 24);
 
-    auto b2 = ASL_MOVE(b);
+    auto b2 = std::move(b);
     ASL_TEST_EXPECT(*b2 == 24);
 }
 
@@ -44,7 +44,7 @@ ASL_TEST(ptr)
     auto b = asl::make_box<int>(24);
     auto* ptr1 = b.get();
 
-    auto b2 = ASL_MOVE(b);
+    auto b2 = std::move(b);
     auto* ptr2 = b2.get();
     ASL_TEST_EXPECT(ptr1 == ptr2);
 }

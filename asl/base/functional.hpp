@@ -11,22 +11,22 @@ namespace asl {
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
-    -> decltype((self.*f)(ASL_FWD(args)...))
+    -> decltype((self.*f)(std::forward<Args>(args)...))
     requires requires {
-        (self.*f)(ASL_FWD(args)...);
+        (self.*f)(std::forward<Args>(args)...);
     }
 {
-    return (ASL_FWD(self).*f)(ASL_FWD(args)...);
+    return (std::forward<decltype(self)>(self).*f)(std::forward<Args>(args)...);
 }
 
 template<typename... Args, typename C>
 constexpr auto invoke(is_func auto C::* f, auto* self, Args&&... args)
-    -> decltype((self->*f)(ASL_FWD(args)...))
+    -> decltype((self->*f)(std::forward<Args>(args)...))
     requires requires {
-        (self->*f)(ASL_FWD(args)...);
+        (self->*f)(std::forward<Args>(args)...);
     }
 {
-    return (self->*f)(ASL_FWD(args)...);
+    return (self->*f)(std::forward<Args>(args)...);
 }
 
 template<typename... Args, typename C>
@@ -37,7 +37,7 @@ constexpr auto invoke(is_object auto C::* m, auto&& self, Args&&...)
         requires { self.*m; }
     )
 {
-    return ASL_FWD(self).*m;
+    return std::forward<decltype(self)>(self).*m;
 }
 
 template<typename... Args, typename C>
@@ -53,12 +53,12 @@ constexpr auto invoke(is_object auto C::* m, auto* self, Args&&...)
 
 template<typename... Args>
 constexpr auto invoke(auto&& f, Args&&... args)
-    -> decltype(f(ASL_FWD(args)...))
+    -> decltype(f(std::forward<Args>(args)...))
     requires requires {
-        f(ASL_FWD(args)...);
+        f(std::forward<Args>(args)...);
     }
 {
-    return ASL_FWD(f)(ASL_FWD(args)...);
+    return std::forward<decltype(f)>(f)(std::forward<Args>(args)...);
 }
 
 template<typename Void, typename F, typename... Args>
@@ -76,7 +76,7 @@ using invoke_result_t = _invoke_result_helper<void, F, Args...>::type;
 template<typename F, typename... Args>
 concept invocable = requires (F&& f, Args&&... args)
 {
-    invoke(ASL_FWD(f), ASL_FWD(args)...);
+    invoke(std::forward<F>(f), std::forward<Args>(args)...);
 };
 
 } // namespace asl

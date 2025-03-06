@@ -23,7 +23,7 @@ struct StatusInternal
     asl::atomic<int32_t> ref_count;
 
     constexpr StatusInternal(asl::string<Allocator>&& msg_, asl::status_code code_)
-        : msg{ASL_MOVE(msg_)}
+        : msg{std::move(msg_)}
         , code{code_}
     {
         ASL_ASSERT(code != asl::status_code::ok);
@@ -41,7 +41,7 @@ asl::status::status(status_code code, string_view fmt, span<format_internals::ty
 {
     StringWriter<Allocator> sink{g_allocator};
     format_internals::format(&sink, fmt, args);
-    m_payload = alloc_new<StatusInternal>(g_allocator, ASL_MOVE(sink).finish(), code);
+    m_payload = alloc_new<StatusInternal>(g_allocator, std::move(sink).finish(), code);
 }
 
 asl::status_code asl::status::code_internal() const

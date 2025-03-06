@@ -275,7 +275,7 @@ ASL_TEST(move_construct_from_heap)
     buf.push(&d[2]);
 
     {
-        asl::buffer<DestructorObserver> buf2(ASL_MOVE(buf));
+        asl::buffer<DestructorObserver> buf2(std::move(buf));
         ASL_TEST_EXPECT(buf2.size() == 3);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
@@ -294,7 +294,7 @@ ASL_TEST(move_construct_inline_trivial)
     buf.push(1U);
     buf.push(2U);
 
-    asl::buffer<uint64_t> buf2(ASL_MOVE(buf));
+    asl::buffer<uint64_t> buf2(std::move(buf));
     ASL_TEST_EXPECT(buf2[0] == 1U);
     ASL_TEST_EXPECT(buf2[1] == 2U);
 
@@ -310,7 +310,7 @@ ASL_TEST(move_construct_from_inline_non_trivial)
     buf.push(&d[1]);
 
     {
-        asl::buffer<DestructorObserver> buf2(ASL_MOVE(buf));
+        asl::buffer<DestructorObserver> buf2(std::move(buf));
         ASL_TEST_EXPECT(buf2.size() == 2);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
@@ -344,7 +344,7 @@ ASL_TEST(move_assign_from_heap)
         ASL_TEST_EXPECT(d[4] == false);
         ASL_TEST_EXPECT(d[5] == false);
 
-        buf2 = ASL_MOVE(buf);
+        buf2 = std::move(buf);
 
         ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 3);
@@ -380,7 +380,7 @@ ASL_TEST(move_assign_trivial_heap_to_inline)
     buf2.push(5);
     ASL_TEST_EXPECT(alloc_count == 1);
 
-    buf = ASL_MOVE(buf2);
+    buf = std::move(buf2);
     ASL_TEST_EXPECT(alloc_count == 1);
 
     ASL_TEST_EXPECT(buf.size() == 3);
@@ -405,7 +405,7 @@ ASL_TEST(move_assign_trivial_inline_to_heap)
     buf2.push(5);
     ASL_TEST_EXPECT(alloc_count == 1);
 
-    buf2 = ASL_MOVE(buf);
+    buf2 = std::move(buf);
     ASL_TEST_EXPECT(alloc_count == 1);
 
     ASL_TEST_EXPECT(buf.size() == 0);
@@ -430,7 +430,7 @@ ASL_TEST(move_assign_inline_to_heap)
         buf2.push(&d[4]);
         buf2.push(&d[5]);
 
-        buf2 = ASL_MOVE(buf);
+        buf2 = std::move(buf);
 
         ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 2);
@@ -466,7 +466,7 @@ ASL_TEST(move_assign_from_inline_incompatible_allocator)
         buf2.push(&d[4]);
         buf2.push(&d[5]);
 
-        buf2 = ASL_MOVE(buf);
+        buf2 = std::move(buf);
 
         ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 2);

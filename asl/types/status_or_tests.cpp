@@ -52,11 +52,11 @@ ASL_TEST(destructor)
         ASL_TEST_EXPECT(s.ok());
         ASL_TEST_EXPECT(!d);
 
-        asl::status_or s2 = ASL_MOVE(s);
+        asl::status_or s2 = std::move(s);
         ASL_TEST_EXPECT(s.ok());
         ASL_TEST_EXPECT(!d);
 
-        s = ASL_MOVE(s2);
+        s = std::move(s2);
         ASL_TEST_EXPECT(s.ok());
         ASL_TEST_EXPECT(!d);
     }

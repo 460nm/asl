@@ -41,7 +41,7 @@ template<typename T, typename... Args>
 constexpr T* construct_at(void* ptr, Args&&... args)
     requires constructible_from<T, Args&&...>
 {
-    return new (ptr) T{ ASL_FWD(args)... };
+    return new (ptr) T{ std::forward<Args>(args)... }; // NOLINT(*-owning-memory)
 }
 
 template<typename T>
@@ -112,7 +112,7 @@ constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
         for (isize_t i = 0; i < n; ++i)
         {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            construct_at<T>(to + i, ASL_MOVE(from[i]));
+            construct_at<T>(to + i, std::move(from[i]));
         }
         destroy_n(from, n);
     }
@@ -131,7 +131,7 @@ constexpr void relocate_assign_n(T* to, T* from, isize_t n)
         for (isize_t i = 0; i < n; ++i)
         {
             // NOLINTNEXTLINE(*-pointer-arithmetic)
-            to[i] = ASL_MOVE(from[i]);
+            to[i] = std::move(from[i]);
         }
         destroy_n(from, n);
     }

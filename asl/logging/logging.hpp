@@ -48,7 +48,11 @@ class DefaultLogger : public DefaultLoggerBase
     W m_writer;
 
 public:
-    explicit constexpr DefaultLogger(W&& writer) : m_writer{ASL_FWD(writer)} {}
+    template<typename U>
+    explicit constexpr DefaultLogger(U&& writer)
+        requires constructible_from<W, U&&>
+        : m_writer{std::forward<U>(writer)}
+    {}
 
     constexpr void log(const message& m) override
     {

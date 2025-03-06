@@ -77,7 +77,7 @@ public:
     constexpr hash_map() requires default_constructible<Allocator> = default;
 
     explicit constexpr hash_map(Allocator allocator)
-        : Base{ASL_MOVE(allocator)}
+        : Base{std::move(allocator)}
     {}
 
     hash_map(const hash_map&) requires copyable<K> && copyable<V> = default;
@@ -122,7 +122,7 @@ public:
             {
                 ASL_ASSERT((Base::m_tags[result.first_available_index] & Base::kHasValue) == 0);
 
-                Base::m_values[result.first_available_index].construct_unsafe(ASL_MOVE(Base::m_values[result.already_present_index].as_init_unsafe()));
+                Base::m_values[result.first_available_index].construct_unsafe(std::move(Base::m_values[result.already_present_index].as_init_unsafe()));
                 Base::m_values[result.already_present_index].destroy_unsafe();
 
                 Base::m_tags[result.first_available_index] = result.tag;
@@ -133,17 +133,17 @@ public:
 
             if constexpr (sizeof...(Args1) == 0 && assignable_from<V&, Arg0&&>)
             {
-                Base::m_values[result.first_available_index].as_init_unsafe().value = ASL_FWD(arg0);
+                Base::m_values[result.first_available_index].as_init_unsafe().value = std::forward<Arg0>(arg0);
             }
             else
             {
-                Base::m_values[result.first_available_index].as_init_unsafe().value = ASL_MOVE(V{ASL_FWD(arg0), ASL_FWD(args1)...});
+                Base::m_values[result.first_available_index].as_init_unsafe().value = std::move(V{std::forward<Arg0>(arg0), std::forward<Args1>(args1)...});
             }
         }
         else
         {
             ASL_ASSERT((Base::m_tags[result.first_available_index] & Base::kHasValue) == 0);
-            Base::m_values[result.first_available_index].construct_unsafe(ASL_FWD(key), V{ASL_FWD(arg0), ASL_FWD(args1)...});
+            Base::m_values[result.first_available_index].construct_unsafe(std::forward<U>(key), V{std::forward<Arg0>(arg0), std::forward<Args1>(args1)...});
             Base::m_tags[result.first_available_index] = result.tag;
             Base::m_size += 1;
         }

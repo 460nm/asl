@@ -23,7 +23,7 @@ public:
 
     explicit constexpr maybe_uninit(in_place_t, auto&&... args)
         requires constructible_from<T, decltype(args)...>
-        : m_value{ASL_FWD(args)...}
+        : m_value{std::forward<decltype(args)>(args)...}
     {}
 
     constexpr maybe_uninit(const maybe_uninit&) requires trivially_copy_constructible<T> = default;
@@ -33,10 +33,10 @@ public:
     constexpr maybe_uninit(maybe_uninit&&) requires (!trivially_move_constructible<T>) {} // NOLINT
 
     constexpr maybe_uninit& operator=(const maybe_uninit&) requires trivially_copy_assignable<T> = default;
-    constexpr maybe_uninit& operator=(const maybe_uninit&) requires (!trivially_copy_assignable<T>) {}
+    constexpr maybe_uninit& operator=(const maybe_uninit&) requires (!trivially_copy_assignable<T>) { return *this; } // NOLINT
 
     constexpr maybe_uninit& operator=(maybe_uninit&&) requires trivially_move_assignable<T> = default;
-    constexpr maybe_uninit& operator=(maybe_uninit&&) requires (!trivially_move_assignable<T>) {}
+    constexpr maybe_uninit& operator=(maybe_uninit&&) requires (!trivially_move_assignable<T>) { return *this; } // NOLINT
 
     constexpr ~maybe_uninit() requires trivially_destructible<T> = default;
     constexpr ~maybe_uninit() requires (!trivially_destructible<T>) {} // NOLINT
@@ -45,14 +45,14 @@ public:
     constexpr void construct_unsafe(auto&&... args)
         requires constructible_from<T, decltype(args)...>
     {
-        construct_at<T>(&m_value, ASL_FWD(args)...);
+        construct_at<T>(&m_value, std::forward<decltype(args)>(args)...);
     }
 
     // @Safety Value must have been initialized
     constexpr void assign_unsafe(auto&& value)
         requires assignable_from<T&, decltype(value)>
     {
-        m_value = ASL_FWD(value);
+        m_value = std::forward<decltype(value)>(value);
     }
 
     // @Safety Value must have been initialized
@@ -67,7 +67,7 @@ public:
     // @Safety Value must have been initialized
     constexpr auto&& as_init_unsafe(this auto&& self)
     {
-        return ASL_FWD(self).m_value;
+        return std::forward<decltype(self)>(self).m_value;
     }
 };
 

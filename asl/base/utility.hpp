@@ -7,11 +7,36 @@
 #include "asl/base/meta.hpp"
 #include "asl/base/assert.hpp"
 
-#define ASL_MOVE(...) (static_cast<::asl::un_ref_t<decltype(__VA_ARGS__)>&&>(__VA_ARGS__))
+namespace std
+{
 
-#define ASL_FWD(expr_) (static_cast<decltype(expr_)&&>(expr_))
+template<typename T>
+constexpr asl::un_ref_t<T>&& move(T&& t) noexcept // NOLINT
+{
+    return static_cast<asl::un_ref_t<T>&&>(t);
+}
 
-#define ASL_FWD_LIKE(ref_, expr_) (static_cast<::asl::copy_cref_t<ref_, decltype(expr_)&&>>(expr_))
+template<typename T>
+constexpr T&& forward(asl::un_ref_t<T>& t) noexcept // NOLINT
+{
+    return static_cast<T&&>(t);
+}
+
+template< class T >
+constexpr T&& forward(asl::un_ref_t<T>&& t) noexcept // NOLINT
+{
+    return static_cast<T&&>(t);
+}
+
+template<typename T, typename U>
+constexpr auto forward_like(U&& x) noexcept -> asl::copy_cref_t<T, U> // NOLINT
+{
+    using return_type = asl::copy_cref_t<T, U&&>;
+    return static_cast<return_type>(x);
+}
+
+} // namespace std
+
 
 namespace asl
 {
@@ -22,16 +47,16 @@ static constexpr in_place_t in_place{};
 template<moveable T>
 constexpr void swap(T& a, T& b)
 {
-    T tmp{ASL_MOVE(a)};
-    a = ASL_MOVE(b);
-    b = ASL_MOVE(tmp);
+    T tmp{std::move(a)};
+    a = std::move(b);
+    b = std::move(tmp);
 }
 
 template<typename T, typename U>
 T exchange(T& obj, U&& new_value)
 {
-    T old_value = ASL_MOVE(obj);
-    obj = ASL_FWD(new_value);
+    T old_value = std::move(obj);
+    obj = std::forward<U>(new_value);
     return old_value;
 }
 
@@ -59,44 +84,46 @@ constexpr uint64_t round_up_pow2(uint64_t v)
 
     v -= 1;
 
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v |= v >> 32;
+    v |= v >> 1U;
+    v |= v >> 2U;
+    v |= v >> 4U;
+    v |= v >> 8U;
+    v |= v >> 16U;
+    v |= v >> 32U;
 
     return v + 1;
 }
 
 constexpr bool is_pow2(isize_t v)
 {
-    return v > 0 && ((v - 1) & v) == 0;
+    return v > 0 && ((v - 1) & v) == 0; // NOLINT
 }
 
+// NOLINTBEGIN(*-macro-parentheses)
 #define ASL_DELETE_COPY(T)                         \
     T(const T&) = delete;                          \
-    T& operator=(const T&) = delete;
+    T& operator=(const T&) = delete
 
 #define ASL_DELETE_MOVE(T)                         \
     T(T&&) = delete;                               \
-    T& operator=(T&&) = delete;
+    T& operator=(T&&) = delete
 
 #define ASL_DELETE_COPY_MOVE(T)                    \
-    ASL_DELETE_COPY(T)                             \
+    ASL_DELETE_COPY(T);                            \
     ASL_DELETE_MOVE(T)
 
 #define ASL_DEFAULT_COPY(T)                         \
     T(const T&) = default;                          \
-    T& operator=(const T&) = default;
+    T& operator=(const T&) = default
 
 #define ASL_DEFAULT_MOVE(T)                         \
     T(T&&) = default;                               \
-    T& operator=(T&&) = default;
+    T& operator=(T&&) = default
 
 #define ASL_DEFAULT_COPY_MOVE(T)                    \
-    ASL_DEFAULT_COPY(T)                             \
+    ASL_DEFAULT_COPY(T);                            \
     ASL_DEFAULT_MOVE(T)
+// NOLINTEND(*-macro-parentheses)
 
 #define ASL_CONCAT2(A, B) A##B
 #define ASL_CONCAT(A, B) ASL_CONCAT2(A, B)

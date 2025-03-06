@@ -122,7 +122,7 @@ public:
         return {};
     }
 
-    constexpr status&& throw_status() && { return ASL_MOVE(*this); }
+    constexpr status&& throw_status() && { return std::move(*this); }
 
     friend void AslFormat(Formatter& f, const status&);
 
@@ -131,9 +131,9 @@ public:
     {
         if (s.is_inline())
         {
-            return H::combine(ASL_MOVE(h), s.code());
+            return H::combine(std::move(h), s.code());
         }
-        return H::combine(ASL_MOVE(h), s.code(), s.message());
+        return H::combine(std::move(h), s.code(), s.message());
     }
 };
 
@@ -156,6 +156,6 @@ ASL_DEFINE_ERROR_(internal)
 ASL_DEFINE_ERROR_(runtime)
 ASL_DEFINE_ERROR_(invalid_argument)
 
-#define ASL_TRY(VALUE) if (VALUE.ok()) {} else { return ASL_MOVE(VALUE).throw_status(); }
+#define ASL_TRY(VALUE) if (VALUE.ok()) {} else { return std::move(VALUE).throw_status(); }
 
 } // namespace asl

@@ -37,7 +37,7 @@ template<typename T>
 T* alloc_new(allocator auto& a, auto&&... args)
 {
     void* ptr = a.alloc(layout::of<T>());
-    return construct_at<T>(ptr, ASL_FWD(args)...);
+    return construct_at<T>(ptr, std::forward<decltype(args)>(args)...);
 }
 
 template<typename T>
@@ -50,7 +50,7 @@ void alloc_delete(allocator auto& a, T* ptr)
 template<typename T>
 constexpr T* alloc_new_default(auto&&... args)
 {
-    return alloc_new<T>(DefaultAllocator{}, ASL_FWD(args)...);
+    return alloc_new<T>(DefaultAllocator{}, std::forward<decltype(args)>(args)...);
 }
 
 template<typename T>

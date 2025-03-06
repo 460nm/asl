@@ -115,7 +115,7 @@ protected:
                 *size += 1;
             }
 
-            values[result.first_available_index].construct_unsafe(ASL_MOVE(value));
+            values[result.first_available_index].construct_unsafe(std::move(value));
             tags[result.first_available_index] = result.tag;
         }
 
@@ -144,7 +144,7 @@ protected:
             {
                 if ((m_tags[i] & kHasValue) == 0) { continue; }
 
-                insert_inner(ASL_MOVE(m_values[i].as_init_unsafe()), new_tags, new_values, new_capacity, &new_size);
+                insert_inner(std::move(m_values[i].as_init_unsafe()), new_tags, new_values, new_capacity, &new_size);
 
                 // Destroy now so that destroy() has less things to do
                 m_values[i].destroy_unsafe();
@@ -312,7 +312,7 @@ public:
     {}
 
     explicit constexpr hash_set(Allocator allocator)
-        : m_allocator{ASL_MOVE(allocator)}
+        : m_allocator{std::move(allocator)}
     {}
 
     hash_set(const hash_set& other)
@@ -339,7 +339,7 @@ public:
         , m_values{exchange(other.m_values, nullptr)}
         , m_capacity{exchange(other.m_capacity, 0)}
         , m_size{exchange(other.m_size, 0)}
-        , m_allocator{ASL_MOVE(other.m_allocator)}
+        , m_allocator{std::move(other.m_allocator)}
     {}
 
     hash_set& operator=(hash_set&& other)
@@ -351,7 +351,7 @@ public:
             m_values = exchange(other.m_values, nullptr);
             m_capacity = exchange(other.m_capacity, 0);
             m_size = exchange(other.m_size, 0);
-            m_allocator = ASL_MOVE(other.m_allocator);
+            m_allocator = std::move(other.m_allocator);
         }
         return *this;
     }
@@ -393,7 +393,7 @@ public:
     {
         maybe_grow_to_fit_one_more();
         ASL_ASSERT(m_size < max_size());
-        insert_inner(ASL_MOVE(T{ASL_FWD(args)...}), m_tags, m_values, m_capacity, &m_size);
+        insert_inner(T{std::forward<Args>(args)...}, m_tags, m_values, m_capacity, &m_size);
     }
 
     template<typename U>

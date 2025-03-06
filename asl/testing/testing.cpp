@@ -4,26 +4,40 @@
 
 #include "asl/testing/testing.hpp"
 
+#include "asl/base/assert.hpp"
+#include "asl/base/meta.hpp"
+#include "asl/base/utility.hpp"
 #include "asl/io/print.hpp"
 
-static asl::testing::Test* g_head = nullptr;
-static asl::testing::Test* g_tail = nullptr;
+namespace
+{
+
+struct TestingState
+{
+    asl::testing::Test* head = nullptr;
+    asl::testing::Test* tail = nullptr;
+
+    bool current_test_fail = false;
+};
+
+}  // namespace
+
+// NOLINTNEXTLINE(*-avoid-non-const-global-variables)
+static TestingState g_state{};
 
 void asl::testing::register_test(Test* test)
 {
-    if (g_head == nullptr && g_tail == nullptr)
+    if (g_state.head == nullptr && g_state.tail == nullptr)
     {
-        g_head = test;
-        g_tail = test;
+        g_state.head = test;
+        g_state.tail = test;
     }
     else
     {
-        g_tail->m_next = test;
-        test->m_prev = asl::exchange(g_tail, test);
+        g_state.tail->m_next = test;
+        test->m_prev = asl::exchange(g_state.tail, test);
     }
 }
-
-static bool g_current_test_fail = false;
 
 void asl::testing::report_failure(const char* msg, const asl::source_location& sl)
 {
@@ -31,10 +45,10 @@ void asl::testing::report_failure(const char* msg, const asl::source_location& s
     asl::eprint("Test assertion failed at {}, line {}:\n", sl.file, sl.line);
     asl::eprint("    {}\n", msg);
     asl::eprint("--------------------------------------------------------------\n");
-    g_current_test_fail = true;
+    g_state.current_test_fail = true;
 }
 
-static void report_assert_failure(const char* msg, const asl::source_location& sl, void*)
+static void report_assert_failure(const char* msg, const asl::source_location& sl, void* /* userdata */)
 {
     asl::eprint("------------------------------------------------------------\n");
     asl::eprint("Assertion failure at {}, line {}:\n", sl.file, sl.line);
@@ -55,14 +69,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
     asl::testing::Test* failed_head = nullptr;
 
-    for (auto* it = g_head; it != nullptr; it = it->m_next)
+    for (auto* it = g_state.head; it != nullptr; it = it->m_next)
     {
         asl::eprint(GREEN("[ RUN      ]") " {}\n", it->m_case_name);
 
-        g_current_test_fail = false;
+        g_state.current_test_fail = false;
         it->m_fn();
 
-        if (!g_current_test_fail)
+        if (!g_state.current_test_fail)
         {
             asl::eprint(GREEN("[       OK ]") " {}\n", it->m_case_name);
             pass += 1;
