@@ -5,6 +5,7 @@
 #include "asl/testing/testing.hpp"
 #include "asl/containers/hash_map.hpp"
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(default)
 {
     asl::hash_map<int, int> map;

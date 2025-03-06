@@ -80,7 +80,7 @@ private:
         {
             return is_on_heap(size_encoded)
                 ? static_cast<isize_t>(size_encoded & (~kOnHeapMask))
-                : static_cast<isize_t>(size_encoded >> 56);
+                : static_cast<isize_t>(size_encoded >> 56U);
         }
     }
 
@@ -110,7 +110,7 @@ private:
     constexpr void set_size_inline(isize_t new_size)
     {
         ASL_ASSERT(new_size >= 0 && new_size <= kInlineCapacity);
-        size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56);
+        size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56U);
         store_size_encoded(size_encoded);
     }
 
@@ -328,12 +328,12 @@ public:
 
         if (currently_on_heap && trivially_move_constructible<T>)
         {
-            m_data = reinterpret_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
+            m_data = static_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
             m_capacity = new_capacity;
             return;
         }
 
-        T* new_data = reinterpret_cast<T*>(m_allocator.alloc(new_layout));
+        T* new_data = static_cast<T*>(m_allocator.alloc(new_layout));
 
         relocate_uninit_n(new_data, old_data, current_size);
 
@@ -394,6 +394,7 @@ public:
         }
         else
         {
+            // NOLINTNEXTLINE(*-reinterpret-cast)
             return self.is_on_heap() ? return_type{ self.m_data } : reinterpret_cast<return_type>(&self);
         }
     }

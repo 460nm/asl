@@ -10,7 +10,7 @@
 
 ASL_TEST(empty)
 {
-    asl::hash_set<int> set;
+    const asl::hash_set<int> set;
 
     ASL_TEST_EXPECT(set.size() == 0);
 
@@ -42,7 +42,7 @@ ASL_TEST(a_bunch_of_ints)
 {
     asl::hash_set<int> set;
 
-    int count = 3000;
+    const int count = 3000;
 
     for (int i = 0; i < count; ++i)
     {
@@ -98,6 +98,7 @@ struct CustomHasher
     }
 };
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(destructor_and_remove)
 {
     static constexpr int kCount = 200;
@@ -113,9 +114,9 @@ ASL_TEST(destructor_and_remove)
 
         ASL_TEST_EXPECT(set.size() == kCount);
 
-        for (int i = 0; i < kCount; ++i)
+        for (const bool i : destroyed)
         {
-            ASL_TEST_EXPECT(!destroyed[i]); // NOLINT
+            ASL_TEST_EXPECT(!i); // NOLINT
         }
 
         for (int i = 0; i < kCount; i += 2)
@@ -132,9 +133,9 @@ ASL_TEST(destructor_and_remove)
         }
     }
 
-    for (int i = 0; i < kCount; ++i)
+    for (const bool i : destroyed)
     {
-        ASL_TEST_EXPECT(destroyed[i]); // NOLINT
+        ASL_TEST_EXPECT(i); // NOLINT
     }
 }
 
@@ -147,7 +148,7 @@ ASL_TEST(copy)
         set1.insert(i);
     }
 
-    asl::hash_set<int> set2 = set1;
+    const asl::hash_set<int> set2 = set1;
     asl::hash_set<int> set3;
     set3 = set1;
 

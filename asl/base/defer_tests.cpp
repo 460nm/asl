@@ -10,25 +10,25 @@ ASL_TEST(defer)
     uint32_t a = 0;
 
     {
-        ASL_DEFER [&a]() { a |= 1; };
+        ASL_DEFER [&a]() { a |= 1U; };
         ASL_TEST_EXPECT(a == 0);
 
         {
-            ASL_DEFER [&a]() { a |= 2; };
-            ASL_DEFER [&a]() { a |= 4; };
+            ASL_DEFER [&a]() { a |= 2U; };
+            ASL_DEFER [&a]() { a |= 4U; };
             ASL_TEST_EXPECT(a == 0);
         }
 
         ASL_TEST_EXPECT(a == 6);
 
         {
-            ASL_DEFER [&a]() { a |= 8; };
+            ASL_DEFER [&a]() { a |= 8U; };
             ASL_TEST_EXPECT(a == 6);
         }
 
         ASL_TEST_EXPECT(a == 14);
 
-        ASL_DEFER [&a]() { a |= 16; };
+        ASL_DEFER [&a]() { a |= 16U; };
         ASL_TEST_EXPECT(a == 14);
     }
 

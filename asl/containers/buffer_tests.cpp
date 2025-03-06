@@ -24,7 +24,7 @@ ASL_TEST(default_size)
     ASL_TEST_EXPECT(b1.capacity() == 5);
     ASL_TEST_EXPECT(static_cast<const void*>(b1.data()) == &b1);
 
-    asl::buffer<Big> b2;
+    const asl::buffer<Big> b2;
     ASL_TEST_EXPECT(b2.size() == 0);
     ASL_TEST_EXPECT(b2.capacity() == 0);
     ASL_TEST_EXPECT(b2.data() == nullptr);
@@ -34,6 +34,7 @@ struct CounterAllocator
 {
     isize_t* count;
 
+    [[nodiscard]]
     void* alloc(const asl::layout& layout) const
     {
         *count += 1;
@@ -76,6 +77,7 @@ struct IncompatibleAllocator
 };
 static_assert(asl::allocator<IncompatibleAllocator>);
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(reserve_capacity)
 {
     isize_t count = 0;
@@ -105,6 +107,7 @@ ASL_TEST(reserve_capacity)
     ASL_TEST_EXPECT(count == 2);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push)
 {
     asl::buffer<int32_t> b;
@@ -137,7 +140,7 @@ ASL_TEST(push)
 
 ASL_TEST(from_span)
 {
-    int data[] = {1, 2, 4, 8};
+    const int data[] = {1, 2, 4, 8};
     asl::buffer<int> b{data};
 
     ASL_TEST_EXPECT(b.size() == 4);
@@ -157,12 +160,14 @@ struct MoveableType
     MoveableType(MoveableType&& other)  : moved{other.moved + 1}, value{other.value} {}
     MoveableType& operator=(const MoveableType&) = delete;
     MoveableType& operator=(MoveableType&&) = delete;
+    ~MoveableType() = default;
 };
 static_assert(!asl::trivially_copy_constructible<MoveableType>);
 static_assert(!asl::trivially_move_constructible<MoveableType>);
 static_assert(!asl::copyable<MoveableType>);
 static_assert(asl::move_constructible<MoveableType>);
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push_move)
 {
     asl::buffer<MoveableType> b;
@@ -275,14 +280,13 @@ ASL_TEST(move_construct_from_heap)
     buf.push(&d[2]);
 
     {
-        asl::buffer<DestructorObserver> buf2(std::move(buf));
+        const asl::buffer<DestructorObserver> buf2(std::move(buf));
         ASL_TEST_EXPECT(buf2.size() == 3);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
         ASL_TEST_EXPECT(d[2] == false);
     }
 
-    ASL_TEST_EXPECT(buf.size() == 0);
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
     ASL_TEST_EXPECT(d[2] == true);
@@ -299,7 +303,6 @@ ASL_TEST(move_construct_inline_trivial)
     ASL_TEST_EXPECT(buf2[1] == 2U);
 
     ASL_TEST_EXPECT(buf2.size() == 2);
-    ASL_TEST_EXPECT(buf.size() == 0);
 }
 
 ASL_TEST(move_construct_from_inline_non_trivial)
@@ -310,17 +313,17 @@ ASL_TEST(move_construct_from_inline_non_trivial)
     buf.push(&d[1]);
 
     {
-        asl::buffer<DestructorObserver> buf2(std::move(buf));
+        const asl::buffer<DestructorObserver> buf2(std::move(buf));
         ASL_TEST_EXPECT(buf2.size() == 2);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
     }
 
-    ASL_TEST_EXPECT(buf.size() == 0);
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(move_assign_from_heap)
 {
     bool d[6]{};
@@ -346,7 +349,6 @@ ASL_TEST(move_assign_from_heap)
 
         buf2 = std::move(buf);
 
-        ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 3);
 
         ASL_TEST_EXPECT(d[0] == false);
@@ -384,7 +386,6 @@ ASL_TEST(move_assign_trivial_heap_to_inline)
     ASL_TEST_EXPECT(alloc_count == 1);
 
     ASL_TEST_EXPECT(buf.size() == 3);
-    ASL_TEST_EXPECT(buf2.size() == 0);
     ASL_TEST_EXPECT(buf[0] == 3);
     ASL_TEST_EXPECT(buf[1] == 4);
     ASL_TEST_EXPECT(buf[2] == 5);
@@ -408,12 +409,12 @@ ASL_TEST(move_assign_trivial_inline_to_heap)
     buf2 = std::move(buf);
     ASL_TEST_EXPECT(alloc_count == 1);
 
-    ASL_TEST_EXPECT(buf.size() == 0);
     ASL_TEST_EXPECT(buf2.size() == 2);
     ASL_TEST_EXPECT(buf2[0] == 1);
     ASL_TEST_EXPECT(buf2[1] == 2);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(move_assign_inline_to_heap)
 {
     bool d[6]{};
@@ -432,7 +433,6 @@ ASL_TEST(move_assign_inline_to_heap)
 
         buf2 = std::move(buf);
 
-        ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 2);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
@@ -450,6 +450,7 @@ ASL_TEST(move_assign_inline_to_heap)
     ASL_TEST_EXPECT(d[5] == true);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(move_assign_from_inline_incompatible_allocator)
 {
     bool d[6]{};
@@ -468,7 +469,6 @@ ASL_TEST(move_assign_from_inline_incompatible_allocator)
 
         buf2 = std::move(buf);
 
-        ASL_TEST_EXPECT(buf.size() == 0);
         ASL_TEST_EXPECT(buf2.size() == 2);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);

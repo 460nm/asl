@@ -13,3 +13,8 @@ Checks:
   - "-*noexcept*"
   - "-*-magic-numbers"
   - "-*-named-parameter"
+  - "-misc-include-cleaner"
+  - "-google-runtime-int"
+  - "-bugprone-easily-swappable-parameters"
+  - "-*-signed-bitwise"
+  - "-*-avoid-do-while"

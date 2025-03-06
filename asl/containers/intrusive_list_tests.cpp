@@ -23,6 +23,7 @@ ASL_TEST(empty_list)
     ASL_TEST_EXPECT(list.back() == nullptr);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push_front)
 {
     IntNode one{1};
@@ -75,6 +76,7 @@ ASL_TEST(push_front)
     ASL_TEST_ASSERT(it == end);
 }
 
+// NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push_back)
 {
     IntNode one{1};

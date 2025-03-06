@@ -29,10 +29,10 @@ static_assert(asl::hashable<int64_t>);
 
 ASL_TEST(integers)
 {
-    uint64_t a = asl::hash_value<uint16_t>(45);
-    uint64_t b = asl::hash_value<uint16_t>(45);
-    uint64_t c = asl::hash_value<uint16_t>(46);
-    uint64_t d = asl::hash_value<uint32_t>(45);
+    const uint64_t a = asl::hash_value<uint16_t>(45);
+    const uint64_t b = asl::hash_value<uint16_t>(45);
+    const uint64_t c = asl::hash_value<uint16_t>(46);
+    const uint64_t d = asl::hash_value<uint32_t>(45);
 
     ASL_TEST_EXPECT(a == b);
     ASL_TEST_EXPECT(a != c);
@@ -187,19 +187,19 @@ static_assert(asl::uniquely_represented<asl::option<NonZero>>);
 
 ASL_TEST(option)
 {
-    asl::option<int> int1 = 0;
-    asl::option<int> int2 = 0;
-    asl::option<int> int3 = 1;
-    asl::option<int> int4 = asl::nullopt;
+    const asl::option<int> int1 = 0;
+    const asl::option<int> int2 = 0;
+    const asl::option<int> int3 = 1;
+    const asl::option<int> int4 = asl::nullopt;
 
     ASL_TEST_EXPECT(asl::hash_value(int1) == asl::hash_value(int2));
     ASL_TEST_EXPECT(asl::hash_value(int1) != asl::hash_value(int3));
     ASL_TEST_EXPECT(asl::hash_value(int1) != asl::hash_value(int4));
 
-    asl::option<NonZero> noz1{8};
-    asl::option<NonZero> noz2{8};
-    asl::option<NonZero> noz3{9};
-    asl::option<NonZero> noz4 = asl::nullopt;
+    const asl::option<NonZero> noz1{8};
+    const asl::option<NonZero> noz2{8};
+    const asl::option<NonZero> noz3{9};
+    const asl::option<NonZero> noz4 = asl::nullopt;
 
     ASL_TEST_EXPECT(asl::hash_value(noz1) == asl::hash_value(noz2));
     ASL_TEST_EXPECT(asl::hash_value(noz1) != asl::hash_value(noz3));
@@ -208,17 +208,18 @@ ASL_TEST(option)
 
 static_assert(asl::hashable<asl::status>);
 
+// NOLINTNEXTLINE(*-cognitive-complexity)
 ASL_TEST(status)
 {
-    asl::status s1 = asl::ok();
-    asl::status s2 = asl::ok();
-    asl::status s3 = asl::internal_error();
-    asl::status s4 = asl::internal_error();
-    asl::status s5 = asl::runtime_error();
-    asl::status s6 = asl::internal_error("Oh, no!");
-    asl::status s7 = asl::internal_error("Oh, no!");
-    asl::status s8 = asl::internal_error("Oh, no");
-    asl::status s9 = asl::runtime_error("Oh, no!");
+    const asl::status s1 = asl::ok();
+    const asl::status s2 = asl::ok();
+    const asl::status s3 = asl::internal_error();
+    const asl::status s4 = asl::internal_error();
+    const asl::status s5 = asl::runtime_error();
+    const asl::status s6 = asl::internal_error("Oh, no!");
+    const asl::status s7 = asl::internal_error("Oh, no!");
+    const asl::status s8 = asl::internal_error("Oh, no");
+    const asl::status s9 = asl::runtime_error("Oh, no!");
 
     ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
     ASL_TEST_EXPECT(asl::hash_value(s3) == asl::hash_value(s4));
@@ -244,13 +245,13 @@ static_assert(!asl::hashable<asl::status_or<int*>>);
 
 ASL_TEST(status_or)
 {
-    asl::status_or<int> s1 = 42;
-    asl::status_or<int> s2 = 42;
-    asl::status_or<int> s3 = 43;
-    asl::status_or<int> s4 = asl::runtime_error();
-    asl::status_or<int> s5 = asl::runtime_error();
-    asl::status_or<int> s6 = asl::runtime_error("Hello");
-    asl::status_or<int> s7 = asl::runtime_error("Hello");
+    const asl::status_or<int> s1 = 42;
+    const asl::status_or<int> s2 = 42;
+    const asl::status_or<int> s3 = 43;
+    const asl::status_or<int> s4 = asl::runtime_error();
+    const asl::status_or<int> s5 = asl::runtime_error();
+    const asl::status_or<int> s6 = asl::runtime_error("Hello");
+    const asl::status_or<int> s7 = asl::runtime_error("Hello");
 
     ASL_TEST_EXPECT(asl::hash_value(s1) == asl::hash_value(s2));
     ASL_TEST_EXPECT(asl::hash_value(s4) == asl::hash_value(s5));

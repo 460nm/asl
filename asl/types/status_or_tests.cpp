@@ -20,24 +20,24 @@ static_assert(!asl::moveable<asl::status_or<Pinned>>);
 
 ASL_TEST(ok)
 {
-    asl::status_or<int> s = 6;
+    const  asl::status_or<int> s = 6;
     ASL_TEST_EXPECT(s.ok());
     ASL_TEST_EXPECT(s.code() == asl::status_code::ok);
 }
 
 ASL_TEST(from_status)
 {
-    asl::status_or<char> s = asl::internal_error();
+    const asl::status_or<char> s = asl::internal_error();
     ASL_TEST_EXPECT(!s.ok());
     ASL_TEST_EXPECT(s.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s.message() == ""_sv);
 
-    asl::status_or<int> s2 = asl::internal_error("oh no");
+    const asl::status_or<int> s2 = asl::internal_error("oh no");
     ASL_TEST_EXPECT(!s2.ok());
     ASL_TEST_EXPECT(s2.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s2.message() == "oh no"_sv);
 
-    asl::status_or<int> s3 = asl::internal_error("{} {}", 1, 2);
+    const asl::status_or<int> s3 = asl::internal_error("{} {}", 1, 2);
     ASL_TEST_EXPECT(!s3.ok());
     ASL_TEST_EXPECT(s3.code() == asl::status_code::internal);
     ASL_TEST_EXPECT(s3.message() == "1 2"_sv);
@@ -53,7 +53,7 @@ ASL_TEST(destructor)
         ASL_TEST_EXPECT(!d);
 
         asl::status_or s2 = std::move(s);
-        ASL_TEST_EXPECT(s.ok());
+        ASL_TEST_EXPECT(s2.ok());
         ASL_TEST_EXPECT(!d);
 
         s = std::move(s2);
@@ -79,8 +79,8 @@ ASL_TEST(copy)
 
 ASL_TEST(value_or)
 {
-    asl::status_or<int> s = 7;
-    asl::status_or<int> s2 = asl::internal_error();
+    const asl::status_or<int> s = 7;
+    const asl::status_or<int> s2 = asl::internal_error();
 
     ASL_TEST_EXPECT(s.value_or(45) == 7);
     ASL_TEST_EXPECT(s2.value_or(45) == 45);

@@ -81,7 +81,7 @@ ASL_TEST(niche)
     ASL_TEST_EXPECT(destroyed);
 }
 
-class Base
+class Base // NOLINT
 {
 public:
     virtual ~Base() = default;

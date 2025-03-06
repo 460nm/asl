@@ -26,7 +26,7 @@ public:
     constexpr string() requires default_constructible<Allocator> = default;
     explicit constexpr string(Allocator allocator) : m_buffer{std::move(allocator)} {}
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
+    // NOLINTNEXTLINE(*explicit*)
     constexpr string(string_view sv)
         requires default_constructible<Allocator>
         : m_buffer{sv.as_span()}
@@ -44,16 +44,16 @@ public:
     constexpr string& operator=(const string&) requires copy_assignable<Allocator> = default;
     constexpr string& operator=(string&&) = default;
 
-    constexpr isize_t size() const { return m_buffer.size(); }
-    constexpr const char* data() const { return m_buffer.data(); }
+    [[nodiscard]] constexpr isize_t size() const { return m_buffer.size(); }
+    [[nodiscard]] constexpr const char* data() const { return m_buffer.data(); }
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
+    // NOLINTNEXTLINE(*explicit*)
     constexpr operator string_view() const
     {
         return as_string_view();
     }
 
-    constexpr string_view as_string_view() const
+    [[nodiscard]] constexpr string_view as_string_view() const
     {
         auto span = m_buffer.as_span();
         return string_view{span.data(), span.size()};

@@ -12,6 +12,7 @@ import time
 TO_FIX = [
     ".bazelrc",
     ".clang-tidy",
+    ".clangd",
     ".gitignore",
     "**/*.hpp",
     "**/*.h",

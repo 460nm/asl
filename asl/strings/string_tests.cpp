@@ -8,7 +8,7 @@
 
 ASL_TEST(default)
 {
-    asl::string s;
+    const asl::string s;
     ASL_TEST_ASSERT(s.size() == 0);
     ASL_TEST_ASSERT(s.as_string_view().size() == 0);
     ASL_TEST_ASSERT(s == ""_sv);
@@ -17,7 +17,7 @@ ASL_TEST(default)
 
 ASL_TEST(from_string_view)
 {
-    asl::string s = "hello"_sv;
+    const asl::string s = "hello"_sv;
     ASL_TEST_ASSERT(s.size() == 5);
     ASL_TEST_ASSERT(s == "hello"_sv);
 }

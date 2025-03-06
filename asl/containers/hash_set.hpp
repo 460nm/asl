@@ -75,7 +75,7 @@ protected:
     constexpr isize_t max_size() const
     {
         // Max load factor is 75%
-        return (m_capacity >> 1) + (m_capacity >> 2);
+        return (m_capacity >> 1) + (m_capacity >> 2); // NOLINT(*-signed-bitwise)
     }
 
     static isize_t size_to_capacity(isize_t size)
@@ -131,8 +131,8 @@ protected:
     {
         ASL_ASSERT(new_capacity >= kMinCapacity && is_pow2(new_capacity) && new_capacity > m_capacity);
 
-        auto* new_tags = reinterpret_cast<uint8_t*>(m_allocator.alloc(layout::array<uint8_t>(new_capacity)));
-        auto* new_values = reinterpret_cast<maybe_uninit<T>*>(m_allocator.alloc(layout::array<maybe_uninit<T>>(new_capacity)));
+        auto* new_tags = static_cast<uint8_t*>(m_allocator.alloc(layout::array<uint8_t>(new_capacity)));
+        auto* new_values = static_cast<maybe_uninit<T>*>(m_allocator.alloc(layout::array<maybe_uninit<T>>(new_capacity)));
         asl::memzero(new_tags, new_capacity);
 
         isize_t new_size = 0;
@@ -228,7 +228,6 @@ protected:
         result.tag = static_cast<uint8_t>(hash & kHashMask) | kHasValue;
 
         // NOLINTBEGIN(*-pointer-arithmetic)
-
         for (
             isize_t i = starting_index;
             i != starting_index || result.first_available_index < 0;

@@ -80,7 +80,7 @@ struct HashState
         {
             auto bytes = as_bytes(s);
             auto hashed = city_hash::CityHash128WithSeed(
-                reinterpret_cast<const char*>(bytes.data()),
+                reinterpret_cast<const char*>(bytes.data()), // NOLINT(*-reinterpret-cast)
                 static_cast<size_t>(bytes.size()),
                 h.state);
             return HashState{hashed};

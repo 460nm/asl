@@ -14,13 +14,13 @@ ASL_TEST(string_builder)
 
     ASL_TEST_EXPECT(b.as_string_view() == "abcdefg");
 
-    asl::string s = b.as_string();
+    const asl::string s = b.as_string();
     ASL_TEST_EXPECT(s == "abcdefg");
 }
 
 ASL_TEST(string_builder_rvalue)
 {
-    asl::string s = asl::StringBuilder{}.push('a').push("bcdef").push('g').finish();
+    const asl::string s = asl::StringBuilder{}.push('a').push("bcdef").push('g').finish();
 
     ASL_TEST_EXPECT(s == "abcdefg");
 }

@@ -151,7 +151,7 @@ asl::string_view asl::format_uint64(uint64_t v, asl::span<char, kMaxUint64Digits
 
     while (v >= 100)
     {
-        uint64_t x = v % 100;
+        const uint64_t x = v % 100;
         v /= 100;
         write_two(s_pairs.subspan(static_cast<isize_t>(x * 2)).first<2>());
     }
@@ -195,7 +195,7 @@ void asl::AslFormat(Formatter& f, int64_t v)
     if (v < 0)
     {
         f.write("-");
-        uint64_t absolute_value = ~(bit_cast<uint64_t>(v) - 1);
+        const uint64_t absolute_value = ~(bit_cast<uint64_t>(v) - 1);
         AslFormat(f, absolute_value);
     }
     else

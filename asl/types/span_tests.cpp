@@ -17,7 +17,7 @@ static_assert(asl::size_of<asl::span<int, 2>> == asl::size_of<void*>);
 
 ASL_TEST(empty_dynamic)
 {
-    asl::span<int> s;
+    const asl::span<int> s;
     ASL_TEST_EXPECT(s.size() == 0);
     ASL_TEST_EXPECT(s.size_bytes() == 0);
     ASL_TEST_EXPECT(s.is_empty());
@@ -26,7 +26,7 @@ ASL_TEST(empty_dynamic)
 
 ASL_TEST(empty_static)
 {
-    asl::span<int, 0> s;
+    const asl::span<int, 0> s;
     ASL_TEST_EXPECT(s.size() == 0);
     ASL_TEST_EXPECT(s.size_bytes() == 0);
     ASL_TEST_EXPECT(s.is_empty());
@@ -35,7 +35,7 @@ ASL_TEST(empty_static)
 ASL_TEST(from_array_dynamic)
 {
     int array[] = {1, 2, 3};
-    asl::span<int> span = array;
+    const asl::span<int> span = array;
     ASL_TEST_ASSERT(span.size() == 3);
     ASL_TEST_EXPECT(span[0] == 1);
     ASL_TEST_EXPECT(span[1] == 2);
@@ -56,7 +56,7 @@ static_assert(!asl::constructible_from<asl::span<int32_t, 8>, int32_t(&)[10]>);
 ASL_TEST(from_array_static)
 {
     int array[] = {1, 2, 3};
-    asl::span<int, 3> span = array;
+    const asl::span<int, 3> span = array;
     ASL_TEST_ASSERT(span.size() == 3);
     ASL_TEST_EXPECT(span[0] == 1);
     ASL_TEST_EXPECT(span[1] == 2);
@@ -77,21 +77,21 @@ ASL_TEST(conversion)
 {
     int array[] = {1, 2, 3};
 
-    asl::span<int> span1 = array;
+    const asl::span<int> span1 = array;
 
-    asl::span<int, 3> span2{span1};
+    const asl::span<int, 3> span2{span1};
     ASL_TEST_ASSERT(span2.size() == 3);
     ASL_TEST_EXPECT(span2[0] == 1);
     ASL_TEST_EXPECT(span2[1] == 2);
     ASL_TEST_EXPECT(span2[2] == 3);
 
-    asl::span<int> span3 = span2;
+    const asl::span<int> span3 = span2;
     ASL_TEST_ASSERT(span3.size() == 3);
     ASL_TEST_EXPECT(span3[0] == 1);
     ASL_TEST_EXPECT(span3[1] == 2);
     ASL_TEST_EXPECT(span3[2] == 3);
 
-    asl::span<const int, 3> span4{span2};
+    const asl::span<const int, 3> span4{span2};
     ASL_TEST_ASSERT(span4.size() == 3);
     ASL_TEST_EXPECT(span4[0] == 1);
     ASL_TEST_EXPECT(span4[1] == 2);
@@ -138,7 +138,7 @@ static_assert(!IsValidSubspan<asl::span<int, 4>, 2, 3>);
 ASL_TEST(subspan_static_from_static)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int, 4> span{array};
+    const asl::span<int, 4> span{array};
 
     auto s1 = span.subspan<0>();
     ASL_TEST_ASSERT(s1.size() == 4);
@@ -164,7 +164,7 @@ ASL_TEST(subspan_static_from_static)
 ASL_TEST(subspan_static_from_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.subspan<0>();
     ASL_TEST_ASSERT(s1.size() == 4);
@@ -190,7 +190,7 @@ ASL_TEST(subspan_static_from_dynamic)
 ASL_TEST(subspan_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.subspan(0);
     ASL_TEST_ASSERT(s1.size() == 4);
@@ -249,7 +249,7 @@ static_assert(!IsValidFirst<asl::span<int, 4>, asl::dynamic_size>);
 ASL_TEST(first_static_from_static)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int, 4> span{array};
+    const asl::span<int, 4> span{array};
 
     auto s1 = span.first<0>();
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -270,7 +270,7 @@ ASL_TEST(first_static_from_static)
 ASL_TEST(first_static_from_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.first<0>();
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -291,7 +291,7 @@ ASL_TEST(first_static_from_dynamic)
 ASL_TEST(first_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.first(0);
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -345,7 +345,7 @@ static_assert(!IsValidLast<asl::span<int, 4>, asl::dynamic_size>);
 ASL_TEST(last_static_from_static)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int, 4> span{array};
+    const asl::span<int, 4> span{array};
 
     auto s1 = span.last<0>();
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -366,7 +366,7 @@ ASL_TEST(last_static_from_static)
 ASL_TEST(last_static_from_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.last<0>();
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -387,7 +387,7 @@ ASL_TEST(last_static_from_dynamic)
 ASL_TEST(last_dynamic)
 {
     int array[] = {1, 2, 3, 4};
-    asl::span<int> span{array};
+    const asl::span<int> span{array};
 
     auto s1 = span.last(0);
     ASL_TEST_ASSERT(s1.size() == 0);
@@ -416,8 +416,8 @@ static_assert(HasAsMutableBytes<const int*>);
 ASL_TEST(as_bytes)
 {
      uint32_t data[] = {0x01020304, 0x05060708};
-     asl::span s1(data);
-     asl::span s2 = asl::as_bytes(s1);
+     const asl::span s1(data);
+     const asl::span s2 = asl::as_bytes(s1);
 
      ASL_TEST_ASSERT(s2.size() == 8);
      ASL_TEST_ASSERT(static_cast<int>(s2[0]) == 0x04);
@@ -433,8 +433,8 @@ ASL_TEST(as_bytes)
 ASL_TEST(as_mutable_bytes)
 {
      uint32_t data[] = {0x01020304, 0x05060708};
-     asl::span s1(data);
-     asl::span s2 = asl::as_mutable_bytes(s1);
+     const asl::span s1(data);
+     const asl::span s2 = asl::as_mutable_bytes(s1);
 
      ASL_TEST_ASSERT(s2.size() == 8);
      ASL_TEST_ASSERT(static_cast<int>(s2[0]) == 0x04);

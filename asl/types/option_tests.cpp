@@ -99,8 +99,8 @@ static_assert(!asl::trivially_move_assignable<asl::option<MoveableOnly>>);
 
 ASL_TEST(make_null)
 {
-    asl::option<int> a;
-    asl::option<int> b = asl::nullopt;
+    const asl::option<int> a;
+    const asl::option<int> b = asl::nullopt;
 
     ASL_TEST_EXPECT(!a.has_value());
     ASL_TEST_EXPECT(!b.has_value());
@@ -108,7 +108,7 @@ ASL_TEST(make_null)
 
 ASL_TEST(make_value)
 {
-    asl::option<int> a = 48;
+    const asl::option<int> a = 48;
 
     ASL_TEST_EXPECT(a.has_value());
 }
@@ -132,7 +132,7 @@ ASL_TEST(call_destructor)
         asl::option<DestructorObserver> opt(std::move(obs));
         ASL_TEST_EXPECT(!destroyed);
 
-        asl::option<DestructorObserver> opt2 = std::move(opt);
+        const asl::option<DestructorObserver> opt2 = std::move(opt);
         ASL_TEST_EXPECT(!destroyed);
     }
 
@@ -213,7 +213,7 @@ ASL_TEST(convert_move)
     ASL_TEST_ASSERT(opt16.has_value());
     ASL_TEST_EXPECT(opt16.value() == 8);
 
-    opt8 = std::move(uint8_t{10});
+    opt8 = uint8_t{10};
     ASL_TEST_ASSERT(opt8.has_value());
     ASL_TEST_EXPECT(opt8.value() == 10);
 
@@ -227,8 +227,8 @@ ASL_TEST(convert_move)
 
 ASL_TEST(value_or)
 {
-    asl::option<int> a = asl::nullopt;
-    asl::option<int> b = 2;
+    const asl::option<int> a = asl::nullopt;
+    const asl::option<int> b = 2;
 
     ASL_TEST_EXPECT(a.value_or(5) == 5);
     ASL_TEST_EXPECT(b.value_or(5) == 2);
@@ -296,8 +296,8 @@ ASL_TEST(transform)
 
 ASL_TEST(or_else)
 {
-    asl::option<int> a = 5;
-    asl::option<int> b;
+    const asl::option<int> a = 5;
+    const asl::option<int> b;
 
     auto fn = []() -> asl::option<int> { return 12; };
 

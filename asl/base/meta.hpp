@@ -153,7 +153,7 @@ template<typename T> struct _tame_helper { using type = T; };
 
 #define TAME_HELPER_IMPL(TRAILING)                                  \
     template<typename R, typename... Args>                          \
-    struct _tame_helper<R(Args...) TRAILING> { using type = R(Args...); }
+    struct _tame_helper<R(Args...) TRAILING> { using type = R(Args...); } // NOLINT(*-parentheses)
 
 TAME_HELPER_IMPL();
 TAME_HELPER_IMPL(&);

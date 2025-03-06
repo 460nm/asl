@@ -10,20 +10,20 @@ static_assert(asl::trivially_copy_constructible<asl::string_view>);
 
 ASL_TEST(default)
 {
-    asl::string_view s1;
+    const asl::string_view s1;
     ASL_TEST_EXPECT(s1.is_empty());
 
-    asl::string_view s2 = nullptr;
+    const asl::string_view s2 = nullptr;
     ASL_TEST_EXPECT(s2.is_empty());
 }
 
 ASL_TEST(from_literal)
 {
-    asl::string_view s1 = "Hello"_sv;
+    const asl::string_view s1 = "Hello"_sv;
     ASL_TEST_ASSERT(s1.size() == 5);
     ASL_TEST_EXPECT(asl::memcmp(s1.data(), "Hello", 5) == 0);
 
-    asl::string_view s2 = ""_sv;
+    const asl::string_view s2 = ""_sv;
     ASL_TEST_EXPECT(s2.is_empty());
 }
 
@@ -47,7 +47,7 @@ ASL_TEST(from_zstr)
 
 ASL_TEST(substr1)
 {
-    asl::string_view s1 = "abcd";
+    const asl::string_view s1 = "abcd";
 
     asl::string_view s2 = s1.substr(0);
     ASL_TEST_ASSERT(s2.size() == 4);
@@ -63,7 +63,7 @@ ASL_TEST(substr1)
 
 ASL_TEST(substr2)
 {
-    asl::string_view s1 = "abcd";
+    const asl::string_view s1 = "abcd";
 
     asl::string_view s2 = s1.substr(0, 4);
     ASL_TEST_ASSERT(s2.size() == 4);
@@ -82,7 +82,7 @@ ASL_TEST(substr2)
 
 ASL_TEST(first)
 {
-    asl::string_view s1 = "abcd";
+    const asl::string_view s1 = "abcd";
 
     asl::string_view s2 = s1.first(0);
     ASL_TEST_ASSERT(s2.size() == 0);
@@ -98,7 +98,7 @@ ASL_TEST(first)
 
 ASL_TEST(last)
 {
-    asl::string_view s1 = "abcd";
+    const asl::string_view s1 = "abcd";
 
     asl::string_view s2 = s1.last(0);
     ASL_TEST_ASSERT(s2.size() == 0);
