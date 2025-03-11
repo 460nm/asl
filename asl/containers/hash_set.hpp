@@ -72,7 +72,7 @@ protected:
 
     ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
 
-    constexpr isize_t max_size() const
+    [[nodiscard]] constexpr isize_t max_size() const
     {
         // Max load factor is 75%
         return (m_capacity >> 1) + (m_capacity >> 2); // NOLINT(*-signed-bitwise)
@@ -384,7 +384,7 @@ public:
         }
     }
 
-    constexpr isize_t size() const { return m_size; }
+    [[nodiscard]] constexpr isize_t size() const { return m_size; }
 
     template<typename... Args>
     void insert(Args&&... args)

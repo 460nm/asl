@@ -32,7 +32,7 @@ struct type_erased_arg
     template<formattable T>
     static constexpr void erased_fn(Formatter& f, const void* data)
     {
-        AslFormat(f, *reinterpret_cast<const T*>(data));
+        AslFormat(f, *static_cast<const T*>(data));
     }
 
     template<formattable T>
@@ -44,7 +44,7 @@ struct type_erased_arg
 
 void format(Writer*, string_view fmt, span<const type_erased_arg> args);
 
-} // namespace internals
+}  // namespace format_internals
 
 class Formatter
 {
@@ -60,7 +60,7 @@ public:
         m_writer->write(as_bytes(s.as_span()));
     }
 
-    constexpr Writer* writer() const { return m_writer; }
+    [[nodiscard]] constexpr Writer* writer() const { return m_writer; }
 };
 
 template<formattable... Args>
@@ -68,7 +68,7 @@ void format(Writer* w, string_view fmt, const Args&... args)
 {
     if constexpr (types_count<Args...> > 0)
     {
-        format_internals::type_erased_arg type_erased_args[] = {
+        const format_internals::type_erased_arg type_erased_args[] = {
             format_internals::type_erased_arg(args)...
         };
 

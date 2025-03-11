@@ -9,7 +9,7 @@
 #include "asl/base/utility.hpp"
 #include "asl/memory/layout.hpp"
 
-constexpr void* operator new(size_t, void* ptr)
+constexpr void* operator new(size_t, void* ptr) noexcept
 {
     return ptr;
 }

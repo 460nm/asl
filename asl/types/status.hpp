@@ -38,12 +38,12 @@ class status
         return static_cast<status_code>(bit_cast<uintptr_t>(payload) >> 1);
     }
 
-    constexpr bool is_inline() const
+    [[nodiscard]] constexpr bool is_inline() const
     {
         return m_payload == nullptr || (bit_cast<uintptr_t>(m_payload) & 1) != 0;
     }
 
-    constexpr status_code code_inline() const
+    [[nodiscard]] constexpr status_code code_inline() const
     {
         ASL_ASSERT(is_inline());
         if (m_payload == nullptr)
@@ -53,8 +53,8 @@ class status
         return payload_to_status(m_payload);
     }
 
-    status_code code_internal() const;
-    string_view message_internal() const;
+    [[nodiscard]] status_code code_internal() const;
+    [[nodiscard]] string_view message_internal() const;
 
     void ref();
     void unref();
@@ -103,17 +103,17 @@ public:
         return *this;
     }
 
-    constexpr bool ok() const
+    [[nodiscard]] constexpr bool ok() const
     {
         return m_payload == nullptr;
     }
 
-    constexpr status_code code() const
+    [[nodiscard]] constexpr status_code code() const
     {
         return is_inline() ? code_inline() : code_internal();
     }
 
-    constexpr string_view message() const
+    [[nodiscard]] constexpr string_view message() const
     {
         if (!is_inline())
         {
@@ -156,6 +156,6 @@ ASL_DEFINE_ERROR_(internal)
 ASL_DEFINE_ERROR_(runtime)
 ASL_DEFINE_ERROR_(invalid_argument)
 
-#define ASL_TRY(VALUE) if (VALUE.ok()) {} else { return std::move(VALUE).throw_status(); }
+#define ASL_TRY(VALUE) if ((VALUE).ok()) {} else { return std::move(VALUE).throw_status(); }
 
 } // namespace asl

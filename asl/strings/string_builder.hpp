@@ -30,7 +30,7 @@ public:
     constexpr StringBuilder& operator=(const StringBuilder&) requires copy_assignable<Allocator> = default;
     constexpr StringBuilder& operator=(StringBuilder&&) = default;
 
-    constexpr string_view as_string_view() const
+    [[nodiscard]] constexpr string_view as_string_view() const
     {
         auto span = m_buffer.as_span();
         return string_view{span.data(), span.size()};
@@ -98,10 +98,11 @@ public:
 
     void write(span<const byte> str) override
     {
+        // NOLINTNEXTLINE(*-reinterpret-cast)
         m_builder.push(string_view{reinterpret_cast<const char*>(str.data()), str.size()});
     }
 
-    constexpr string_view as_string_view() const
+    [[nodiscard]] constexpr string_view as_string_view() const
     {
         return m_builder.as_string_view();
     }

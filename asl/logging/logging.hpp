@@ -78,7 +78,7 @@ void log(level l, const source_location& sl, string_view fmt, const Args&... arg
     }
     else
     {
-        format_internals::type_erased_arg type_erased_args[] = {
+        const format_internals::type_erased_arg type_erased_args[] = {
             format_internals::type_erased_arg(args)...
         };
         log_inner(l, fmt, type_erased_args, sl);

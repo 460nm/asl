@@ -77,14 +77,14 @@ public:
     template<isize_t N>
     constexpr span(T (&array)[N]) // NOLINT(*explicit*)
         requires (kIsDynamic)
-        : m_data{array}
+        : m_data{static_cast<T*>(array)}
         , m_size{N}
     {}
 
     template<isize_t N>
     constexpr span(T (&array)[N]) // NOLINT(*explicit*)
         requires (!kIsDynamic) && (N == kSize)
-        : m_data{array}
+        : m_data{static_cast<T*>(array)}
     {}
 
     template<is_object U, isize_t kOtherSize>
@@ -109,24 +109,24 @@ public:
 
     ~span() = default;
 
-    constexpr isize_t size() const
+    [[nodiscard]] constexpr isize_t size() const
     {
         if constexpr (kIsDynamic) { return m_size; }
         else { return kSize; }
     }
 
-    constexpr isize_t size_bytes() const { return size() * size_of<T>; }
+    [[nodiscard]] constexpr isize_t size_bytes() const { return size() * size_of<T>; }
 
-    constexpr bool is_empty() const { return size() == 0; }
+    [[nodiscard]] constexpr bool is_empty() const { return size() == 0; }
 
-    constexpr T* data() const { return m_data; }
+    [[nodiscard]] constexpr T* data() const { return m_data; }
 
-    constexpr contiguous_iterator<T> begin() const
+    [[nodiscard]] constexpr contiguous_iterator<T> begin() const
     {
         return contiguous_iterator{m_data};
     }
 
-    constexpr contiguous_iterator<T> end() const
+    [[nodiscard]] constexpr contiguous_iterator<T> end() const
     {
         return contiguous_iterator{m_data + size()};
     }
@@ -138,7 +138,7 @@ public:
     }
 
     template<isize_t kOffset, isize_t kSubSize = dynamic_size>
-    constexpr auto subspan() const
+    [[nodiscard]] constexpr auto subspan() const
         requires (
             kOffset >= 0 &&
             (kIsDynamic || kOffset <= kSize) &&
@@ -165,13 +165,13 @@ public:
         }
     }
 
-    constexpr span<T> subspan(isize_t offset) const
+    [[nodiscard]] constexpr span<T> subspan(isize_t offset) const
     {
         ASL_ASSERT(offset <= size());
         return span<T>{ data() + offset, size() - offset };
     }
 
-    constexpr span<T> subspan(isize_t offset, isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> subspan(isize_t offset, isize_t sub_size) const
     {
         ASL_ASSERT(offset <= size() && !is_dynamic(sub_size));
         ASL_ASSERT(sub_size <= size() - offset);
@@ -179,7 +179,7 @@ public:
     }
 
     template<isize_t kSubSize>
-    constexpr auto first() const
+    [[nodiscard]] constexpr auto first() const
         requires (
             kSubSize >= 0 &&
             (kIsDynamic || kSubSize <= kSize)
@@ -189,14 +189,14 @@ public:
         return span<T, kSubSize>{ data(), kSubSize };
     }
 
-    constexpr span<T> first(isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> first(isize_t sub_size) const
     {
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data(), sub_size };
     }
 
     template<isize_t kSubSize>
-    constexpr auto last() const
+    [[nodiscard]] constexpr auto last() const
         requires (
             kSubSize >= 0 &&
             (kIsDynamic || kSubSize <= kSize)
@@ -206,7 +206,7 @@ public:
         return span<T, kSubSize>{ data() + size() - kSubSize, kSubSize };
     }
 
-    constexpr span<T> last(isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> last(isize_t sub_size) const
     {
         ASL_ASSERT(sub_size >= 0 && sub_size <= size());
         return span<T>{ data() + size() - sub_size, sub_size };

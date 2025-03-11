@@ -20,7 +20,7 @@ class string_view
 public:
     constexpr string_view() = default;
 
-    constexpr string_view(nullptr_t) : string_view() {} // NOLINT(*-explicit-conversions)
+    constexpr string_view(nullptr_t) : string_view() {} // NOLINT(*explicit*)
 
     constexpr string_view(const char* data, isize_t size)
         : m_data{data}
@@ -28,9 +28,9 @@ public:
     {}
 
     template<isize_t kSize>
-    constexpr string_view(const char (&str)[kSize]) // NOLINT(*-explicit-conversions)
+    constexpr string_view(const char (&str)[kSize]) // NOLINT(*explicit*)
         requires (kSize >= 1)
-        : m_data{str}
+        : m_data{static_cast<const char*>(str)}
         , m_size{kSize - 1}
     {
         ASL_ASSERT(m_data[kSize - 1] == '\0'); // NOLINT(*-pointer-arithmetic)
@@ -38,7 +38,7 @@ public:
 
     static constexpr string_view from_zstr(const char* str)
     {
-        return string_view(str, asl::strlen(str));
+        return {str, asl::strlen(str)};
     }
 
     constexpr string_view(const string_view&) = default;
@@ -49,18 +49,18 @@ public:
 
     ~string_view() = default;
 
-    constexpr isize_t size() const { return m_size; }
+    [[nodiscard]] constexpr isize_t size() const { return m_size; }
 
-    constexpr bool is_empty() const { return m_size == 0; }
+    [[nodiscard]] constexpr bool is_empty() const { return m_size == 0; }
 
-    constexpr const char* data() const { return m_data; }
+    [[nodiscard]] constexpr const char* data() const { return m_data; }
 
-    constexpr contiguous_iterator<const char> begin() const { return contiguous_iterator{m_data}; }
+    [[nodiscard]] constexpr contiguous_iterator<const char> begin() const { return contiguous_iterator{m_data}; }
 
     // NOLINTNEXTLINE(*-pointer-arithmetic)
-    constexpr contiguous_iterator<const char> end() const { return contiguous_iterator{m_data + m_size}; }
+    [[nodiscard]] constexpr contiguous_iterator<const char> end() const { return contiguous_iterator{m_data + m_size}; }
 
-    constexpr span<const char> as_span() const { return span<const char>(m_data, m_size); }
+    [[nodiscard]] constexpr span<const char> as_span() const { return {m_data, m_size}; }
 
     constexpr char operator[](isize_t i) const
     {
@@ -68,24 +68,24 @@ public:
         return m_data[i]; // NOLINT(*-pointer-arithmetic)
     }
 
-    constexpr string_view substr(isize_t offset, isize_t size) const
+    [[nodiscard]] constexpr string_view substr(isize_t offset, isize_t size) const
     {
         ASL_ASSERT(offset >= 0 && size >= 0 && offset + size <= m_size);
         return string_view{m_data + offset, size}; // NOLINT(*-pointer-arithmetic)
     }
 
-    constexpr string_view substr(isize_t offset) const
+    [[nodiscard]] constexpr string_view substr(isize_t offset) const
     {
         ASL_ASSERT(offset >= 0 && offset <= m_size);
         return string_view{m_data + offset, m_size - offset}; // NOLINT(*-pointer-arithmetic)
     }
 
-    constexpr string_view first(isize_t size) const
+    [[nodiscard]] constexpr string_view first(isize_t size) const
     {
         return substr(0, size);
     }
 
-    constexpr string_view last(isize_t size) const
+    [[nodiscard]] constexpr string_view last(isize_t size) const
     {
         return substr(m_size - size);
     }
@@ -107,5 +107,5 @@ public:
 
 constexpr asl::string_view operator ""_sv(const char* s, size_t len)
 {
-    return asl::string_view(s, static_cast<isize_t>(len));
+    return {s, static_cast<isize_t>(len)};
 }

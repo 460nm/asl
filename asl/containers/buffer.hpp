@@ -46,7 +46,7 @@ private:
     static_assert(align_of<T*> == align_of<isize_t>);
     static_assert(align_of<T*> == align_of<size_t>);
 
-    constexpr size_t load_size_encoded() const
+    [[nodiscard]] constexpr size_t load_size_encoded() const
     {
         size_t s{};
         asl::memcpy(&s, &m_size_encoded_, sizeof(size_t));
@@ -84,21 +84,21 @@ private:
         }
     }
 
-    constexpr bool is_on_heap() const
+    [[nodiscard]] constexpr bool is_on_heap() const
     {
         return is_on_heap(load_size_encoded());
     }
 
     constexpr T* push_uninit()
     {
-        isize_t sz = size();
+        const isize_t sz = size();
         resize_uninit_inner(sz + 1);
         return data() + sz;
     }
 
     constexpr void resize_uninit_inner(isize_t new_size)
     {
-        isize_t old_size = size();
+        const isize_t old_size = size();
         if (!trivially_destructible<T> && new_size < old_size)
         {
             destroy_n(data() + new_size, old_size - new_size);
@@ -110,7 +110,7 @@ private:
     constexpr void set_size_inline(isize_t new_size)
     {
         ASL_ASSERT(new_size >= 0 && new_size <= kInlineCapacity);
-        size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56U);
+        const size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56U);
         store_size_encoded(size_encoded);
     }
 
@@ -144,8 +144,8 @@ private:
         }
         else if (!assign || m_allocator == other.m_allocator)
         {
-            isize_t other_n = other.size();
-            isize_t this_n = size();
+            const isize_t other_n = other.size();
+            const isize_t this_n = size();
             resize_uninit_inner(other_n);
             if (other_n <= this_n)
             {
@@ -160,7 +160,7 @@ private:
         else
         {
             destroy();
-            isize_t n = other.size();
+            const isize_t n = other.size();
             ASL_ASSERT(n <= kInlineCapacity);
             relocate_uninit_n(data(), other.data(), n);
             set_size_inline(n);
@@ -176,8 +176,8 @@ private:
 
     void copy_range(span<const T> to_copy)
     {
-        isize_t this_size = size();
-        isize_t new_size = to_copy.size();
+        const isize_t this_size = size();
+        const isize_t new_size = to_copy.size();
 
         resize_uninit_inner(to_copy.size());
         ASL_ASSERT(capacity() >= new_size);
@@ -268,12 +268,12 @@ public:
         destroy();
     }
 
-    constexpr isize_t size() const
+    [[nodiscard]] constexpr isize_t size() const
     {
         return decode_size(load_size_encoded());
     }
 
-    constexpr isize_t capacity() const
+    [[nodiscard]] constexpr isize_t capacity() const
     {
         if constexpr (kInlineCapacity == 0)
         {
@@ -287,7 +287,7 @@ public:
 
     void clear()
     {
-        isize_t current_size = size();
+        const isize_t current_size = size();
         if (current_size == 0) { return; }
 
         destroy_n(data(), current_size);
@@ -357,7 +357,7 @@ public:
     constexpr void resize_zero(isize_t new_size)
         requires trivially_default_constructible<T> && trivially_destructible<T>
     {
-        isize_t old_size = size();
+        const isize_t old_size = size();
         resize_uninit(new_size);
 
         if (new_size > old_size)

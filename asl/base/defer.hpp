@@ -18,7 +18,9 @@ class DeferCallback
 
 public:
     template<typename T>
-    explicit DeferCallback(T&& callback) : m_callback(std::forward<T>(callback))
+    explicit DeferCallback(T&& callback)
+        requires (!same_as<un_cvref_t<T>, DeferCallback>)
+        : m_callback(std::forward<T>(callback))
     {
     }
 

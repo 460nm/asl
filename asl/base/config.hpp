@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+// NOLINTBEGIN(*-macro-to-enum)
+
 #pragma once
 
 #if defined(_WIN32)
@@ -19,3 +21,6 @@
 #else
     #error Unknown compiler
 #endif
+
+// NOLINTEND(*-macro-to-enum)
+

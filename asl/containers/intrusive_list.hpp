@@ -47,7 +47,7 @@ public:
     ASL_DEFAULT_MOVE(IntrusiveList);
     ~IntrusiveList() = default;
 
-    constexpr bool is_empty() const { return m_head == nullptr; }
+    [[nodiscard]] constexpr bool is_empty() const { return m_head == nullptr; }
 
     void push_front(T* node)
     {

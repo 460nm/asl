@@ -18,3 +18,6 @@ Checks:
   - "-bugprone-easily-swappable-parameters"
   - "-*-signed-bitwise"
   - "-*-avoid-do-while"
+  - "-cppcoreguidelines-pro-type-union-access"
+  - "-*-copy-assignment-signature"
+  - "-*-unconventional-assign-operator"

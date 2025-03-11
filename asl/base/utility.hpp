@@ -11,32 +11,31 @@ namespace std
 {
 
 template<typename T>
-constexpr asl::un_ref_t<T>&& move(T&& t) noexcept // NOLINT
+[[nodiscard]] constexpr asl::un_ref_t<T>&& move(T&& t) noexcept // NOLINT
 {
     return static_cast<asl::un_ref_t<T>&&>(t);
 }
 
 template<typename T>
-constexpr T&& forward(asl::un_ref_t<T>& t) noexcept // NOLINT
+[[nodiscard]] constexpr T&& forward(asl::un_ref_t<T>& t) noexcept // NOLINT
 {
     return static_cast<T&&>(t);
 }
 
 template< class T >
-constexpr T&& forward(asl::un_ref_t<T>&& t) noexcept // NOLINT
+[[nodiscard]] constexpr T&& forward(asl::un_ref_t<T>&& t) noexcept // NOLINT
 {
     return static_cast<T&&>(t);
 }
 
 template<typename T, typename U>
-constexpr auto forward_like(U&& x) noexcept -> asl::copy_cref_t<T, U> // NOLINT
+[[nodiscard]] constexpr auto forward_like(U&& x) noexcept -> asl::copy_cref_t<T, U> // NOLINT
 {
     using return_type = asl::copy_cref_t<T, U&&>;
     return static_cast<return_type>(x);
 }
 
 } // namespace std
-
 
 namespace asl
 {

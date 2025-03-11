@@ -99,13 +99,13 @@ public:
         }
     }
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
+    // NOLINTNEXTLINE(*explicit*)
     constexpr status_or(const status& status) : m_status{status}
     {
         ASL_ASSERT_RELEASE(!m_status.ok());
     }
 
-    // NOLINTNEXTLINE(*-explicit-conversions)
+    // NOLINTNEXTLINE(*explicit*)
     constexpr status_or(status&& status) : m_status{std::move(status)}
     {
         ASL_ASSERT_RELEASE(!m_status.ok());
@@ -125,11 +125,11 @@ public:
         , m_value{in_place, std::forward<U>(value)}
     {}
 
-    constexpr bool ok() const { return m_status.ok(); }
+    [[nodiscard]] constexpr bool ok() const { return m_status.ok(); }
 
-    constexpr status_code code() const { return m_status.code(); }
+    [[nodiscard]] constexpr status_code code() const { return m_status.code(); }
 
-    constexpr string_view message() const { return m_status.message(); }
+    [[nodiscard]] constexpr string_view message() const { return m_status.message(); }
 
     constexpr status&& throw_status() && { return std::move(m_status); }
 
