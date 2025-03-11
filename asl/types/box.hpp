@@ -40,7 +40,7 @@ public:
     {}
 
     template<is_object U>
-    requires convertible_from<T*, U*>
+    requires convertible_to<U*, T*>
     constexpr box(box<U, Allocator>&& other) // NOLINT(*explicit*,*-not-moved)
         : m_ptr{exchange(other.m_ptr, nullptr)}
         , m_alloc{std::move(other.m_alloc)}

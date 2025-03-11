@@ -110,7 +110,7 @@ public:
     constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place, niche_t{}} {}
 
     template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)
+    constexpr explicit (!convertible_to<U&&, T>)
     option(U&& value)
         requires (
             kHasNiche &&
@@ -121,7 +121,7 @@ public:
     {}
 
     template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)
+    constexpr explicit (!convertible_to<U&&, T>)
     option(U&& value)
         requires (
             !kHasNiche &&
@@ -159,7 +159,7 @@ public:
     }
 
     template<typename U>
-    constexpr explicit (!convertible_from<T, const U&>)
+    constexpr explicit (!convertible_to<const U&, T>)
     option(const option<U>& other)
         requires (
             constructible_from<T, const U&> &&
@@ -174,7 +174,7 @@ public:
     }
 
     template<typename U>
-    constexpr explicit (!convertible_from<T, U&&>)
+    constexpr explicit (!convertible_to<U&&, T>)
     option(option<U>&& other)
         requires (
             constructible_from<T, U&&> &&
@@ -377,14 +377,14 @@ public:
 
     template<typename U>
     constexpr T value_or(U&& other_value) const&
-        requires copy_constructible<T> && convertible_from<T, U&&>
+        requires copy_constructible<T> && convertible_to<U&&, T>
     {
         return has_value() ? value() : static_cast<T>(std::forward<U>(other_value));
     }
 
     template<typename U>
     constexpr T value_or(U&& other_value) &&
-        requires move_constructible<T> && convertible_from<T, U&&>
+        requires move_constructible<T> && convertible_to<U&&, T>
     {
         return has_value() ? std::move(value()) : static_cast<T>(std::forward<U>(other_value));
     }

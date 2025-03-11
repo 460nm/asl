@@ -62,20 +62,20 @@ static_assert(!asl::move_assignable<asl::option<Pinned>>);
 static_assert(asl::assignable_from<asl::option<Base*>&, asl::option<Derived*>>);
 static_assert(!asl::assignable_from<asl::option<Derived*>&, asl::option<Base*>>);
 
-static_assert(asl::convertible_from<asl::option<Base*>, asl::option<Derived*>>);
-static_assert(!asl::convertible_from<asl::option<Derived*>, asl::option<Base*>>);
+static_assert(asl::convertible_to<asl::option<Derived*>, asl::option<Base*>>);
+static_assert(!asl::convertible_to<asl::option<Base*>, asl::option<Derived*>>);
 
 class ExplicitConversion { public: explicit ExplicitConversion(int) {} };
 class ImplicitConversion { public: ImplicitConversion(int) {} }; // NOLINT
 
-static_assert(!asl::convertible_from<ExplicitConversion, int>);
-static_assert(asl::convertible_from<ImplicitConversion, int>);
+static_assert(!asl::convertible_to<int, ExplicitConversion>);
+static_assert(asl::convertible_to<int, ImplicitConversion>);
 
-static_assert(!asl::convertible_from<asl::option<ExplicitConversion>, int>);
-static_assert(asl::convertible_from<asl::option<ImplicitConversion>, int>);
+static_assert(!asl::convertible_to<int, asl::option<ExplicitConversion>>);
+static_assert(asl::convertible_to<int, asl::option<ImplicitConversion>>);
 
-static_assert(!asl::convertible_from<asl::option<ExplicitConversion>, asl::option<int>>);
-static_assert(asl::convertible_from<asl::option<ImplicitConversion>, asl::option<int>>);
+static_assert(!asl::convertible_to<asl::option<int>, asl::option<ExplicitConversion>>);
+static_assert(asl::convertible_to<asl::option<int>, asl::option<ImplicitConversion>>);
 
 static_assert(asl::trivially_copy_constructible<asl::option<int>>);
 static_assert(asl::trivially_copy_constructible<asl::option<TrivialType>>);

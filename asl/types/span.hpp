@@ -95,7 +95,7 @@ public:
                 kIsDynamic ||
                 is_dynamic(kOtherSize) ||
                 kOtherSize == kSize
-            ) && convertible_from<T(&)[], U(&)[]>
+            ) && convertible_to<U(&)[], T(&)[]>
         )
         : span{static_cast<U*>(other.data()), other.size()}
     {

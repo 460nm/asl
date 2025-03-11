@@ -205,19 +205,19 @@ class C {};
 class D { public: operator C() { return c; } C c; }; // NOLINT
 class E { public: template<class T> E(T&&) {} }; // NOLINT
 
-static_assert(asl::convertible_from<Base*, Derived*>);
-static_assert(!asl::convertible_from<Derived*, Base*>);
-static_assert(asl::convertible_from<C, D>);
-static_assert(!asl::convertible_from<C*, Derived*>);
-static_assert(asl::convertible_from<E, Base>);
+static_assert(asl::convertible_to<Derived*, Base*>);
+static_assert(!asl::convertible_to<Base*, Derived*>);
+static_assert(asl::convertible_to<D, C>);
+static_assert(!asl::convertible_to<Derived*, C*>);
+static_assert(asl::convertible_to<Base, E>);
 
-static_assert(!asl::convertible_from<int16_t(&)[], int32_t(&)[]>);
-static_assert(asl::convertible_from<const int16_t(&)[], int16_t(&)[]>);
-static_assert(asl::convertible_from<const int16_t(&)[], const int16_t(&)[]>);
-static_assert(asl::convertible_from<int16_t(&)[], int16_t(&)[]>);
-static_assert(!asl::convertible_from<int32_t(&)[], int16_t(&)[]>);
-static_assert(!asl::convertible_from<int16_t(&)[], const int16_t(&)[]>);
-static_assert(!asl::convertible_from<C(&)[], D(&)[]>);
+static_assert(!asl::convertible_to<int32_t(&)[], int16_t(&)[]>);
+static_assert(asl::convertible_to<int16_t(&)[], const int16_t(&)[]>);
+static_assert(asl::convertible_to<const int16_t(&)[], const int16_t(&)[]>);
+static_assert(asl::convertible_to<int16_t(&)[], int16_t(&)[]>);
+static_assert(!asl::convertible_to<int16_t(&)[], int32_t(&)[]>);
+static_assert(!asl::convertible_to<const int16_t(&)[], int16_t(&)[]>);
+static_assert(!asl::convertible_to<D(&)[], C(&)[]>);
 
 static_assert(asl::derived_from<Derived, Base>);
 static_assert(!asl::derived_from<Base, Derived>);

@@ -87,14 +87,11 @@ template<typename T> concept trivially_destructible = __is_trivially_destructibl
 template<typename T> concept copyable = copy_constructible<T> && copy_assignable<T>;
 template<typename T> concept moveable = move_constructible<T> && move_assignable<T>;
 
-template<typename To, typename From>
-concept convertible_from = __is_convertible(From, To);
-
 template<typename From, typename To>
 concept convertible_to = __is_convertible(From, To);
 
 template<typename Derived, class Base>
-concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_from<const volatile Base*, const volatile Derived*>;
+concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_to<const volatile Derived*, const volatile Base*>;
 
 using nullptr_t = decltype(nullptr);
 
@@ -258,7 +255,7 @@ concept derefs_as = is_object<To> &&
     (convertible_to<un_ref_t<From>&, To&> || _dereferenceable_as_convertible<un_ref_t<From>, To>);
 
 template<typename To, derefs_as<To> From>
-constexpr auto&& deref(From&& from) // NOLINT(*forward*)
+constexpr auto&& deref(From&& from) // NOLINT(*-missing-std-forward)
 {
     if constexpr (_dereferenceable_as_convertible<From, To>)
     {

@@ -114,7 +114,7 @@ public:
     status_or& operator=(status status) = delete;
 
     template<typename U = T>
-    constexpr explicit (!convertible_from<T, U&&>)
+    constexpr explicit (!convertible_to<U&&, T>)
     status_or(U&& value)
         requires (
             constructible_from<T, U&&> &&
@@ -141,14 +141,14 @@ public:
 
     template<typename U>
     constexpr T value_or(U&& other_value) const&
-        requires copy_constructible<T> && convertible_from<T, U&&>
+        requires copy_constructible<T> && convertible_to<U&&, T>
     {
         return ok() ? value() : static_cast<T>(std::forward<U>(other_value));
     }
 
     template<typename U>
     constexpr T value_or(U&& other_value) &&
-        requires move_constructible<T> && convertible_from<T, U&&>
+        requires move_constructible<T> && convertible_to<U&&, T>
     {
         return ok() ? std::move(value()) : static_cast<T>(std::forward<U>(other_value));
     }

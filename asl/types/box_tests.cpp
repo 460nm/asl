@@ -94,10 +94,10 @@ public:
     int number() override { return 2; }
 };
 
-static_assert(asl::convertible_from<asl::box<Base>, asl::box<Derived>>);
-static_assert(asl::convertible_from<asl::box<Base>, asl::box<Base>>);
-static_assert(!asl::convertible_from<asl::box<Derived>, asl::box<Base>>);
-static_assert(!asl::convertible_from<asl::box<int>, asl::box<float>>);
+static_assert(asl::convertible_to<asl::box<Derived>, asl::box<Base>>);
+static_assert(asl::convertible_to<asl::box<Base>, asl::box<Base>>);
+static_assert(!asl::convertible_to<asl::box<Base>, asl::box<Derived>>);
+static_assert(!asl::convertible_to<asl::box<float>, asl::box<int>>);
 
 ASL_TEST(derived)
 {
