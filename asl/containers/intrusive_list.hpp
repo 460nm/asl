@@ -19,7 +19,7 @@ struct intrusive_list_node
 };
 
 template<typename T>
-concept is_intrusive_list_node = convertible_from<intrusive_list_node<T>*, T*>;
+concept is_intrusive_list_node = derived_from<T, intrusive_list_node<T>>;
 
 template<is_intrusive_list_node T>
 class IntrusiveList

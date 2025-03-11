@@ -75,21 +75,21 @@ public:
     }
 
     template<isize_t N>
-    constexpr span(T (&array)[N]) // NOLINT(*-explicit-conversions)
+    constexpr span(T (&array)[N]) // NOLINT(*explicit*)
         requires (kIsDynamic)
         : m_data{array}
         , m_size{N}
     {}
 
     template<isize_t N>
-    constexpr span(T (&array)[N]) // NOLINT(*-explicit-conversions)
+    constexpr span(T (&array)[N]) // NOLINT(*explicit*)
         requires (!kIsDynamic) && (N == kSize)
         : m_data{array}
     {}
 
     template<is_object U, isize_t kOtherSize>
     constexpr explicit(!kIsDynamic)
-    span(const span<U, kOtherSize>& other) // NOLINT(*-explicit-conversions)
+    span(const span<U, kOtherSize>& other)
         requires (
             (
                 kIsDynamic ||
@@ -217,7 +217,7 @@ template<is_object T, isize_t kSize>
 inline span<const byte> as_bytes(span<T, kSize> s)
 {
     return span<const byte>(
-        reinterpret_cast<const byte*>(s.data()),
+        reinterpret_cast<const byte*>(s.data()), // NOLINT(*-reinterpret-cast)
         s.size_bytes());
 }
 
@@ -226,7 +226,7 @@ inline span<byte> as_mutable_bytes(span<T, kSize> s)
     requires (!is_const<T>)
 {
     return span<byte>(
-        reinterpret_cast<byte*>(s.data()),
+        reinterpret_cast<byte*>(s.data()), // NOLINT(*-reinterpret-cast)
         s.size_bytes());
 }
 

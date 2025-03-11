@@ -255,16 +255,22 @@ static_assert(asl::is_enum<Enum2>);
 
 static_assert(asl::derefs_as<int, int>);
 static_assert(asl::derefs_as<int*, int>);
+static_assert(!asl::derefs_as<const int*, int>);
 static_assert(asl::derefs_as<int&, int>);
+static_assert(!asl::derefs_as<const int&, int>);
 static_assert(asl::derefs_as<asl::box<int>, int>);
 
 static_assert(asl::derefs_as<Derived, Base>);
+static_assert(!asl::derefs_as<Base, Derived>);
 static_assert(asl::derefs_as<Derived*, Base>);
 static_assert(asl::derefs_as<Derived&, Base>);
+static_assert(!asl::derefs_as<Base&, Derived>);
 static_assert(asl::derefs_as<asl::box<Derived>, Base>);
+static_assert(asl::derefs_as<asl::box<Derived>, Derived>);
+static_assert(asl::derefs_as<asl::box<Base>, Base>);
 
 static void wants_int(int) {}
-static void wants_base(Base&) {}
+static void wants_base(const Base&) {}
 static void wants_base_ptr(Base*) {}
 
 ASL_TEST(deref)
@@ -285,10 +291,11 @@ ASL_TEST(deref)
     wants_base(asl::deref<Base>(&c));
     wants_base(asl::deref<Base>(d));
 
-    wants_base_ptr(&asl::deref<Base>(Derived{}));
     wants_base_ptr(&asl::deref<Base>(c));
     wants_base_ptr(&asl::deref<Base>(&c));
     wants_base_ptr(&asl::deref<Base>(d));
+
+    wants_base(asl::deref<Base>(std::move(d)));
 }
 
 static_assert(asl::same_as<asl::copy_cref_t<int, float>, float>);

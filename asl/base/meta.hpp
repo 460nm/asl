@@ -90,6 +90,9 @@ template<typename T> concept moveable = move_constructible<T> && move_assignable
 template<typename To, typename From>
 concept convertible_from = __is_convertible(From, To);
 
+template<typename From, typename To>
+concept convertible_to = __is_convertible(From, To);
+
 template<typename Derived, class Base>
 concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_from<const volatile Base*, const volatile Derived*>;
 
@@ -244,29 +247,28 @@ concept has_niche = constructible_from<T, niche_t> && equality_comparable_with<T
 template<typename T>
 concept is_niche = same_as<un_cvref_t<T>, niche_t>;
 
-template<typename T, typename U>
-concept _derefs_with_indirection_as = requires(T& t)
+template<typename From, typename To>
+concept _dereferenceable_as_convertible = requires(From& t)
 {
-    *t;
-    requires convertible_from<U&, decltype(*t)>;
+    { *t } -> convertible_to<To&>;
 };
 
-template<typename T, typename U>
-concept _derefs_reference_as = is_ref<T> && convertible_from<U&, T>;
+template<typename From, typename To>
+concept derefs_as = is_object<To> &&
+    (convertible_to<un_ref_t<From>&, To&> || _dereferenceable_as_convertible<un_ref_t<From>, To>);
 
-template<typename T, typename U>
-concept _derefs_value_as = !is_ref<T> && convertible_from<U&, T&>;
-
-template<typename U, _derefs_with_indirection_as<U> T>
-constexpr U& deref(T&& t) { return static_cast<U&>(*t); }
-
-template<typename U, _derefs_reference_as<U> T>
-constexpr U& deref(T&& t) { return static_cast<U&>(t); }
-
-template<typename U, _derefs_value_as<U> T>
-constexpr U& deref(T&& t) { return static_cast<U&>(t); }
-
-template<typename T, typename U>
-concept derefs_as = _derefs_with_indirection_as<T, U> || _derefs_reference_as<T, U> || _derefs_value_as<T, U>;
+template<typename To, derefs_as<To> From>
+constexpr auto&& deref(From&& from) // NOLINT(*forward*)
+{
+    if constexpr (_dereferenceable_as_convertible<From, To>)
+    {
+        using deref_type = decltype(*declval<From&&>());
+        return static_cast<copy_cref_t<deref_type, To>>(*static_cast<From&&>(from));
+    }
+    else
+    {
+        return static_cast<copy_cref_t<From&&, To>>(from);
+    }
+}
 
 } // namespace asl

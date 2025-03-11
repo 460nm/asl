@@ -76,18 +76,21 @@ public:
         }
     }
 
-    constexpr T* get() const { return m_ptr; }
-
-    constexpr T& operator*() const
+    constexpr auto* get(this auto&& self)
     {
-        ASL_ASSERT(m_ptr != nullptr);
-        return *m_ptr;
+        return self.m_ptr;
     }
 
-    constexpr T* operator->() const
+    constexpr auto&& operator*(this auto&& self)
     {
-        ASL_ASSERT(m_ptr != nullptr);
-        return m_ptr;
+        ASL_ASSERT(self.m_ptr != nullptr);
+        return std::forward_like<decltype(self)&&>(*self.m_ptr);
+    }
+
+    constexpr auto* operator->(this auto&& self)
+    {
+        ASL_ASSERT(self.m_ptr != nullptr);
+        return self.m_ptr;
     }
 
     constexpr bool operator==(niche_t) const
