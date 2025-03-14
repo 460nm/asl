@@ -80,16 +80,6 @@ public:
         : Base{std::move(allocator)}
     {}
 
-    hash_map(const hash_map&) requires copyable<K> && copyable<V> = default;
-
-    hash_map& operator=(const hash_map&) requires copyable<K> && copyable<V> = default;
-
-    hash_map(hash_map&&) = default;
-
-    hash_map& operator=(hash_map&&) = default;
-
-    ~hash_map() = default;
-
     using Base::destroy;
 
     using Base::clear;
