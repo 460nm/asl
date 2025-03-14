@@ -45,6 +45,9 @@ public:
     constexpr string& operator=(string&&) = default;
 
     [[nodiscard]] constexpr isize_t size() const { return m_buffer.size(); }
+
+    [[nodiscard]] constexpr bool is_empty() const { return m_buffer.is_empty(); }
+
     [[nodiscard]] constexpr const char* data() const { return m_buffer.data(); }
 
     // NOLINTNEXTLINE(*explicit*)

@@ -273,6 +273,8 @@ public:
         return decode_size(load_size_encoded());
     }
 
+    [[nodiscard]] constexpr bool is_empty() const { return size() == 0; }
+
     [[nodiscard]] constexpr isize_t capacity() const
     {
         if constexpr (kInlineCapacity == 0)

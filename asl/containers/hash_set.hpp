@@ -386,6 +386,8 @@ public:
 
     [[nodiscard]] constexpr isize_t size() const { return m_size; }
 
+    [[nodiscard]] constexpr bool is_empty() const { return m_size == 0; }
+
     template<typename... Args>
     void insert(Args&&... args)
         requires constructible_from<T, Args&&...>

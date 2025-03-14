@@ -96,6 +96,8 @@ public:
 
     using Base::size;
 
+    using Base::is_empty;
+
     using Base::remove;
 
     using Base::contains;
