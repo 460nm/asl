@@ -45,7 +45,7 @@ public:
         requires (!is_const<un_ref_t<decltype(self)>>)
     {
         const isize_t old_size = self.m_buffer.size();
-        self.m_buffer.resize_zero(old_size + sv.size());
+        self.m_buffer.resize_uninit(old_size + sv.size());
         // NOLINTNEXTLINE(*-pointer-arithmetic)
         asl::memcpy(self.m_buffer.data() + old_size, sv.data(), sv.size());
         return std::forward<decltype(self)>(self);

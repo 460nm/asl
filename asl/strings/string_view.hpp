@@ -12,6 +12,7 @@
 namespace asl
 {
 
+// NOLINTBEGIN(*-convert-member-functions-to-static)
 class string_view
 {
     const char* m_data{};
@@ -49,51 +50,69 @@ public:
 
     ~string_view() = default;
 
-    [[nodiscard]] constexpr isize_t size() const { return m_size; }
-
-    [[nodiscard]] constexpr bool is_empty() const { return m_size == 0; }
-
-    [[nodiscard]] constexpr const char* data() const { return m_data; }
-
-    [[nodiscard]] constexpr contiguous_iterator<const char> begin() const { return contiguous_iterator{m_data}; }
-
-    // NOLINTNEXTLINE(*-pointer-arithmetic)
-    [[nodiscard]] constexpr contiguous_iterator<const char> end() const { return contiguous_iterator{m_data + m_size}; }
-
-    [[nodiscard]] constexpr span<const char> as_span() const { return {m_data, m_size}; }
-
-    constexpr char operator[](isize_t i) const
+    [[nodiscard]] constexpr isize_t size(this string_view self)
     {
-        ASL_ASSERT(i >= 0 && i < m_size);
-        return m_data[i]; // NOLINT(*-pointer-arithmetic)
+        return self.m_size;
     }
 
-    [[nodiscard]] constexpr string_view substr(isize_t offset, isize_t size) const
+    [[nodiscard]] constexpr bool is_empty(this string_view self)
     {
-        ASL_ASSERT(offset >= 0 && size >= 0 && offset + size <= m_size);
-        return string_view{m_data + offset, size}; // NOLINT(*-pointer-arithmetic)
+        return self.m_size == 0;
     }
 
-    [[nodiscard]] constexpr string_view substr(isize_t offset) const
+    [[nodiscard]] constexpr const char* data(this string_view self)
     {
-        ASL_ASSERT(offset >= 0 && offset <= m_size);
-        return string_view{m_data + offset, m_size - offset}; // NOLINT(*-pointer-arithmetic)
+        return self.m_data;
     }
 
-    [[nodiscard]] constexpr string_view first(isize_t size) const
+    [[nodiscard]] constexpr contiguous_iterator<const char> begin(this string_view self)
     {
-        return substr(0, size);
+        return contiguous_iterator{self.m_data};
     }
 
-    [[nodiscard]] constexpr string_view last(isize_t size) const
+    [[nodiscard]] constexpr contiguous_iterator<const char> end(this string_view self)
     {
-        return substr(m_size - size);
+        // NOLINTNEXTLINE(*-pointer-arithmetic)
+        return contiguous_iterator{self.m_data + self.m_size};
     }
 
-    constexpr bool operator==(string_view other) const
+    [[nodiscard]] constexpr span<const char> as_span(this string_view self)
     {
-        if (m_size != other.m_size) { return false; }
-        return memcmp(m_data, other.m_data, m_size) == 0;
+        return {self.m_data, self.m_size};
+    }
+
+    [[nodiscard]] constexpr char operator[](this string_view self, isize_t i)
+    {
+        ASL_ASSERT(i >= 0 && i < self.m_size);
+        return self.m_data[i]; // NOLINT(*-pointer-arithmetic)
+    }
+
+    [[nodiscard]] constexpr string_view substr(this string_view self, isize_t offset, isize_t size)
+    {
+        ASL_ASSERT(offset >= 0 && size >= 0 && offset + size <= self.m_size);
+        return string_view{self.m_data + offset, size}; // NOLINT(*-pointer-arithmetic)
+    }
+
+    [[nodiscard]] constexpr string_view substr(this string_view self, isize_t offset)
+    {
+        ASL_ASSERT(offset >= 0 && offset <= self.m_size);
+        return string_view{self.m_data + offset, self.m_size - offset}; // NOLINT(*-pointer-arithmetic)
+    }
+
+    [[nodiscard]] constexpr string_view first(this string_view self, isize_t size)
+    {
+        return self.substr(0, size);
+    }
+
+    [[nodiscard]] constexpr string_view last(this string_view self, isize_t size)
+    {
+        return self.substr(self.m_size - size);
+    }
+
+    constexpr bool operator==(this string_view self, string_view other)
+    {
+        if (self.m_size != other.m_size) { return false; }
+        return asl::memcmp(self.m_data, other.m_data, self.m_size) == 0;
     }
 
     template<typename H>
@@ -102,6 +121,7 @@ public:
         return H::combine(H::combine_contiguous(h, as_bytes(sv.as_span())), sv.size());
     }
 };
+// NOLINTEND(*-convert-member-functions-to-static)
 
 } // namespace asl
 

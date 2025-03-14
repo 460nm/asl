@@ -151,7 +151,7 @@ public:
             , m_advanced{end}
         {}
 
-        constexpr bool operator==(const generic_iterator& other) const = default;
+        constexpr bool operator==(this generic_iterator, generic_iterator other) = default;
 
         constexpr generic_iterator& operator++()
         {
@@ -167,9 +167,9 @@ public:
             };
         }
 
-        constexpr TT& operator*() const { return *m_node; }
+        constexpr TT& operator*(this generic_iterator self) { return *self.m_node; }
 
-        constexpr TT* operator->() const { return m_node; }
+        constexpr TT* operator->(this generic_iterator self) { return self.m_node; }
     };
 
     using iterator = generic_iterator<T>;

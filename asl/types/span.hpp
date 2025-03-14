@@ -14,6 +14,7 @@ namespace asl
 
 static constexpr isize_t dynamic_size = -1;
 
+// NOLINTBEGIN(*-convert-member-functions-to-static)
 template<typename T>
 class contiguous_iterator
 {
@@ -22,7 +23,7 @@ class contiguous_iterator
 public:
     constexpr explicit contiguous_iterator(T* ptr) : m_ptr{ptr} {}
 
-    constexpr bool operator==(const contiguous_iterator& other) const = default;
+    constexpr bool operator==(this contiguous_iterator self, contiguous_iterator other) = default;
 
     constexpr contiguous_iterator& operator++()
     {
@@ -35,9 +36,9 @@ public:
         return contiguous_iterator{ exchange(m_ptr, m_ptr + 1) };
     }
 
-    constexpr T& operator*() const { return *m_ptr; }
+    constexpr T& operator*(this contiguous_iterator self) { return *self.m_ptr; }
 
-    constexpr T* operator->() const { return m_ptr; }
+    constexpr T* operator->(this contiguous_iterator self) { return self.m_ptr; }
 };
 
 template<typename T>
@@ -109,109 +110,110 @@ public:
 
     ~span() = default;
 
-    [[nodiscard]] constexpr isize_t size() const
+    [[nodiscard]] constexpr isize_t size(this span self)
     {
-        if constexpr (kIsDynamic) { return m_size; }
+        if constexpr (kIsDynamic) { return self.m_size; }
         else { return kSize; }
     }
 
-    [[nodiscard]] constexpr isize_t size_bytes() const { return size() * size_of<T>; }
+    [[nodiscard]] constexpr isize_t size_bytes(this span self) { return self.size() * size_of<T>; }
 
-    [[nodiscard]] constexpr bool is_empty() const { return size() == 0; }
+    [[nodiscard]] constexpr bool is_empty(this span self) { return self.size() == 0; }
 
-    [[nodiscard]] constexpr T* data() const { return m_data; }
+    [[nodiscard]] constexpr T* data(this span self) { return self.m_data; }
 
-    [[nodiscard]] constexpr contiguous_iterator<T> begin() const
+    [[nodiscard]] constexpr contiguous_iterator<T> begin(this span self)
     {
-        return contiguous_iterator{m_data};
+        return contiguous_iterator{self.m_data};
     }
 
-    [[nodiscard]] constexpr contiguous_iterator<T> end() const
+    [[nodiscard]] constexpr contiguous_iterator<T> end(this span self)
     {
-        return contiguous_iterator{m_data + size()};
+        return contiguous_iterator{self.m_data + self.size()};
     }
 
-    constexpr T& operator[](isize_t i) const
+    constexpr T& operator[](this span self, isize_t i)
     {
-        ASL_ASSERT(i >= 0 && i < size());
-        return m_data[i]; // NOLINT(*-pointer-arithmetic)
+        ASL_ASSERT(i >= 0 && i < self.size());
+        return self.m_data[i]; // NOLINT(*-pointer-arithmetic)
     }
 
     template<isize_t kOffset, isize_t kSubSize = dynamic_size>
-    [[nodiscard]] constexpr auto subspan() const
+    [[nodiscard]] constexpr auto subspan(this span self)
         requires (
             kOffset >= 0 &&
             (kIsDynamic || kOffset <= kSize) &&
             (kIsDynamic || is_dynamic(kSubSize) || kSubSize <= kSize - kOffset)
         )
     {
-        ASL_ASSERT(kOffset <= size());
+        ASL_ASSERT(kOffset <= self.size());
 
         if constexpr (is_dynamic(kSubSize))
         {
             if constexpr (kIsDynamic)
             {
-                return span<T>(data() + kOffset, size() - kOffset);
+                return span<T>(self.data() + kOffset, self.size() - kOffset);
             }
             else
             {
-                return span<T, kSize - kOffset>(data() + kOffset, size() - kOffset);
+                return span<T, kSize - kOffset>(self.data() + kOffset, self.size() - kOffset);
             }
         }
         else
         {
-            ASL_ASSERT(kSubSize <= size() - kOffset);
-            return span<T, kSubSize>(data() + kOffset, kSubSize);
+            ASL_ASSERT(kSubSize <= self.size() - kOffset);
+            return span<T, kSubSize>(self.data() + kOffset, kSubSize);
         }
     }
 
-    [[nodiscard]] constexpr span<T> subspan(isize_t offset) const
+    [[nodiscard]] constexpr span<T> subspan(this span self, isize_t offset)
     {
-        ASL_ASSERT(offset <= size());
-        return span<T>{ data() + offset, size() - offset };
+        ASL_ASSERT(offset <= self.size());
+        return span<T>{ self.data() + offset, self.size() - offset };
     }
 
-    [[nodiscard]] constexpr span<T> subspan(isize_t offset, isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> subspan(this span self, isize_t offset, isize_t sub_size)
     {
-        ASL_ASSERT(offset <= size() && !is_dynamic(sub_size));
-        ASL_ASSERT(sub_size <= size() - offset);
-        return span<T>{ data() + offset, sub_size };
+        ASL_ASSERT(offset <= self.size() && !is_dynamic(sub_size));
+        ASL_ASSERT(sub_size <= self.size() - offset);
+        return span<T>{ self.data() + offset, sub_size };
     }
 
     template<isize_t kSubSize>
-    [[nodiscard]] constexpr auto first() const
+    [[nodiscard]] constexpr auto first(this span self)
         requires (
             kSubSize >= 0 &&
             (kIsDynamic || kSubSize <= kSize)
         )
     {
-        ASL_ASSERT(kSubSize <= size());
-        return span<T, kSubSize>{ data(), kSubSize };
+        ASL_ASSERT(kSubSize <= self.size());
+        return span<T, kSubSize>{ self.data(), kSubSize };
     }
 
-    [[nodiscard]] constexpr span<T> first(isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> first(this span self, isize_t sub_size)
     {
-        ASL_ASSERT(sub_size >= 0 && sub_size <= size());
-        return span<T>{ data(), sub_size };
+        ASL_ASSERT(sub_size >= 0 && sub_size <= self.size());
+        return span<T>{ self.data(), sub_size };
     }
 
     template<isize_t kSubSize>
-    [[nodiscard]] constexpr auto last() const
+    [[nodiscard]] constexpr auto last(this span self)
         requires (
             kSubSize >= 0 &&
             (kIsDynamic || kSubSize <= kSize)
         )
     {
-        ASL_ASSERT(kSubSize <= size());
-        return span<T, kSubSize>{ data() + size() - kSubSize, kSubSize };
+        ASL_ASSERT(kSubSize <= self.size());
+        return span<T, kSubSize>{ self.data() + self.size() - kSubSize, kSubSize };
     }
 
-    [[nodiscard]] constexpr span<T> last(isize_t sub_size) const
+    [[nodiscard]] constexpr span<T> last(this span self, isize_t sub_size)
     {
-        ASL_ASSERT(sub_size >= 0 && sub_size <= size());
-        return span<T>{ data() + size() - sub_size, sub_size };
+        ASL_ASSERT(sub_size >= 0 && sub_size <= self.size());
+        return span<T>{ self.data() + self.size() - sub_size, sub_size };
     }
 };
+// NOLINTEND(*-convert-member-functions-to-static)
 
 template<is_object T, isize_t kSize>
 inline span<const byte> as_bytes(span<T, kSize> s)
