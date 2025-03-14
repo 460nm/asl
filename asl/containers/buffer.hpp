@@ -390,14 +390,18 @@ public:
     auto data(this auto&& self)
     {
         using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        // NOLINTNEXTLINE(*-reinterpret-cast)
+        auto&& buffer = reinterpret_cast<copy_cref_t<decltype(self), class buffer>>(self);
         if constexpr (kInlineCapacity == 0)
         {
-            return return_type{ self.m_data };
+            return return_type{ buffer.m_data };
         }
         else
         {
-            // NOLINTNEXTLINE(*-reinterpret-cast)
-            return self.is_on_heap() ? return_type{ self.m_data } : reinterpret_cast<return_type>(&self);
+            return buffer.is_on_heap()
+                ? return_type{ buffer.m_data }
+                // NOLINTNEXTLINE(*-reinterpret-cast)
+                : reinterpret_cast<return_type>(&buffer);
         }
     }
 

@@ -11,12 +11,12 @@ namespace asl
 {
 
 template<allocator Allocator = DefaultAllocator>
-class string
+class string : protected buffer<char, Allocator>
 {
-    buffer<char, Allocator> m_buffer;
+    using Base = buffer<char, Allocator>;
 
-    explicit constexpr string(buffer<char, Allocator>&& buffer) :
-        m_buffer{std::move(buffer)}
+    explicit constexpr string(buffer<char, Allocator>&& b) :
+        Base{std::move(b)}
     {}
 
     template<allocator A>
@@ -24,31 +24,26 @@ class string
 
 public:
     constexpr string() requires default_constructible<Allocator> = default;
-    explicit constexpr string(Allocator allocator) : m_buffer{std::move(allocator)} {}
+
+    explicit constexpr string(Allocator allocator)
+        : Base{std::move(allocator)}
+    {}
 
     // NOLINTNEXTLINE(*explicit*)
     constexpr string(string_view sv)
         requires default_constructible<Allocator>
-        : m_buffer{sv.as_span()}
+        : Base{sv.as_span()}
     {}
 
     constexpr string(string_view sv, Allocator allocator)
-        : m_buffer{sv.as_span(), std::move(allocator)}
+        : Base{sv.as_span(), std::move(allocator)}
     {}
 
-    constexpr ~string() = default;
+    using Base::size;
 
-    constexpr string(const string&) requires copy_constructible<Allocator> = default;
-    constexpr string(string&&) = default;
+    using Base::is_empty;
 
-    constexpr string& operator=(const string&) requires copy_assignable<Allocator> = default;
-    constexpr string& operator=(string&&) = default;
-
-    [[nodiscard]] constexpr isize_t size() const { return m_buffer.size(); }
-
-    [[nodiscard]] constexpr bool is_empty() const { return m_buffer.is_empty(); }
-
-    [[nodiscard]] constexpr const char* data() const { return m_buffer.data(); }
+    [[nodiscard]] constexpr const char* data() const { return Base::data(); }
 
     // NOLINTNEXTLINE(*explicit*)
     constexpr operator string_view() const
@@ -58,7 +53,7 @@ public:
 
     [[nodiscard]] constexpr string_view as_string_view() const
     {
-        auto span = m_buffer.as_span();
+        auto span = Base::as_span();
         return string_view{span.data(), span.size()};
     }
 
