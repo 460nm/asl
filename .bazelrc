@@ -24,14 +24,15 @@ build --cxxopt=-Wno-extra-semi
 build --cxxopt=-Wno-global-constructors
 build --cxxopt=-Wno-unsafe-buffer-usage
 build --cxxopt=-Wno-covered-switch-default
+build --cxxopt=-Wno-unused-command-line-argument
 
 build:windows_san --config=windows
 build:windows_san --copt=-fno-sanitize-ignorelist
 build:windows_san --copt=-fsanitize=address
 build:windows_san --copt=-fsanitize=undefined
 build:windows_san --copt=-fno-sanitize-recover=all
-build:windows_san --linkopt=clang_rt.asan-x86_64.lib
-build:windows_san --copt=/MT
+build:windows_san --linkopt=clang_rt.asan_dynamic-x86_64.lib
+build:windows_san --linkopt=clang_rt.asan_dynamic_runtime_thunk-x86_64.lib
 
 build:linux_san --config=linux
 build:linux_san --copt=-fsanitize=address
