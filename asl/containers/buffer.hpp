@@ -110,7 +110,9 @@ private:
     constexpr void set_size_inline(isize_t new_size)
     {
         ASL_ASSERT(new_size >= 0 && new_size <= kInlineCapacity);
-        const size_t size_encoded = (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff}) | (bit_cast<size_t>(new_size) << 56U);
+        const size_t size_encoded =
+            (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff})
+            | (bit_cast<size_t>(new_size) << 56U);
         store_size_encoded(size_encoded);
     }
 

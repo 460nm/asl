@@ -35,6 +35,13 @@ template<typename T, typename U>
     return static_cast<return_type>(x);
 }
 
+template<typename T>
+[[nodiscard]] constexpr T* launder(T* ptr) noexcept // NOLINT
+    requires (!asl::is_func<T> && !asl::is_void<T>)
+{
+    return __builtin_launder(ptr);
+}
+
 } // namespace std
 
 namespace asl

@@ -1,1 +1,3 @@
-
+review unions
+review reinterpret_cast
+review as_bytes & static_cast in general

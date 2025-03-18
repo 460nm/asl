@@ -22,15 +22,17 @@ enum class status_code : uint8_t
     invalid_argument = 4,
 };
 
+struct StatusInternal;
+
 class status
 {
-    void* m_payload{};
+    StatusInternal* m_payload{};
 
-    static constexpr void* status_to_payload(status_code code)
+    static constexpr StatusInternal* status_to_payload(status_code code)
     {
         return code == status_code::ok
             ? nullptr
-            : bit_cast<void*>((static_cast<uintptr_t>(code) << 1) | 1);
+            : bit_cast<StatusInternal*>((static_cast<uintptr_t>(code) << 1) | 1);
     }
 
     static constexpr status_code payload_to_status(void* payload)

@@ -15,7 +15,7 @@ using Allocator = asl::DefaultAllocator;
 // NOLINTNEXTLINE(*-non-const-global-variables)
 static Allocator g_allocator{};
 
-namespace
+namespace asl
 {
 
 struct StatusInternal
@@ -33,7 +33,7 @@ struct StatusInternal
     }
 };
 
-} // anonymous namespace
+}  // namespace asl
 
 asl::status::status(status_code code, string_view msg)
     : m_payload{alloc_new<StatusInternal>(g_allocator, msg, code)}
@@ -49,34 +49,29 @@ asl::status::status(status_code code, string_view fmt, span<format_internals::ty
 asl::status_code asl::status::code_internal() const
 {
     ASL_ASSERT(!is_inline());
-    // NOLINTNEXTLINE(*-reinterpret-cast)
-    return reinterpret_cast<const StatusInternal*>(m_payload)->code;
+    return m_payload->code;
 }
 
 asl::string_view asl::status::message_internal() const
 {
     ASL_ASSERT(!is_inline());
-    // NOLINTNEXTLINE(*-reinterpret-cast)
-    return reinterpret_cast<const StatusInternal*>(m_payload)->msg;
+    return m_payload->msg;
 }
 
 void asl::status::ref()
 {
     ASL_ASSERT(!is_inline());
-    // NOLINTNEXTLINE(*-reinterpret-cast)
-    auto* internal = reinterpret_cast<StatusInternal*>(m_payload);
-    atomic_fetch_increment(&internal->ref_count, memory_order::relaxed);
+    atomic_fetch_increment(&m_payload->ref_count, memory_order::relaxed);
 }
 
 void asl::status::unref()
 {
     ASL_ASSERT(!is_inline());
-    // NOLINTNEXTLINE(*-reinterpret-cast)
-    auto* internal = reinterpret_cast<StatusInternal*>(m_payload);
-    if (atomic_fetch_decrement(&internal->ref_count, memory_order::release) == 1)
+    if (atomic_fetch_decrement(&m_payload->ref_count, memory_order::release) == 1)
     {
         atomic_fence(memory_order::acquire);
-        alloc_delete(g_allocator, internal);
+        alloc_delete(g_allocator, m_payload);
+        m_payload = nullptr;
     }
 }
 
