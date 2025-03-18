@@ -403,7 +403,7 @@ public:
             return buffer.is_on_heap()
                 ? return_type{ buffer.m_data }
                 // NOLINTNEXTLINE(*-reinterpret-cast)
-                : reinterpret_cast<return_type>(&buffer);
+                : std::launder(reinterpret_cast<return_type>(&buffer));
         }
     }
 
