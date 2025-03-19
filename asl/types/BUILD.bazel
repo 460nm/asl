@@ -78,6 +78,28 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "function",
+    hdrs = [
+        "function.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/memory",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "function_tests",
+    srcs = ["function_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:function",
+    ],
+)
+
 cc_test(
     name = "box_tests",
     srcs = ["box_tests.cpp"],

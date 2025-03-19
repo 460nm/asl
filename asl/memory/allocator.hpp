@@ -50,13 +50,15 @@ void alloc_delete(allocator auto& a, T* ptr)
 template<typename T>
 constexpr T* alloc_new_default(auto&&... args)
 {
-    return alloc_new<T>(DefaultAllocator{}, std::forward<decltype(args)>(args)...);
+    DefaultAllocator allocator{};
+    return alloc_new<T>(allocator, std::forward<decltype(args)>(args)...);
 }
 
 template<typename T>
 void alloc_delete_default(T* ptr)
 {
-    alloc_delete(DefaultAllocator{}, ptr);
+    DefaultAllocator allocator{};
+    alloc_delete(allocator, ptr);
 }
 
 } // namespace asl
