@@ -54,6 +54,11 @@ template<typename T> using as_rref_t = decltype(_as_rref_helper<T>(0))::type;
 
 template<typename T> consteval as_rref_t<T> declval() {}
 
+template<typename T> auto _as_ptr_helper(int) -> id<T*>;
+template<typename T> auto _as_ptr_helper(...) -> id<T>;
+
+template<typename T> using as_ptr_t = decltype(_as_ptr_helper<T>(0))::type;
+
 template<typename T> struct _un_ref_t      { using type = T; };
 template<typename T> struct _un_ref_t<T&>  { using type = T; };
 template<typename T> struct _un_ref_t<T&&> { using type = T; };
@@ -191,11 +196,23 @@ template<typename T> concept is_func = _is_func_helper<tame_t<T>>::value;
 
 template<typename T> concept is_object = !is_void<T> && !is_ref<T> && !is_func<T>;
 
-template<typename T>        struct _is_array_helper       : false_type {};
-template<typename T>        struct _is_array_helper<T[]>  : true_type  {};
-template<typename T, int N> struct _is_array_helper<T[N]> : true_type  {};
+template<typename T>        struct _array_helper       : false_type { using type = T; };
+template<typename T>        struct _array_helper<T[]>  : true_type  { using type = T; };
+template<typename T, int N> struct _array_helper<T[N]> : true_type  { using type = T; };
 
-template<typename T> concept is_array = _is_array_helper<T>::value;
+template<typename T> concept is_array = _array_helper<T>::value;
+
+template<typename T> using remove_extent_t = _array_helper<T>::type;
+
+template<typename T>
+using decay_t =
+    select_t<
+        is_array<un_ref_t<T>>,
+        as_ptr_t<remove_extent_t<un_ref_t<T>>>,
+        select_t<
+            is_func<un_ref_t<T>>,
+            as_ptr_t<un_ref_t<T>>,
+            un_cv_t<un_ref_t<T>>>>;
 
 template<typename T> struct _is_floating_point_helper         : false_type {};
 template<>           struct _is_floating_point_helper<float>  : true_type  {};

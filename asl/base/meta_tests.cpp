@@ -189,6 +189,10 @@ static_assert(!asl::is_array<void>);
 static_assert(!asl::is_array<void(int)>);
 static_assert(!asl::is_array<int(float) const && noexcept>);
 
+static_assert(asl::same_as<int, asl::remove_extent_t<int>>);
+static_assert(asl::same_as<int, asl::remove_extent_t<int[]>>);
+static_assert(asl::same_as<int, asl::remove_extent_t<int[67]>>);
+
 static_assert(asl::same_as<int, asl::un_ref_t<int>>);
 static_assert(asl::same_as<int, asl::un_ref_t<int&>>);
 static_assert(asl::same_as<int, asl::un_ref_t<int&&>>);
@@ -318,3 +322,13 @@ static_assert(asl::same_as<asl::copy_cref_t<const int&, const float>, const floa
 static_assert(asl::same_as<asl::copy_cref_t<const int&, float&&>, const float&>);
 static_assert(asl::same_as<asl::copy_cref_t<const int&, const float&>, const float&>);
 
+static_assert(asl::same_as<asl::decay_t<int>, int>);
+static_assert(!asl::same_as<asl::decay_t<int>, float>);
+static_assert(asl::same_as<asl::decay_t<int&>, int>);
+static_assert(asl::same_as<asl::decay_t<int&&>, int>);
+static_assert(asl::same_as<asl::decay_t<const int&>, int>);
+static_assert(asl::same_as<asl::decay_t<int[2]>, int*>);
+static_assert(!asl::same_as<asl::decay_t<int[4][2]>, int*>);
+static_assert(!asl::same_as<asl::decay_t<int[4][2]>, int**>);
+static_assert(asl::same_as<asl::decay_t<int[4][2]>, int(*)[2]>);
+static_assert(asl::same_as<asl::decay_t<int(int)>, int(*)(int)>);
