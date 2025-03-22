@@ -1,6 +1,7 @@
 startup --windows_enable_symlinks
 build:windows --enable_runfiles=true
 
+build --enable_platform_specific_config
 build --build_python_zip=false
 
 build:windows  --extra_execution_platforms=//:x64_windows-clang-cl
