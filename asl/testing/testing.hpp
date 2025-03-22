@@ -46,6 +46,6 @@ struct Test
     if (EXPR) {}              \
     else { ::asl::testing::report_failure(#EXPR); return; }
 
-#define ASL_TEST_EXPECT(EXPR) \
-    if (EXPR) {}              \
-    else { ::asl::testing::report_failure(#EXPR); }
+#define ASL_TEST_EXPECT(...) \
+    if (__VA_ARGS__) {}      \
+    else { ::asl::testing::report_failure(#__VA_ARGS__); }

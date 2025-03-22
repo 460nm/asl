@@ -90,6 +90,17 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "function_ref",
+    hdrs = [
+        "function_ref.hpp",
+    ],
+    deps = [
+        "//asl/base",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 cc_test(
     name = "function_tests",
     srcs = ["function_tests.cpp"],
@@ -97,6 +108,16 @@ cc_test(
         "//asl/tests:utils",
         "//asl/testing",
         "//asl/types:function",
+    ],
+)
+
+cc_test(
+    name = "function_ref_tests",
+    srcs = ["function_ref_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:function_ref",
     ],
 )
 

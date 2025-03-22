@@ -196,7 +196,7 @@ public:
     {
         if (m_op != nullptr)
         {
-            (*m_op)(
+            m_op(
                 &m_storage,
                 const_cast<function_detail::Storage*>(&other.m_storage), // NOLINT(*-const-cast)
                 function_detail::FunctionOp::kCopyFromOtherToThisUninit);
@@ -209,7 +209,7 @@ public:
     {
         if (m_op != nullptr)
         {
-            (*m_op)(
+            m_op(
                 &m_storage,
                 &other.m_storage,
                 function_detail::FunctionOp::kMoveFromOtherToThisUninit);
@@ -230,7 +230,7 @@ public:
             m_invoke = other.m_invoke;
             m_op = other.m_op;
 
-            (*m_op)(
+            m_op(
                 &m_storage,
                 const_cast<function_detail::Storage*>(&other.m_storage), // NOLINT(*-const-cast)
                 function_detail::FunctionOp::kCopyFromOtherToThisUninit);
@@ -247,7 +247,7 @@ public:
             m_invoke = asl::exchange(other.m_invoke, nullptr);
             m_op = asl::exchange(other.m_op, nullptr);
 
-            (*m_op)(
+            m_op(
                 &m_storage,
                 &other.m_storage,
                 function_detail::FunctionOp::kMoveFromOtherToThisUninit);
@@ -277,7 +277,7 @@ public:
     constexpr R operator()(Args... args) const
     {
         ASL_ASSERT(m_invoke);
-        return (*m_invoke)(args..., m_storage);
+        return m_invoke(args..., m_storage);
     }
 };
 

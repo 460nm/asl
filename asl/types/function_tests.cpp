@@ -177,3 +177,15 @@ ASL_TEST(replace)
     fn = [](int x) { return x + 3; };
     ASL_TEST_EXPECT(fn(5) == 8);
 }
+
+static int foo(const asl::function<int(int, int)>& fn)
+{
+    return fn(5, 5);
+}
+
+ASL_TEST(function_parameter)
+{
+    ASL_TEST_EXPECT(foo(add) == 10);
+    ASL_TEST_EXPECT(foo([](int a, int b) { return a + b; }) == 10);
+}
+
