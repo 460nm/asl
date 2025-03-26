@@ -194,6 +194,17 @@ template<typename R, typename... Args> struct _is_func_helper<R(Args...)> : true
 
 template<typename T> concept is_func = _is_func_helper<tame_t<T>>::value;
 
+template<typename T>             struct _is_member_ptr_helper         : false_type {};
+template<typename C, typename T> struct _is_member_ptr_helper<T C::*> : true_type
+{
+    static constexpr bool kIsFunc = is_func<T>;
+};
+
+template<typename T> concept is_member_ptr = _is_member_ptr_helper<un_cv_t<T>>::value;
+
+template<typename T> concept is_member_func_ptr = is_member_ptr<T> && _is_member_ptr_helper<un_cv_t<T>>::kIsFunc;
+template<typename T> concept is_member_data_ptr = is_member_ptr<T> && !_is_member_ptr_helper<un_cv_t<T>>::kIsFunc;
+
 template<typename T> concept is_object = !is_void<T> && !is_ref<T> && !is_func<T>;
 
 template<typename T>        struct _array_helper       : false_type { using type = T; };

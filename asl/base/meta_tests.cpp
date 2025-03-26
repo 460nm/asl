@@ -135,6 +135,12 @@ static_assert(!asl::is_ref<void>);
 static_assert(!asl::is_ref<void()>);
 static_assert(!asl::is_ref<void() const &&>);
 
+struct MyClass
+{
+    int data;
+    int fn(int x) { return x; } // NOLINT
+};
+
 static_assert(asl::is_ptr<int*>);
 static_assert(asl::is_ptr<const int* const>);
 static_assert(asl::is_ptr<const volatile int*>);
@@ -142,6 +148,26 @@ static_assert(!asl::is_ptr<int>);
 static_assert(!asl::is_ptr<void>);
 static_assert(!asl::is_ptr<void()>);
 static_assert(!asl::is_ptr<void() const &&>);
+static_assert(!asl::is_ptr<int MyClass::*>);
+static_assert(!asl::is_ptr<int (MyClass::*)(int)>);
+
+static_assert(!asl::is_member_ptr<int*>);
+static_assert(!asl::is_member_ptr<void()>);
+static_assert(!asl::is_member_ptr<void() const &&>);
+static_assert(asl::is_member_ptr<int MyClass::*>);
+static_assert(asl::is_member_ptr<int (MyClass::*)(int)>);
+
+static_assert(!asl::is_member_data_ptr<int*>);
+static_assert(!asl::is_member_data_ptr<void()>);
+static_assert(!asl::is_member_data_ptr<void() const &&>);
+static_assert(asl::is_member_data_ptr<int MyClass::*>);
+static_assert(!asl::is_member_data_ptr<int (MyClass::*)(int)>);
+
+static_assert(!asl::is_member_func_ptr<int*>);
+static_assert(!asl::is_member_func_ptr<void()>);
+static_assert(!asl::is_member_func_ptr<void() const &&>);
+static_assert(!asl::is_member_func_ptr<int MyClass::*>);
+static_assert(asl::is_member_func_ptr<int (MyClass::*)(int)>);
 
 static_assert(asl::same_as<int, asl::tame_t<int>>);
 static_assert(asl::same_as<int(), asl::tame_t<int()>>);
