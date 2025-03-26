@@ -7,8 +7,11 @@
 
 struct HasFunction
 {
-    void do_something(int, float) {}
+    void do_something(int, float) const {}
+    int& do_something2(int, float) &;
 };
+
+struct HasFunction2 : public HasFunction {};
 
 struct HasMember
 {
@@ -16,6 +19,8 @@ struct HasMember
     int member_array[4]{};
     void (*member_fn)(){};
 };
+
+struct HasMember2 : public HasMember {};
 
 struct Functor
 {
@@ -34,7 +39,13 @@ static_assert(asl::same_as<asl::invoke_result_t<Functor>, int64_t>);
 static_assert(asl::same_as<asl::invoke_result_t<Functor, int>, int>);
 static_assert(asl::same_as<asl::invoke_result_t<decltype(static_cast<float(*)(float)>(some_func1)), float>, float>);
 static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something), HasFunction, int, float>, void>);
-static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasMember::member), const HasMember>, const int&>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something), const HasFunction2&, int, float>, void>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something), HasFunction*, int, float>, void>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something2), HasFunction2&, int, float>, int&>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasFunction::do_something2), HasFunction*, int, float>, int&>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasMember::member), HasMember>, int&&>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasMember::member), const HasMember&>, const int&>);
+static_assert(asl::same_as<asl::invoke_result_t<decltype(&HasMember::member), const HasMember2*>, const int&>);
 
 static_assert(asl::invocable<int()>);
 static_assert(!asl::invocable<int(), int>);
@@ -45,8 +56,17 @@ static_assert(asl::invocable<Functor, int>);
 static_assert(!asl::invocable<Functor, void*>);
 static_assert(asl::invocable<decltype(static_cast<float(*)(float)>(some_func1)), float>);
 static_assert(asl::invocable<decltype(&HasFunction::do_something), HasFunction, int, float>);
+static_assert(asl::invocable<decltype(&HasFunction::do_something), const HasFunction2&, int, float>);
+static_assert(asl::invocable<decltype(&HasFunction::do_something), HasFunction*, int, float>);
 static_assert(!asl::invocable<decltype(&HasFunction::do_something), HasFunction, int, int*>);
-static_assert(asl::invocable<decltype(&HasMember::member), const HasMember>);
+static_assert(!asl::invocable<decltype(&HasFunction::do_something2), HasFunction, int, float>);
+static_assert(!asl::invocable<decltype(&HasFunction::do_something2), const HasFunction2&, int, float>);
+static_assert(asl::invocable<decltype(&HasFunction::do_something2), HasFunction2&, int, float>);
+static_assert(asl::invocable<decltype(&HasFunction::do_something2), HasFunction*, int, float>);
+static_assert(!asl::invocable<decltype(&HasFunction::do_something2), HasFunction, int, int*>);
+static_assert(asl::invocable<decltype(&HasMember::member), const HasMember2>);
+static_assert(asl::invocable<decltype(&HasMember::member), const HasMember&>);
+static_assert(asl::invocable<decltype(&HasMember::member), const HasMember2*>);
 
 ASL_TEST(invoke_member_function)
 {

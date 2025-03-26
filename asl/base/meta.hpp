@@ -92,12 +92,6 @@ template<typename T> concept trivially_destructible = __is_trivially_destructibl
 template<typename T> concept copyable = copy_constructible<T> && copy_assignable<T>;
 template<typename T> concept moveable = move_constructible<T> && move_assignable<T>;
 
-template<typename From, typename To>
-concept convertible_to = __is_convertible(From, To);
-
-template<typename Derived, class Base>
-concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_to<const volatile Derived*, const volatile Base*>;
-
 using nullptr_t = decltype(nullptr);
 
 template<typename T> struct _un_const_helper          { using type = T; };
@@ -153,6 +147,15 @@ template<typename T> struct _is_ptr_helper     : false_type {};
 template<typename T> struct _is_ptr_helper<T*> : true_type {};
 
 template<typename T> concept is_ptr = _is_ptr_helper<un_cv_t<T>>::value;
+
+template<typename From, typename To>
+concept convertible_to = __is_convertible(From, To);
+
+template<typename Derived, typename Base>
+concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_to<const volatile Derived*, const volatile Base*>;
+
+template<typename Derived, typename Base>
+concept same_or_derived_from = same_as<un_cvref_t<Derived>, Base> || derived_from<un_cvref_t<Derived>, Base>;
 
 template<typename T> struct _tame_helper { using type = T; };
 

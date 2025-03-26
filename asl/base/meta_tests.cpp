@@ -168,6 +168,8 @@ static_assert(!asl::is_member_func_ptr<void()>);
 static_assert(!asl::is_member_func_ptr<void() const &&>);
 static_assert(!asl::is_member_func_ptr<int MyClass::*>);
 static_assert(asl::is_member_func_ptr<int (MyClass::*)(int)>);
+static_assert(asl::is_member_func_ptr<int (MyClass::*)(int) const>);
+static_assert(asl::is_member_func_ptr<int (MyClass::*)(int) volatile &&>);
 
 static_assert(asl::same_as<int, asl::tame_t<int>>);
 static_assert(asl::same_as<int(), asl::tame_t<int()>>);
@@ -250,12 +252,24 @@ static_assert(!asl::convertible_to<const int16_t(&)[], int16_t(&)[]>);
 static_assert(!asl::convertible_to<D(&)[], C(&)[]>);
 
 static_assert(asl::derived_from<Derived, Base>);
+static_assert(asl::derived_from<Derived, Derived>);
+static_assert(asl::derived_from<Base, Base>);
 static_assert(!asl::derived_from<Base, Derived>);
 static_assert(!asl::derived_from<D, C>);
 static_assert(!asl::derived_from<C, D>);
 static_assert(!asl::derived_from<uint8_t, uint16_t>);
 static_assert(!asl::derived_from<uint16_t, uint8_t>);
 static_assert(!asl::derived_from<int, int>);
+
+static_assert(asl::same_or_derived_from<Derived, Base>);
+static_assert(asl::same_or_derived_from<Derived, Derived>);
+static_assert(asl::same_or_derived_from<Base, Base>);
+static_assert(!asl::same_or_derived_from<Base, Derived>);
+static_assert(!asl::same_or_derived_from<D, C>);
+static_assert(!asl::same_or_derived_from<C, D>);
+static_assert(!asl::same_or_derived_from<uint8_t, uint16_t>);
+static_assert(!asl::same_or_derived_from<uint16_t, uint8_t>);
+static_assert(asl::same_or_derived_from<int, int>);
 
 static_assert(!asl::is_const<int>);
 static_assert(asl::is_const<const int>);

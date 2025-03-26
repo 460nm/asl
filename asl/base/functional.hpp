@@ -9,56 +9,49 @@
 
 namespace asl {
 
-template<typename... Args, typename C>
-constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
-    -> decltype((self.*f)(std::forward<Args>(args)...))
-    requires requires {
-        (self.*f)(std::forward<Args>(args)...);
+template<typename F, typename... Args>
+constexpr auto invoke(F&& f, Args&&... args)
+    -> decltype(std::forward<F>(f)(std::forward<Args>(args)...))
+    requires (!is_member_ptr<un_cvref_t<F>>) && requires {
+        f(std::forward<Args>(args)...);
     }
+{
+    return std::forward<F>(f)(std::forward<Args>(args)...);
+}
+
+template<typename C>
+constexpr auto&& invoke(auto C::* f, same_or_derived_from<C> auto&& arg)
+{
+    return std::forward<decltype(arg)>(arg).*f;
+}
+
+template<typename C>
+constexpr auto&& invoke(auto C::* f, auto&& arg)
+    requires (
+        !same_or_derived_from<decltype(arg), C>
+        && requires { (*arg).*f; }
+    )
+{
+    return (*std::forward<decltype(arg)>(arg)).*f;
+}
+
+template<typename C, typename... Args>
+constexpr auto invoke(is_func auto C::* f, same_or_derived_from<C> auto&& self, Args&&... args)
+    -> decltype((std::forward<decltype(self)>(self).*f)(std::forward<Args>(args)...))
+    requires requires { (self.*f)(std::forward<Args>(args)...); }
 {
     return (std::forward<decltype(self)>(self).*f)(std::forward<Args>(args)...);
 }
 
-template<typename... Args, typename C>
-constexpr auto invoke(is_func auto C::* f, auto* self, Args&&... args)
-    -> decltype((self->*f)(std::forward<Args>(args)...))
-    requires requires {
-        (self->*f)(std::forward<Args>(args)...);
-    }
-{
-    return (self->*f)(std::forward<Args>(args)...);
-}
-
-template<typename... Args, typename C>
-constexpr auto invoke(is_object auto C::* m, auto&& self, Args&&...)
-    -> decltype(self.*m)
+template<typename C, typename... Args>
+constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
+    -> decltype(((*std::forward<decltype(self)>(self)).*f)(std::forward<Args>(args)...))
     requires (
-        sizeof...(Args) == 0 &&
-        requires { self.*m; }
+        !same_or_derived_from<decltype(self), C>
+        && requires { ((*self).*f)(std::forward<Args>(args)...); }
     )
 {
-    return std::forward<decltype(self)>(self).*m;
-}
-
-template<typename... Args, typename C>
-constexpr auto invoke(is_object auto C::* m, auto* self, Args&&...)
-    -> decltype(self->*m)
-    requires (
-        sizeof...(Args) == 0 &&
-        requires { self->*m; }
-    )
-{
-    return self->*m;
-}
-
-template<typename... Args>
-constexpr auto invoke(auto&& f, Args&&... args)
-    -> decltype(f(std::forward<Args>(args)...))
-    requires requires {
-        f(std::forward<Args>(args)...);
-    }
-{
-    return std::forward<decltype(f)>(f)(std::forward<Args>(args)...);
+    return ((*std::forward<decltype(self)>(self)).*f)(std::forward<Args>(args)...);
 }
 
 template<typename Void, typename F, typename... Args>
