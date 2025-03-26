@@ -97,6 +97,7 @@ cc_library(
     ],
     deps = [
         "//asl/base",
+        "//asl/memory",
     ],
     visibility = ["//visibility:public"],
 )

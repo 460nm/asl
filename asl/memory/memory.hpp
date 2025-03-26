@@ -17,6 +17,17 @@ constexpr void* operator new(size_t, void* ptr) noexcept
 namespace asl
 {
 
+template<typename T>
+[[nodiscard]]
+constexpr T* address_of(T& obj)
+{
+    return __builtin_addressof(obj);
+}
+
+template<typename T>
+void address_of(const T&& obj) = delete;
+
+[[nodiscard]]
 constexpr isize_t memcmp(const void* a, const void* b, isize_t size)
 {
     return __builtin_memcmp(a, b, static_cast<size_t>(size));

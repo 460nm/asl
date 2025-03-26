@@ -7,6 +7,7 @@
 #include "asl/base/utility.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/base/functional.hpp"
+#include "asl/memory/memory.hpp"
 
 namespace asl
 {
@@ -43,7 +44,7 @@ public:
             && same_as<invoke_result_t<T, Args...>, R>
         )
         // NOLINTNEXTLINE(*cast*)
-        : m_obj{const_cast<void*>(reinterpret_cast<const void*>(&t))}
+        : m_obj{const_cast<void*>(reinterpret_cast<const void*>(address_of(t)))}
         , m_invoke{invoke<un_ref_t<T>>}
     {}
 
@@ -56,7 +57,7 @@ public:
         )
     {
         // NOLINTNEXTLINE(*cast*)
-        m_obj = const_cast<void*>(reinterpret_cast<const void*>(&t));
+        m_obj = const_cast<void*>(reinterpret_cast<const void*>(address_of(t)));
         m_invoke = invoke<un_ref_t<T>>;
 
         return *this;
