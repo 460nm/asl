@@ -68,6 +68,9 @@ static_assert(asl::invocable<decltype(&HasMember::member), const HasMember2>);
 static_assert(asl::invocable<decltype(&HasMember::member), const HasMember&>);
 static_assert(asl::invocable<decltype(&HasMember::member), const HasMember2*>);
 
+static_assert(asl::invocable_r<void*, int*()>);
+static_assert(!asl::invocable_r<int*, void*()>);
+
 ASL_TEST(invoke_member_function)
 {
     HasFunction c;
@@ -108,4 +111,10 @@ ASL_TEST(invoke_lambda)
 {
     ASL_TEST_EXPECT(asl::invoke([](){ return 35; }) == 35);
     ASL_TEST_EXPECT(asl::invoke([](int x){ return x + 2; }, 6) == 8);
+}
+
+ASL_TEST(invoke_r)
+{
+    ASL_TEST_EXPECT(asl::invoke_r<int>([]() { return 1ULL; }) == 1);
+    asl::invoke_r<void>([]() { return 1ULL; });
 }

@@ -54,6 +54,19 @@ constexpr auto invoke(is_func auto C::* f, auto&& self, Args&&... args)
     return ((*std::forward<decltype(self)>(self)).*f)(std::forward<Args>(args)...);
 }
 
+template<typename R, typename F, typename... Args>
+constexpr R invoke_r(F&& f, Args&&... args)
+{
+    if constexpr (is_void<R>)
+    {
+        static_cast<void>(invoke(std::forward<F>(f), std::forward<Args>(args)...));
+    }
+    else
+    {
+        return invoke(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+}
+
 template<typename Void, typename F, typename... Args>
 struct _invoke_result_helper;
 
@@ -71,5 +84,9 @@ concept invocable = requires (F&& f, Args&&... args)
 {
     invoke(std::forward<F>(f), std::forward<Args>(args)...);
 };
+
+template<typename R, typename F, typename... Args>
+concept invocable_r = invocable<F, Args...>
+    && (is_void<R> || convertible_to<invoke_result_t<F, Args...>, R>);
 
 } // namespace asl
