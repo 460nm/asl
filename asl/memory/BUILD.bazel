@@ -9,15 +9,26 @@ package(
 cc_library(
     name = "memory",
     hdrs = [
-        "allocator.hpp",
         "layout.hpp",
         "memory.hpp",
+    ],
+    deps = [
+        "//asl/base",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "allocator",
+    hdrs = [
+        "allocator.hpp",
     ],
     srcs = [
         "allocator.cpp",
     ],
     deps = [
         "//asl/base",
+        "//asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
