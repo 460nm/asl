@@ -25,6 +25,9 @@ struct empty {};
 
 template<typename T> struct id { using type = T; };
 
+struct in_place_t {};
+static constexpr in_place_t in_place{};
+
 template<typename... Args> static constexpr isize_t types_count = sizeof...(Args);
 
 template<typename T, T kValue> struct integral_constant { static constexpr T value = kValue; };
@@ -234,17 +237,75 @@ template<>           struct _is_floating_point_helper<double> : true_type  {};
 
 template<typename T> concept is_floating_point = _is_floating_point_helper<un_cv_t<T>>::value;
 
-template<typename T> struct _is_integer_helper           : false_type {};
-template<>           struct _is_integer_helper<int8_t>   : true_type  {};
-template<>           struct _is_integer_helper<int16_t>  : true_type  {};
-template<>           struct _is_integer_helper<int32_t>  : true_type  {};
-template<>           struct _is_integer_helper<int64_t>  : true_type  {};
-template<>           struct _is_integer_helper<uint8_t>  : true_type  {};
-template<>           struct _is_integer_helper<uint16_t> : true_type  {};
-template<>           struct _is_integer_helper<uint32_t> : true_type  {};
-template<>           struct _is_integer_helper<uint64_t> : true_type  {};
+template<typename T> struct _integer_traits
+{
+    static constexpr bool kSigned = false;
+    static constexpr bool kUnsigned = false;
+};
 
-template<typename T> concept is_integer = _is_integer_helper<un_cv_t<T>>::value;
+template<> struct _integer_traits<uint8_t>
+{
+    static constexpr bool kSigned = false;
+    static constexpr bool kUnsigned = true;
+    using as_signed = int8_t;
+};
+
+template<> struct _integer_traits<uint16_t>
+{
+    static constexpr bool kSigned = false;
+    static constexpr bool kUnsigned = true;
+    using as_signed = int16_t;
+};
+
+template<> struct _integer_traits<uint32_t>
+{
+    static constexpr bool kSigned = false;
+    static constexpr bool kUnsigned = true;
+    using as_signed = int32_t;
+};
+
+template<> struct _integer_traits<uint64_t>
+{
+    static constexpr bool kSigned = false;
+    static constexpr bool kUnsigned = true;
+    using as_signed = int64_t;
+};
+
+template<> struct _integer_traits<int8_t>
+{
+    static constexpr bool kSigned = true;
+    static constexpr bool kUnsigned = false;
+    using as_unsigned = uint8_t;
+};
+
+template<> struct _integer_traits<int16_t>
+{
+    static constexpr bool kSigned = true;
+    static constexpr bool kUnsigned = false;
+    using as_unsigned = uint16_t;
+};
+
+template<> struct _integer_traits<int32_t>
+{
+    static constexpr bool kSigned = true;
+    static constexpr bool kUnsigned = false;
+    using as_unsigned = uint32_t;
+};
+
+template<> struct _integer_traits<int64_t>
+{
+    static constexpr bool kSigned = true;
+    static constexpr bool kUnsigned = false;
+    using as_unsigned = uint64_t;
+};
+
+template<typename T> concept is_signed_integer   = _integer_traits<T>::kSigned;
+template<typename T> concept is_unsigned_integer = _integer_traits<T>::kUnsigned;
+
+template<typename T> concept is_integer = is_signed_integer<T> || is_unsigned_integer<T>;
+
+template<is_signed_integer T>   using as_unsigned_integer = _integer_traits<T>::as_unsigned;
+template<is_unsigned_integer T> using as_signed_integer   = _integer_traits<T>::as_signed;
 
 template<typename T> concept is_enum = __is_enum(T);
 

@@ -47,9 +47,6 @@ template<typename T>
 namespace asl
 {
 
-struct in_place_t {};
-static constexpr in_place_t in_place{};
-
 template<moveable T>
 constexpr void swap(T& a, T& b)
 {
@@ -82,27 +79,6 @@ template<typename T>
 constexpr T max(T a, T b)
 {
     return (a >= b) ? a : b;
-}
-
-constexpr uint64_t round_up_pow2(uint64_t v)
-{
-    ASL_ASSERT(v <= 0x8000'0000'0000'0000);
-
-    v -= 1;
-
-    v |= v >> 1U;
-    v |= v >> 2U;
-    v |= v >> 4U;
-    v |= v >> 8U;
-    v |= v >> 16U;
-    v |= v >> 32U;
-
-    return v + 1;
-}
-
-constexpr bool is_pow2(isize_t v)
-{
-    return v > 0 && ((v - 1) & v) == 0; // NOLINT
 }
 
 // NOLINTBEGIN(*-macro-parentheses)

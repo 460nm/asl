@@ -11,6 +11,7 @@ cc_library(
     hdrs = [
         "annotations.hpp",
         "assert.hpp",
+        "bit.hpp",
         "config.hpp",
         "defer.hpp",
         "float.hpp",
@@ -37,6 +38,7 @@ cc_library(
         "//asl/types:box",
     ],
 ) for name in [
+    "bit",
     "defer",
     "float",
     "functional",

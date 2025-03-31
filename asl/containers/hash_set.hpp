@@ -7,6 +7,7 @@
 #include "asl/base/annotations.hpp"
 #include "asl/base/utility.hpp"
 #include "asl/base/meta.hpp"
+#include "asl/base/bit.hpp"
 #include "asl/memory/allocator.hpp"
 #include "asl/memory/memory.hpp"
 #include "asl/types/maybe_uninit.hpp"
@@ -83,7 +84,7 @@ protected:
         ASL_ASSERT(size > 0);
         return max<isize_t>(
             kMinCapacity,
-            static_cast<isize_t>(round_up_pow2((static_cast<uint64_t>(size) * 4 + 2) / 3)));
+            static_cast<isize_t>(bit_ceil((static_cast<uint64_t>(size) * 4 + 2) / 3)));
     }
 
     static void insert_inner(

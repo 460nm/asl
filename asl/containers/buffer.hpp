@@ -9,6 +9,7 @@
 #include "asl/memory/memory.hpp"
 #include "asl/base/annotations.hpp"
 #include "asl/base/assert.hpp"
+#include "asl/base/bit.hpp"
 #include "asl/types/span.hpp"
 #include "asl/hashing/hash.hpp"
 
@@ -320,7 +321,7 @@ public:
         if (new_capacity <= capacity()) { return; }
         ASL_ASSERT(new_capacity > kInlineCapacity);
 
-        new_capacity = static_cast<isize_t>(round_up_pow2(static_cast<uint64_t>(new_capacity)));
+        new_capacity = static_cast<isize_t>(bit_ceil(static_cast<uint64_t>(new_capacity)));
 
         T* old_data = data();
         const isize_t old_capacity = capacity();
