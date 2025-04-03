@@ -6,6 +6,9 @@
 
 #include "asl/base/meta.hpp"
 
+using float32_t = float;
+using float64_t = double;
+
 namespace asl
 {
 

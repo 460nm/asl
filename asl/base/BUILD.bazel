@@ -18,6 +18,7 @@ cc_library(
         "functional.hpp",
         "integers.hpp",
         "meta.hpp",
+        "numeric.hpp",
         "utility.hpp",
     ],
     srcs = [
@@ -44,5 +45,6 @@ cc_library(
     "functional",
     "integers",
     "meta",
+    "numeric",
     "utility",
 ]]

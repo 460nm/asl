@@ -15,14 +15,6 @@ constexpr bool has_single_bit(is_unsigned_integer auto x)
     return x != 0 && ((x - 1) & x) == 0;
 }
 
-// @Todo Move this to numeric library
-template<is_integer T>
-constexpr bool is_pow2(T x)
-{
-    using unsigned_type = select_t<is_unsigned_integer<T>, T, as_unsigned_integer<T>>;
-    return x > 0 && has_single_bit(static_cast<unsigned_type>(x));
-}
-
 constexpr int popcount(uint8_t v)
 {
     v = v - ((v >> 1) & 0x55);

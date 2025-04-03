@@ -4,6 +4,7 @@
 
 #include "asl/formatting/format.hpp"
 #include "asl/base/float.hpp"
+#include "asl/base/numeric.hpp"
 
 #define JKJ_STD_REPLACEMENT_NAMESPACE_DEFINED 0
 #define JKJ_STATIC_DATA_SECTION_DEFINED 0

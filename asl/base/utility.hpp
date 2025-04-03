@@ -69,18 +69,6 @@ constexpr U bit_cast(T value) requires (sizeof(T) == sizeof(U))
     return __builtin_bit_cast(U, value);
 }
 
-template<typename T>
-constexpr T min(T a, T b)
-{
-    return (a <= b) ? a : b;
-}
-
-template<typename T>
-constexpr T max(T a, T b)
-{
-    return (a >= b) ? a : b;
-}
-
 // NOLINTBEGIN(*-macro-parentheses)
 #define ASL_DELETE_COPY(T)                         \
     T(const T&) = delete;                          \

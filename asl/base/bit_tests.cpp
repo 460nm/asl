@@ -17,15 +17,6 @@ ASL_TEST(has_single_bit)
     ASL_TEST_EXPECT(!asl::has_single_bit(341U));
 }
 
-ASL_TEST(is_pow2)
-{
-    ASL_TEST_EXPECT(asl::is_pow2(4));
-    ASL_TEST_EXPECT(asl::is_pow2(65536));
-    ASL_TEST_EXPECT(!asl::is_pow2(6));
-    ASL_TEST_EXPECT(!asl::is_pow2(1978));
-    ASL_TEST_EXPECT(!asl::is_pow2(0));
-}
-
 ASL_TEST(popcount) // NOLINT(*-cognitive-complexity)
 {
     ASL_TEST_EXPECT(asl::popcount(uint8_t{0}) == 0);

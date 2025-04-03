@@ -8,6 +8,7 @@
 #include "asl/base/utility.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/base/bit.hpp"
+#include "asl/base/numeric.hpp"
 #include "asl/memory/allocator.hpp"
 #include "asl/memory/memory.hpp"
 #include "asl/types/maybe_uninit.hpp"
