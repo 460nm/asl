@@ -5,8 +5,7 @@ build --enable_platform_specific_config
 build --build_python_zip=false
 
 build:windows  --extra_execution_platforms=//:x64_windows-clang-cl
-# @Todo(bazel) We should be able to use @local_config_cc...
-build:windows  --extra_toolchains=@@rules_cc++cc_configure_extension+local_config_cc//:cc-toolchain-x64_windows-clang-cl
+build:windows  --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl
 
 build:linux    --repo_env=CC=clang
 
