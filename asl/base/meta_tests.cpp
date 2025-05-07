@@ -372,3 +372,10 @@ static_assert(!asl::same_as<asl::decay_t<int[4][2]>, int*>);
 static_assert(!asl::same_as<asl::decay_t<int[4][2]>, int**>);
 static_assert(asl::same_as<asl::decay_t<int[4][2]>, int(*)[2]>);
 static_assert(asl::same_as<asl::decay_t<int(int)>, int(*)(int)>);
+
+enum EnumU8 : uint8_t {};
+enum EnumI64 : int64_t {};
+
+static_assert(asl::same_as<asl::underlying_t<EnumU8>, uint8_t>);
+static_assert(asl::same_as<asl::underlying_t<EnumI64>, int64_t>);
+

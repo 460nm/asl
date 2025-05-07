@@ -69,6 +69,12 @@ constexpr U bit_cast(T value) requires (sizeof(T) == sizeof(U))
     return __builtin_bit_cast(U, value);
 }
 
+template<is_enum T>
+constexpr auto to_underlying(T value)
+{
+    return static_cast<underlying_t<T>>(value);
+}
+
 // NOLINTBEGIN(*-macro-parentheses)
 #define ASL_DELETE_COPY(T)                         \
     T(const T&) = delete;                          \

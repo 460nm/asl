@@ -309,6 +309,8 @@ template<is_unsigned_integer T> using as_signed_integer   = _integer_traits<T>::
 
 template<typename T> concept is_enum = __is_enum(T);
 
+template<is_enum T> using underlying_t = __underlying_type(T);
+
 template<typename T>     struct is_uniquely_represented : false_type {};
 template<is_integer T>   struct is_uniquely_represented<T> : true_type {};
 template<is_enum T>      struct is_uniquely_represented<T> : true_type {};

@@ -81,3 +81,20 @@ ASL_TEST(forward_like)
     ASL_TEST_EXPECT(test_fwd_like<int&&>(9) == 4);
 }
 
+enum class Enum : int // NOLINT
+{
+    kOne = 1,
+    kTwo = 2,
+};
+
+enum Enum2 : int // NOLINT
+{
+    kOne = 1,
+    kTwo = 2,
+};
+
+static_assert(asl::to_underlying(Enum::kOne) == 1);
+static_assert(asl::to_underlying(Enum::kTwo) == 2);
+static_assert(asl::to_underlying(kOne) == 1);
+static_assert(asl::to_underlying(kTwo) == 2);
+
