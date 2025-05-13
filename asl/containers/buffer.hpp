@@ -392,7 +392,7 @@ public:
 
     auto data(this auto&& self)
     {
-        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
         // NOLINTNEXTLINE(*-reinterpret-cast)
         auto&& buffer = reinterpret_cast<copy_cref_t<decltype(self), class buffer>>(self);
         if constexpr (kInlineCapacity == 0)
@@ -410,13 +410,13 @@ public:
 
     constexpr auto begin(this auto&& self)
     {
-        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
         return contiguous_iterator<type>{self.data()};
     }
 
     constexpr auto end(this auto&& self)
     {
-        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
         return contiguous_iterator<type>{self.data() + self.size()};
     }
 
@@ -432,7 +432,7 @@ public:
 
     constexpr auto as_span(this auto&& self)
     {
-        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
         return span<type>{self.data(), self.size()};
     }
 

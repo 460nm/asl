@@ -147,7 +147,7 @@ public:
     auto get(this auto&& self, const U& value)
         requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
     {
-        using return_type = un_ref_t<copy_cref_t<decltype(self), V>>*;
+        using return_type = copy_const_t<un_ref_t<decltype(self)>, V>*;
         isize_t index = self.find_slot_lookup(value);
         if (index >= 0)
         {

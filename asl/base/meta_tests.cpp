@@ -274,6 +274,7 @@ static_assert(asl::same_or_derived_from<int, int>);
 static_assert(!asl::is_const<int>);
 static_assert(asl::is_const<const int>);
 static_assert(!asl::is_const<const int*>);
+static_assert(!asl::is_const<const int&>);
 static_assert(asl::is_const<int* const>);
 
 static_assert(asl::is_floating_point<float>);
@@ -361,6 +362,15 @@ static_assert(asl::same_as<asl::copy_cref_t<const int&, float>, const float&>);
 static_assert(asl::same_as<asl::copy_cref_t<const int&, const float>, const float&>);
 static_assert(asl::same_as<asl::copy_cref_t<const int&, float&&>, const float&>);
 static_assert(asl::same_as<asl::copy_cref_t<const int&, const float&>, const float&>);
+
+static_assert(asl::same_as<asl::copy_const_t<int, float>, float>);
+static_assert(asl::same_as<asl::copy_const_t<int, const float>, float>);
+
+static_assert(asl::same_as<asl::copy_const_t<const int, float>, const float>);
+static_assert(asl::same_as<asl::copy_const_t<const int, const float>, const float>);
+
+static_assert(asl::same_as<asl::copy_const_t<const int*, float>, float>);
+static_assert(asl::same_as<asl::copy_const_t<int* const, float>, const float>);
 
 static_assert(asl::same_as<asl::decay_t<int>, int>);
 static_assert(!asl::same_as<asl::decay_t<int>, float>);

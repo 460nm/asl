@@ -146,6 +146,8 @@ struct _copy_const_helper<From, To, true> { using type = const To; };
 template<typename From, typename To> using copy_cref_t =
     _copy_ref_helper<From, typename _copy_const_helper<From, un_cvref_t<To>>::type>::type;
 
+template<typename From, typename To> using copy_const_t = _copy_const_helper<From, un_cvref_t<To>>::type;
+
 template<typename T> struct _is_ptr_helper     : false_type {};
 template<typename T> struct _is_ptr_helper<T*> : true_type {};
 

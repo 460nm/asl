@@ -19,12 +19,12 @@ struct array
     T m_data[kSize];
 
     [[nodiscard]] constexpr bool is_empty() const { return false; }
-    
+
     [[nodiscard]] constexpr int64_t size() const { return kSize; }
 
     constexpr auto data(this auto&& self)
     {
-        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
         return static_cast<return_type>(self.m_data);
     }
 
@@ -54,7 +54,7 @@ struct array
 
     constexpr auto as_span(this auto&& self)
     {
-        using type = un_ref_t<copy_cref_t<decltype(self), T>>;
+        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
         return span<type, kSize>{self.data(), self.size()};
     }
 

@@ -82,13 +82,13 @@ public:
 
     constexpr auto front(this auto&& self)
     {
-        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
         return return_type{ self.m_head };
     }
 
     constexpr auto back(this auto&& self)
     {
-        using return_type = un_ref_t<copy_cref_t<decltype(self), T>>*;
+        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
         return return_type{ self.m_head != nullptr ? self.m_head->m_prev : nullptr };
     }
 
