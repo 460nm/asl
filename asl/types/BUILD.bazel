@@ -7,6 +7,18 @@ package(
 )
 
 cc_library(
+    name = "array",
+    hdrs = [
+        "array.hpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/types:span",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "box",
     hdrs = [
         "box.hpp",
@@ -121,6 +133,16 @@ cc_test(
         "//asl/tests:utils",
         "//asl/testing",
         "//asl/types:function_ref",
+    ],
+)
+
+cc_test(
+    name = "array_tests",
+    srcs = ["array_tests.cpp"],
+    deps = [
+        "//asl/tests:utils",
+        "//asl/testing",
+        "//asl/types:array",
     ],
 )
 
