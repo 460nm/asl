@@ -11,7 +11,7 @@ ASL_TEST(has_single_bit)
     ASL_TEST_EXPECT(asl::has_single_bit(4U));
     ASL_TEST_EXPECT(asl::has_single_bit(1024U));
     ASL_TEST_EXPECT(asl::has_single_bit(0x8000'0000U));
-    ASL_TEST_EXPECT(asl::has_single_bit(0x0000'8000'0000'0000ULL));
+    ASL_TEST_EXPECT(asl::has_single_bit(uint64_t{0x0000'8000'0000'0000ULL}));
     ASL_TEST_EXPECT(!asl::has_single_bit(0U));
     ASL_TEST_EXPECT(!asl::has_single_bit(3U));
     ASL_TEST_EXPECT(!asl::has_single_bit(341U));

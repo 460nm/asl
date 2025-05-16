@@ -4,6 +4,7 @@
 
 #include "asl/memory/allocator.hpp"
 #include "asl/base/assert.hpp"
+#include "asl/base/numeric.hpp"
 #include "asl/memory/layout.hpp"
 
 #include <cstdlib>
