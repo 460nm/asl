@@ -136,18 +136,26 @@ private:
     {
         if (other.is_on_heap())
         {
+            // If the other in on heap, destroy here and adopt their
+            // data. We'll soon adopt the allocator as well.
             destroy();
             m_data = other.m_data;
             m_capacity = other.m_capacity;
             store_size_encoded(other.load_size_encoded());
         }
-        else if (trivially_move_constructible<T>)
-        {
-            destroy();
-            asl::memcpy(this, &other, kInlineRegionSize);
-        }
         else if (!assign || m_allocator == other.m_allocator)
         {
+            // If allocators are compatible, we can move other's inline
+            // data here, even if it's on heap here, because that
+            // memory can be freed by other's allocator, which we will
+            // soon adopt.
+            // 
+            // @Note There is an argument to be made for not doing this and
+            // instead destroying our data here and moving into inline
+            // storage, which frees one allocation. But also this avoids
+            // freeing. So I don't know.
+            // Maybe If this storage is much much larger than the inline
+            // data, it's worth freeing.
             const isize_t other_n = other.size();
             const isize_t this_n = size();
             resize_uninit_inner(other_n);
@@ -163,11 +171,27 @@ private:
         }
         else
         {
+            // Otherwise, if we have to free, because the allocators are
+            // not compatible, well we free and move into our inline
+            // storage region.
+            // There is an optimization here when the data is trivially
+            // move constructible (which implies trivially destructible),
+            // we copy the whole inline region, which includes the size.
+            // Very magic.
+
             destroy();
-            const isize_t n = other.size();
-            ASL_ASSERT(n <= kInlineCapacity);
-            relocate_uninit_n(data(), other.data(), n);
-            set_size_inline(n);
+            if constexpr (trivially_move_constructible<T>)
+            {
+                asl::memcpy(this, &other, kInlineRegionSize);
+            }
+            else
+            {
+                const isize_t n = other.size();
+                ASL_ASSERT(n <= kInlineCapacity);
+                resize_uninit_inner(n);
+                ASL_ASSERT(!is_on_heap());
+                relocate_uninit_n(data(), other.data(), n);
+            }
         }
 
         other.set_size_inline(0);
@@ -269,6 +293,8 @@ public:
     {
         destroy();
     }
+
+    constexpr Allocator& allocator() { return m_allocator; }
 
     [[nodiscard]] constexpr isize_t size() const
     {
