@@ -14,6 +14,7 @@ struct Big
 
 static_assert(asl::buffer<int32_t>::kInlineCapacity == 5);
 static_assert(asl::buffer<int64_t>::kInlineCapacity == 2);
+static_assert(asl::buffer<void*>::kInlineCapacity == 2);
 static_assert(asl::buffer<char>::kInlineCapacity == 23);
 static_assert(asl::buffer<Big>::kInlineCapacity == 0);
 

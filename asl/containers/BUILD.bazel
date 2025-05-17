@@ -22,6 +22,22 @@ cc_library(
 )
 
 cc_library(
+    name = "chunked_buffer",
+    hdrs = [
+        "chunked_buffer.hpp",
+    ],
+    deps = [
+        "//asl/memory",
+        "//asl/memory:allocator",
+        "//asl/base",
+        "//asl/containers:buffer",
+        "//asl/types:array",
+        "//asl/types:maybe_uninit",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "hash_set",
     hdrs = [
         "hash_set.hpp",
@@ -75,6 +91,7 @@ cc_library(
     ],
 ) for name in [
     "buffer",
+    "chunked_buffer",
     "hash_map",
     "hash_set",
     "intrusive_list",
