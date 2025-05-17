@@ -16,7 +16,8 @@
 namespace asl
 {
 
-template<is_object T, allocator Allocator = DefaultAllocator>
+template<typename T, allocator Allocator = DefaultAllocator>
+requires is_object<T> && moveable<T>
 class buffer
 {
     T*         m_data{};
@@ -244,7 +245,6 @@ public:
     }
 
     constexpr buffer(buffer&& other)
-        requires moveable<T>
         : buffer(std::move(other.m_allocator))
     {
         move_from_other(std::move(other), false);
@@ -259,7 +259,6 @@ public:
     }
 
     constexpr buffer& operator=(buffer&& other)
-        requires moveable<T>
     {
         if (&other == this) { return *this; }
         move_from_other(std::move(other), true);

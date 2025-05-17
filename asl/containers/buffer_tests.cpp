@@ -159,13 +159,19 @@ struct MoveableType
     MoveableType(const MoveableType&) = delete;
     MoveableType(MoveableType&& other)  : moved{other.moved + 1}, value{other.value} {}
     MoveableType& operator=(const MoveableType&) = delete;
-    MoveableType& operator=(MoveableType&&) = delete;
+    MoveableType& operator=(MoveableType&& other)
+    {
+        if (this == &other) { return *this; }
+        moved = other.moved + 1;
+        value = other.value;
+        return *this;
+    }
     ~MoveableType() = default;
 };
 static_assert(!asl::trivially_copy_constructible<MoveableType>);
 static_assert(!asl::trivially_move_constructible<MoveableType>);
 static_assert(!asl::copyable<MoveableType>);
-static_assert(asl::move_constructible<MoveableType>);
+static_assert(asl::moveable<MoveableType>);
 
 // NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push_move)
@@ -203,6 +209,30 @@ ASL_TEST(push_move)
     ASL_TEST_EXPECT(b[3].moved == 0);
 
     b.push(4);
+    ASL_TEST_EXPECT(b[0].value == 0);
+    ASL_TEST_EXPECT(b[0].moved == 2);
+    ASL_TEST_EXPECT(b[1].value == 1);
+    ASL_TEST_EXPECT(b[1].moved == 2);
+    ASL_TEST_EXPECT(b[2].value == 2);
+    ASL_TEST_EXPECT(b[2].moved == 1);
+    ASL_TEST_EXPECT(b[3].value == 3);
+    ASL_TEST_EXPECT(b[3].moved == 1);
+    ASL_TEST_EXPECT(b[4].value == 4);
+    ASL_TEST_EXPECT(b[4].moved == 0);
+
+    asl::buffer<MoveableType> b2 = std::move(b);
+    ASL_TEST_EXPECT(b2[0].value == 0);
+    ASL_TEST_EXPECT(b2[0].moved == 2);
+    ASL_TEST_EXPECT(b2[1].value == 1);
+    ASL_TEST_EXPECT(b2[1].moved == 2);
+    ASL_TEST_EXPECT(b2[2].value == 2);
+    ASL_TEST_EXPECT(b2[2].moved == 1);
+    ASL_TEST_EXPECT(b2[3].value == 3);
+    ASL_TEST_EXPECT(b2[3].moved == 1);
+    ASL_TEST_EXPECT(b2[4].value == 4);
+    ASL_TEST_EXPECT(b2[4].moved == 0);
+
+    b = std::move(b2);
     ASL_TEST_EXPECT(b[0].value == 0);
     ASL_TEST_EXPECT(b[0].moved == 2);
     ASL_TEST_EXPECT(b[1].value == 1);
