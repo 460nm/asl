@@ -38,19 +38,70 @@ public:
     {}
 
     // @Todo copy constructor
-    // @Todo move constructor
+    constexpr chunked_buffer(const chunked_buffer& other)
+        requires copyable<T> && copy_constructible<Allocator>
+    {}
+
+    constexpr chunked_buffer(chunked_buffer&& other)
+        : m_chunks{std::move(other.m_chunks)}
+        , m_size{asl::exchange(other.m_size, 0)}
+    {
+        ASL_ASSERT(m_chunks.size() == 0);
+    }
+    
     // @Todo copy assignment
+    constexpr chunked_buffer& operator=(const chunked_buffer& other)
+        requires copyable<T>
+    {
+        if (&other == this) { return *this; }
+        return *this;
+    }
+    
     // @Todo move assignment
-    // @Todo destructor
-    // @Todo iterators
-    // @Todo element access
-    // @Todo clear
-    // @Todo push
-    // @Todo destroy
-    // @Todo reserve_capacity
-    // @Todo resize (default/with value)
-    // @Todo resize_zero
-    // @Todo resize_uninit
+    constexpr chunked_buffer& operator=(chunked_buffer&& other)
+    {
+        if (&other == this) { return *this; }
+        return *this;
+    }
+
+    ~chunked_buffer()
+    {
+        destroy();
+    }
+
+    void clear()
+    {
+        if constexpr (trivially_destructible<T>)
+        {
+            m_size = 0;
+        }
+        else
+        {
+            for (Chunk* chunk: m_chunks)
+            {
+                if (m_size == 0) { break; }
+
+                isize_t in_chunk = asl::min(m_size, kChunkSize);
+                destroy_n(&(*chunk)[0].as_init_unsafe(), in_chunk);
+            
+                m_size -= in_chunk;
+            }
+            ASL_ASSERT(m_size == 0);
+        }
+    }
+
+    void destroy()
+    {
+        clear();
+        ASL_ASSERT(size() == 0);
+        
+        for (Chunk* chunk:  m_chunks)
+        {
+            alloc_delete(m_chunks.allocator(), chunk);
+        }
+
+        m_chunks.destroy();
+    }
 
     [[nodiscard]] constexpr isize_t size() const { return m_size; }
 
@@ -60,6 +111,14 @@ public:
     {
         return m_chunks.size() * kChunkSize;
     }
+
+    // @Todo iterators
+    // @Todo element access
+    // @Todo push
+    // @Todo reserve_capacity
+    // @Todo resize (default/with value)
+    // @Todo resize_zero
+    // @Todo resize_uninit
 };
 
 } // namespace asl

@@ -15,3 +15,12 @@ static_assert(asl::copyable<asl::chunked_buffer<int, 8>>);
 static_assert(asl::copyable<asl::chunked_buffer<Copyable, 8>>);
 static_assert(!asl::copyable<asl::chunked_buffer<MoveableOnly, 8>>);
 static_assert(!asl::copyable<asl::chunked_buffer<Pinned, 8>>);
+
+ASL_TEST(test)
+{
+    asl::chunked_buffer<int, 16> b;
+    b.destroy();
+}
+
+// @Todo test clear actually destroys
+// @Todo test destroy with alloc counter

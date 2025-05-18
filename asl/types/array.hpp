@@ -12,7 +12,7 @@
 namespace asl
 {
 
-template<is_object T, int64_t kSize>
+template<is_object T, isize_t kSize>
 requires (kSize > 0)
 struct array
 {
@@ -20,7 +20,7 @@ struct array
 
     [[nodiscard]] constexpr bool is_empty() const { return false; }
 
-    [[nodiscard]] constexpr int64_t size() const { return kSize; }
+    [[nodiscard]] constexpr isize_t size() const { return kSize; }
 
     constexpr auto data(this auto&& self)
     {
@@ -38,14 +38,14 @@ struct array
         return contiguous_iterator{self.data() + kSize};
     }
 
-    template<int64_t kSpanSize>
+    template<isize_t kSpanSize>
     requires (kSpanSize == kSize || kSpanSize == dynamic_size)
     constexpr operator span<const T, kSpanSize>() const // NOLINT(*explicit*)
     {
         return as_span();
     }
 
-    template<int64_t kSpanSize>
+    template<isize_t kSpanSize>
     requires (kSpanSize == kSize || kSpanSize == dynamic_size)
     constexpr operator span<T, kSpanSize>() // NOLINT(*explicit*)
     {

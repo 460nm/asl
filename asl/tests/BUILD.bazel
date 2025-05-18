@@ -9,10 +9,12 @@ package(
 cc_library(
     name = "utils",
     hdrs = [
+        "counting_allocator.hpp",
         "types.hpp",
     ],
     deps = [
         "//asl/base",
+        "//asl/memory:allocator",
     ],
     visibility = ["//asl:__subpackages__"],
 )

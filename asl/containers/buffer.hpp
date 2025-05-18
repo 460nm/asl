@@ -182,6 +182,7 @@ private:
             destroy();
             if constexpr (trivially_move_constructible<T>)
             {
+                ASL_ASSERT(!is_on_heap());
                 asl::memcpy(this, &other, kInlineRegionSize);
             }
             else
