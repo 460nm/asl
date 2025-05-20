@@ -100,10 +100,13 @@ private:
 
     constexpr void resize_uninit_inner(isize_t new_size)
     {
-        const isize_t old_size = size();
-        if (!trivially_destructible<T> && new_size < old_size)
+        if constexpr (!trivially_destructible<T>)
         {
-            destroy_n(data() + new_size, old_size - new_size);
+            const isize_t old_size = size();
+            if (new_size < old_size)
+            {
+                destroy_n(data() + new_size, old_size - new_size);
+            }
         }
         reserve_capacity(new_size);
         set_size(new_size);
@@ -342,7 +345,6 @@ public:
     void reserve_capacity(isize_t new_capacity)
     {
         ASL_ASSERT(new_capacity >= 0);
-        ASL_ASSERT_RELEASE(new_capacity <= 0x4000'0000'0000'0000);
 
         if (new_capacity <= capacity()) { return; }
         ASL_ASSERT(new_capacity > kInlineCapacity);
@@ -379,17 +381,16 @@ public:
     }
 
     constexpr void resize_uninit(isize_t new_size)
-        requires trivially_default_constructible<T> && trivially_destructible<T>
+        requires trivially_default_constructible<T>
     {
-        reserve_capacity(new_size);
-        set_size(new_size);
+        resize_uninit_inner(new_size);
     }
 
     constexpr void resize_zero(isize_t new_size)
-        requires trivially_default_constructible<T> && trivially_destructible<T>
+        requires trivially_default_constructible<T>
     {
         const isize_t old_size = size();
-        resize_uninit(new_size);
+        resize_uninit_inner(new_size);
 
         if (new_size > old_size)
         {

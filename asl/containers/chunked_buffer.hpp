@@ -28,6 +28,20 @@ class chunked_buffer
     buffer<Chunk*, Allocator>    m_chunks;
     isize_t                      m_size{};
 
+    void resize_uninit_inner(isize_t new_size)
+    {
+        if constexpr (!trivially_destructible<T>)
+        {
+            const isize_t old_size = size();
+            if (new_size < old_size)
+            {
+                // @Todo Destroy
+            }
+        }
+        reserve_capacity(new_size);
+        m_size = new_size;
+    }
+
 public:
     constexpr chunked_buffer()
         requires default_constructible<Allocator>
@@ -115,10 +129,33 @@ public:
     // @Todo iterators
     // @Todo element access
     // @Todo push
-    // @Todo reserve_capacity
+
+    void reserve_capacity(isize_t new_capacity)
+    {
+        new_capacity = round_up_pow2(new_capacity, kChunkSize);
+        if (new_capacity <= capacity()) { return; }
+
+        const isize_t required_chunks = new_capacity / kChunkSize;
+        const isize_t additional_chunks = required_chunks - m_chunks.size();
+        ASL_ASSERT(additional_chunks > 0);
+
+        m_chunks.reserve_capacity(required_chunks);
+        for (isize_t i = 0; i < additional_chunks; ++i)
+        {
+            auto* chunk = alloc_uninit<Chunk>(m_chunks.allocator());
+            m_chunks.push(chunk);
+        }
+    }
+    
     // @Todo resize (default/with value)
     // @Todo resize_zero
+
     // @Todo resize_uninit
+    void resize_uninit(isize_t new_size)
+        requires trivially_default_constructible<T>
+    {
+        resize_uninit_inner(new_size);
+    }
 };
 
 } // namespace asl
