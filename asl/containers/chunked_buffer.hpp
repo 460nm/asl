@@ -98,6 +98,7 @@ class chunked_buffer
                 }
             }
         }
+
         reserve_capacity(new_size);
         m_size = new_size;
     }
@@ -211,7 +212,24 @@ public:
         );
     }
     
-    // @Todo push
+    constexpr T& push(auto&&... args)
+        requires constructible_from<T, decltype(args)&&...>
+    {
+        const isize_t chunk = chunk_index(m_size);
+        const isize_t in_chunk = index_in_chunk(m_size);
+
+        if (m_size == capacity())
+        {
+            resize_uninit_inner(m_size + 1);
+        }
+        else
+        {
+            m_size += 1;
+        }
+        
+        void* uninit = &(*m_chunks[chunk])[in_chunk];
+        return *construct_at<T>(uninit, std::forward<decltype(args)>(args)...);
+    }
 
     void reserve_capacity(isize_t new_capacity)
     {

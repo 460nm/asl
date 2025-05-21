@@ -113,6 +113,27 @@ ASL_TEST(resize)
     }
 }
 
+ASL_TEST(push)
+{
+    asl::chunked_buffer<int, 4> b;
+
+    for (int i = 0; i < 100; ++i)
+    {
+        b.push(i);
+    }
+
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == i);
+    }
+
+    b.resize(1000);
+    for (int i = 0; i < 100; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == i);
+    }
+}
+
 // ASL_TEST(resize_destroy)
 // {
 //     bool destroyed[5];

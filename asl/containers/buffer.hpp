@@ -91,7 +91,7 @@ private:
         return is_on_heap(load_size_encoded());
     }
 
-    constexpr T* push_uninit()
+    constexpr void* push_uninit()
     {
         const isize_t sz = size();
         resize_uninit_inner(sz + 1);
@@ -419,7 +419,7 @@ public:
     constexpr T& push(auto&&... args)
         requires constructible_from<T, decltype(args)&&...>
     {
-        T* uninit = push_uninit();
+        void* uninit = push_uninit();
         T* init = construct_at<T>(uninit, std::forward<decltype(args)>(args)...);
         return *init;
     }
