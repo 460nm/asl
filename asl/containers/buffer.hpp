@@ -401,7 +401,14 @@ public:
     void resize(isize_t new_size)
         requires default_constructible<T>
     {
-        resize_inner(new_size);
+        if constexpr (trivially_default_constructible<T>)
+        {
+            resize_zero(new_size);
+        }
+        else
+        {
+            resize_inner(new_size);
+        }
     }
 
     void resize(isize_t new_size, const T& value)
@@ -465,7 +472,7 @@ public:
 
     constexpr auto&& operator[](this auto&& self, isize_t i)
     {
-        ASL_ASSERT(i >= 0 && i <= self.size());
+        ASL_ASSERT(i >= 0 && i < self.size());
         return std::forward_like<decltype(self)>(std::forward<decltype(self)>(self).data()[i]);
     }
 

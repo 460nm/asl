@@ -49,6 +49,13 @@ T* alloc_uninit(allocator auto& a)
 }
 
 template<typename T>
+T* alloc_uninit_unsafe(allocator auto& a)
+{
+    void* ptr = a.alloc(layout::of<T>());
+    return reinterpret_cast<T*>(ptr); // NOLINT(*-reinterpret-cast)
+}
+
+template<typename T>
 void alloc_delete(allocator auto& a, T* ptr)
 {
     destroy(ptr);

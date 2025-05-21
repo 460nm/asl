@@ -25,21 +25,103 @@ class chunked_buffer
 
     using Chunk = array<maybe_uninit<T>, kChunkSize>;
 
+    static constexpr isize_t chunk_index(isize_t i)
+    {
+        static constexpr int kChunkSizeLog2 = countr_zero(uint64_t{kChunkSize});
+        return i >> kChunkSizeLog2;
+    }
+
+    static constexpr isize_t index_in_chunk(isize_t i)
+    {
+        static constexpr isize_t kMask = kChunkSize - 1;
+        return i & kMask;
+    }
+
+    struct PerChunkIterator
+    {
+        isize_t from_chunk;
+        isize_t to_chunk;
+
+        isize_t from_index_in_chunk;
+        isize_t to_index_in_chunk;
+
+        [[nodiscard]] constexpr bool has_more() const
+        {
+            return from_chunk <= to_chunk;
+        }
+
+        void advance()
+        {
+            from_chunk += 1;
+            from_index_in_chunk = 0;
+        }
+
+        [[nodiscard]] constexpr isize_t chunk() const { return from_chunk; }
+
+        span<maybe_uninit<T>> make_span(Chunk& chunk) const
+        {
+            isize_t from = from_index_in_chunk;
+            isize_t to = (from_chunk == to_chunk) ? to_index_in_chunk : kChunkSize - 1;
+            return chunk.as_span().subspan(from, to - from + 1);
+        }
+    };
+
+    PerChunkIterator make_index_iterator(isize_t from, isize_t to)
+    {
+        return PerChunkIterator {
+            chunk_index(from), chunk_index(to),
+            index_in_chunk(from), index_in_chunk(to)
+        };
+    }
+
     buffer<Chunk*, Allocator>    m_chunks;
     isize_t                      m_size{};
 
     void resize_uninit_inner(isize_t new_size)
     {
+        ASL_ASSERT(new_size >= 0);
+
         if constexpr (!trivially_destructible<T>)
         {
             const isize_t old_size = size();
             if (new_size < old_size)
             {
-                // @Todo Destroy
+                for (PerChunkIterator it = make_index_iterator(new_size, old_size - 1);
+                    it.has_more();
+                    it.advance())
+                {
+                    auto span = it.make_span(*m_chunks[it.chunk()]);
+                    for (auto& el: span)
+                    {
+                        el.destroy_unsafe();
+                    }
+                }
             }
         }
         reserve_capacity(new_size);
         m_size = new_size;
+    }
+
+    template<typename... Args>
+    void resize_construct(isize_t new_size, Args&&... args)
+        requires constructible_from<T, Args&&...>
+    {
+        const isize_t old_size = m_size;
+        resize_uninit_inner(new_size);
+
+        if (new_size > old_size)
+        {
+            for (PerChunkIterator it = make_index_iterator(old_size, new_size - 1);
+                it.has_more();
+                it.advance())
+            {
+                auto span = it.make_span(*m_chunks[it.chunk()]);
+                for (auto& uninit: span)
+                {
+                    uninit.construct_unsafe(std::forward<Args>(args)...);
+                }
+            }
+        }
     }
 
 public:
@@ -89,17 +171,9 @@ public:
         {
             m_size = 0;
         }
-        else
+        else if (m_size > 0)
         {
-            for (Chunk* chunk: m_chunks)
-            {
-                if (m_size == 0) { break; }
-
-                isize_t in_chunk = asl::min(m_size, kChunkSize);
-                destroy_n(&(*chunk)[0].as_init_unsafe(), in_chunk);
-            
-                m_size -= in_chunk;
-            }
+            resize_uninit_inner(0);
             ASL_ASSERT(m_size == 0);
         }
     }
@@ -127,7 +201,16 @@ public:
     }
 
     // @Todo iterators
-    // @Todo element access
+
+    constexpr auto&& operator[](this auto&& self, isize_t i)
+    {
+        ASL_ASSERT(i >= 0 && i < self.m_size);
+        return std::forward_like<decltype(self)>(
+            (*std::forward<decltype(self)>(self).m_chunks[chunk_index(i)])
+                [index_in_chunk(i)].as_init_unsafe()
+        );
+    }
+    
     // @Todo push
 
     void reserve_capacity(isize_t new_capacity)
@@ -142,15 +225,49 @@ public:
         m_chunks.reserve_capacity(required_chunks);
         for (isize_t i = 0; i < additional_chunks; ++i)
         {
-            auto* chunk = alloc_uninit<Chunk>(m_chunks.allocator());
+            // @Todo(C++26) _unsafe shouldn't be needed with trivial unions
+            auto* chunk = alloc_uninit_unsafe<Chunk>(m_chunks.allocator());
             m_chunks.push(chunk);
         }
     }
     
-    // @Todo resize (default/with value)
-    // @Todo resize_zero
+    void resize(isize_t new_size)
+        requires default_constructible<T>
+    {
+        if constexpr (trivially_default_constructible<T>)
+        {
+            resize_zero(new_size);
+        }
+        else
+        {
+            resize_construct(new_size);
+        }
+    }
 
-    // @Todo resize_uninit
+    void resize(isize_t new_size, const T& value)
+        requires copy_constructible<T>
+    {
+        resize_construct(new_size, value);
+    }
+
+    void resize_zero(isize_t new_size)
+        requires trivially_default_constructible<T>
+    {
+        const isize_t old_size = m_size;
+        resize_uninit_inner(new_size);
+
+        if (new_size > old_size)
+        {
+            for (PerChunkIterator it = make_index_iterator(old_size, new_size - 1);
+                it.has_more();
+                it.advance())
+            {
+                auto span = it.make_span(*m_chunks[it.chunk()]);
+                asl::memzero(span.data(), span.size_bytes());
+            }
+        }
+    }
+
     void resize_uninit(isize_t new_size)
         requires trivially_default_constructible<T>
     {

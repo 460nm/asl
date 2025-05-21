@@ -68,9 +68,63 @@ ASL_TEST(resize_uninit)
     b.resize_uninit(12);
     ASL_TEST_EXPECT(b.capacity() == 48);
     ASL_TEST_EXPECT(b.size() == 12);
-
-    // @Todo Test that resizing down destroys stuff
 }
+
+ASL_TEST(resize_zero)
+{
+    asl::chunked_buffer<int, 4> b;
+    ASL_TEST_EXPECT(b.capacity() == 0);
+    ASL_TEST_EXPECT(b.size() == 0);
+
+    b.resize_zero(2);
+    for (isize_t i = 0; i < 2; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == 0);
+    }
+
+    b.resize_zero(18);
+    for (isize_t i = 0; i < 18; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == 0);
+    }
+}
+
+ASL_TEST(resize)
+{
+    asl::chunked_buffer<int, 4> b;
+    ASL_TEST_EXPECT(b.capacity() == 0);
+    ASL_TEST_EXPECT(b.size() == 0);
+
+    b.resize(10);
+    for (isize_t i = 0; i < 10; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == 0);
+    }
+
+    b.resize(20, 8);
+    for (isize_t i = 0; i < 10; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == 0);
+    }
+
+    for (isize_t i = 10; i < 20; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == 8);
+    }
+}
+
+// ASL_TEST(resize_destroy)
+// {
+//     bool destroyed[5];
+//     asl::chunked_buffer<DestructorObserver, 2> buf;
+
+//     for (int i = 0; i < 5; ++i)
+//     {
+//         buf.push(&destroyed[i]);
+//     }
+   
+//     // @Todo Test that resizing does destroys stuff
+// }
 
 // @Todo test clear actually destroys
 // @Todo test destroy with alloc counter

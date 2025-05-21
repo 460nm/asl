@@ -39,6 +39,10 @@ ASL_TEST(popcount) // NOLINT(*-cognitive-complexity)
 ASL_TEST(countr_zero)
 {
     ASL_TEST_EXPECT(asl::countr_zero(uint8_t{0}) == 8);
+    ASL_TEST_EXPECT(asl::countr_zero(uint8_t{1}) == 0);
+    ASL_TEST_EXPECT(asl::countr_zero(uint8_t{2}) == 1);
+    ASL_TEST_EXPECT(asl::countr_zero(uint8_t{4}) == 2);
+    ASL_TEST_EXPECT(asl::countr_zero(uint8_t{8}) == 3);
     ASL_TEST_EXPECT(asl::countr_zero(uint8_t{255}) == 0);
     ASL_TEST_EXPECT(asl::countr_zero(uint8_t{0b00011100}) == 2);
     ASL_TEST_EXPECT(asl::countr_zero(uint8_t{0b10101010}) == 1);
