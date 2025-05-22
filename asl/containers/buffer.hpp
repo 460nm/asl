@@ -298,6 +298,12 @@ public:
         destroy();
     }
 
+    constexpr Allocator allocator_copy() const
+        requires copy_constructible<Allocator>
+    {
+        return m_allocator;
+    }
+
     constexpr Allocator& allocator() { return m_allocator; }
 
     [[nodiscard]] constexpr isize_t size() const

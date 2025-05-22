@@ -4,6 +4,7 @@
 
 #include "asl/testing/testing.hpp"
 #include "asl/tests/types.hpp"
+#include "asl/tests/counting_allocator.hpp"
 #include "asl/containers/chunked_buffer.hpp"
 
 static_assert(asl::moveable<asl::chunked_buffer<int, 8>>);
@@ -134,18 +135,156 @@ ASL_TEST(push)
     }
 }
 
-// ASL_TEST(resize_destroy)
-// {
-//     bool destroyed[5];
-//     asl::chunked_buffer<DestructorObserver, 2> buf;
+ASL_TEST(clear_destroy)
+{
+    bool destroyed[5]{};
+    asl::chunked_buffer<DestructorObserver, 2> buf;
 
-//     for (int i = 0; i < 5; ++i)
-//     {
-//         buf.push(&destroyed[i]);
-//     }
-   
-//     // @Todo Test that resizing does destroys stuff
-// }
+    for (bool& d: destroyed)
+    {
+        buf.push(&d); // NOLINT
+    }
 
-// @Todo test clear actually destroys
-// @Todo test destroy with alloc counter
+    for (const bool d: destroyed)
+    {
+        ASL_TEST_EXPECT(!d);
+    }
+
+    buf.clear();
+
+    for (const bool d: destroyed)
+    {
+        ASL_TEST_EXPECT(d);
+    }
+}
+
+ASL_TEST(alloc_count) // NOLINT
+{
+    CountingAllocator::Stats stats;
+    asl::chunked_buffer<int, 4, CountingAllocator> buf{CountingAllocator{&stats}};
+
+    ASL_TEST_EXPECT(stats.alive_bytes == 0);
+    ASL_TEST_EXPECT(stats.alloc_count == 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 0);
+
+    buf.push(1);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
+
+    buf.push(2);
+    buf.push(3);
+    buf.push(4);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
+
+    buf.push(5);
+    buf.push(6);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 2);
+
+    buf.resize(8, 8);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 2);
+
+    buf.resize(32, 8);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 9);
+
+    buf.resize(16, 0);
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 9);
+
+    buf.clear();
+    ASL_TEST_EXPECT(stats.alive_bytes > 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 9);
+
+    buf.destroy();
+    ASL_TEST_EXPECT(stats.alive_bytes == 0);
+    ASL_TEST_EXPECT(stats.dealloc_count == 9);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 9);
+}
+
+ASL_TEST(move)
+{
+    bool destroyed[5]{};
+
+    {
+        asl::chunked_buffer<DestructorObserver, 2> buf;
+
+        for (bool& d: destroyed)
+        {
+            buf.push(&d); // NOLINT
+        }
+
+        for (const bool d: destroyed)
+        {
+            ASL_TEST_EXPECT(!d);
+        }
+
+        asl::chunked_buffer<DestructorObserver, 2> buf2 = std::move(buf);
+
+        for (const bool d: destroyed)
+        {
+            ASL_TEST_EXPECT(!d);
+        }
+
+        buf = std::move(buf2);
+        buf2.destroy();
+
+        for (const bool d: destroyed)
+        {
+            ASL_TEST_EXPECT(!d);
+        }
+    }
+
+    for (const bool d: destroyed)
+    {
+        ASL_TEST_EXPECT(d);
+    }
+}
+
+ASL_TEST(copy) // NOLINT
+{
+    asl::chunked_buffer<int, 4> buf;
+    for (int i = 0; i < 10; ++i) { buf.push(i); }
+
+    asl::chunked_buffer<int, 4> buf2 = buf;
+
+    ASL_TEST_EXPECT(buf.size() == 10);
+    ASL_TEST_EXPECT(buf2.size() == 10);
+    for (int i = 0; i < 10; ++i)
+    {
+        ASL_TEST_EXPECT(buf[i] == i);
+        ASL_TEST_EXPECT(buf2[i] == i);
+    }
+
+    buf2.resize(5);
+    buf = buf2;
+
+    ASL_TEST_EXPECT(buf.size() == 5);
+    ASL_TEST_EXPECT(buf2.size() == 5);
+    for (int i = 0; i < 5; ++i)
+    {
+        ASL_TEST_EXPECT(buf[i] == i);
+        ASL_TEST_EXPECT(buf2[i] == i);
+    }
+
+    buf.clear();
+    buf.resize(80, 12);
+    buf2 = buf;
+    ASL_TEST_EXPECT(buf.size() == 80);
+    ASL_TEST_EXPECT(buf2.size() == 80);
+    for (int i = 0; i < 80; ++i)
+    {
+        ASL_TEST_EXPECT(buf[i] == 12);
+        ASL_TEST_EXPECT(buf2[i] == 12);
+    }
+}

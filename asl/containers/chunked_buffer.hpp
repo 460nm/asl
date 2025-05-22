@@ -125,6 +125,46 @@ class chunked_buffer
         }
     }
 
+    void copy_from(const chunked_buffer& other)
+        requires copyable<T>
+    {
+        const isize_t this_size = size();
+        isize_t to_copy_assign = asl::min(other.size(), this_size);
+
+        resize_uninit_inner(other.size());
+
+        for (PerChunkIterator it = make_index_iterator(0, to_copy_assign - 1);
+            it.has_more();
+            it.advance())
+        {
+            auto to_span = it.make_span(*m_chunks[it.chunk()]);
+            auto from_span = it.make_span(*other.m_chunks[it.chunk()]);
+
+            copy_assign_n(
+                reinterpret_cast<T*>(to_span.data()), // NOLINT(*-reinterpret-cast)
+                reinterpret_cast<const T*>(from_span.data()), // NOLINT(*-reinterpret-cast)
+                to_span.size());
+        }
+
+        if (other.size() > this_size)
+        {
+            for (PerChunkIterator it = make_index_iterator(to_copy_assign, other.size() - 1);
+                it.has_more();
+                it.advance())
+            {
+                auto to_span = it.make_span(*m_chunks[it.chunk()]);
+                auto from_span = it.make_span(*other.m_chunks[it.chunk()]);
+
+                copy_uninit_n(
+                    reinterpret_cast<T*>(to_span.data()), // NOLINT(*-reinterpret-cast)
+                    reinterpret_cast<const T*>(from_span.data()), // NOLINT(*-reinterpret-cast)
+                    to_span.size());
+            }
+        }
+
+        ASL_ASSERT(size() == other.size());
+    }
+
 public:
     constexpr chunked_buffer()
         requires default_constructible<Allocator>
@@ -134,30 +174,35 @@ public:
         : m_chunks{std::move(allocator)}
     {}
 
-    // @Todo copy constructor
     constexpr chunked_buffer(const chunked_buffer& other)
         requires copyable<T> && copy_constructible<Allocator>
-    {}
+        : m_chunks{other.m_chunks.allocator_copy()}
+    {
+        copy_from(other);
+    }
 
     constexpr chunked_buffer(chunked_buffer&& other)
         : m_chunks{std::move(other.m_chunks)}
         , m_size{asl::exchange(other.m_size, 0)}
     {
-        ASL_ASSERT(m_chunks.size() == 0);
+        ASL_ASSERT(other.m_chunks.size() == 0);
     }
     
-    // @Todo copy assignment
     constexpr chunked_buffer& operator=(const chunked_buffer& other)
         requires copyable<T>
     {
         if (&other == this) { return *this; }
+        copy_from(other);
         return *this;
     }
     
-    // @Todo move assignment
     constexpr chunked_buffer& operator=(chunked_buffer&& other)
     {
         if (&other == this) { return *this; }
+        destroy();
+        m_chunks = std::move(other.m_chunks);
+        m_size = asl::exchange(other.m_size, 0);
+        ASL_ASSERT(other.m_chunks.size() == 0);
         return *this;
     }
 
