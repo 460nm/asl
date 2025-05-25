@@ -6,6 +6,7 @@
 
 #include "asl/testing/testing.hpp"
 #include "asl/tests/types.hpp"
+#include "asl/tests/counting_allocator.hpp"
 
 struct Big
 {
@@ -14,6 +15,7 @@ struct Big
 
 static_assert(asl::buffer<int32_t>::kInlineCapacity == 5);
 static_assert(asl::buffer<int64_t>::kInlineCapacity == 2);
+static_assert(asl::buffer<void*>::kInlineCapacity == 2);
 static_assert(asl::buffer<char>::kInlineCapacity == 23);
 static_assert(asl::buffer<Big>::kInlineCapacity == 0);
 
@@ -29,32 +31,6 @@ ASL_TEST(default_size)
     ASL_TEST_EXPECT(b2.capacity() == 0);
     ASL_TEST_EXPECT(b2.data() == nullptr);
 }
-
-struct CounterAllocator
-{
-    isize_t* count;
-
-    [[nodiscard]]
-    void* alloc(const asl::layout& layout) const
-    {
-        *count += 1;
-        return asl::GlobalHeap::alloc(layout);
-    }
-
-    void* realloc(void* ptr, const asl::layout& old, const asl::layout& new_layout) const
-    {
-        *count += 1;
-        return asl::GlobalHeap::realloc(ptr, old, new_layout);
-    }
-
-    static void dealloc(void* ptr, const asl::layout& layout)
-    {
-        asl::GlobalHeap::dealloc(ptr, layout);
-    }
-
-    constexpr bool operator==(const CounterAllocator&) const { return true; }
-};
-static_assert(asl::allocator<CounterAllocator>);
 
 struct IncompatibleAllocator
 {
@@ -80,31 +56,31 @@ static_assert(asl::allocator<IncompatibleAllocator>);
 // NOLINTNEXTLINE(*-complexity)
 ASL_TEST(reserve_capacity)
 {
-    isize_t count = 0;
-    asl::buffer<int32_t, CounterAllocator> b(CounterAllocator{&count});
+    CountingAllocator::Stats stats;
+    asl::buffer<int32_t, CountingAllocator> b(CountingAllocator{&stats});
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() == 5);
-    ASL_TEST_EXPECT(count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 0);
 
     b.reserve_capacity(4);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() == 5);
-    ASL_TEST_EXPECT(count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 0);
 
     b.reserve_capacity(12);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 12);
-    ASL_TEST_EXPECT(count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     b.reserve_capacity(13);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 13);
-    ASL_TEST_EXPECT(count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     b.reserve_capacity(130);
     ASL_TEST_EXPECT(b.size() == 0);
     ASL_TEST_EXPECT(b.capacity() >= 130);
-    ASL_TEST_EXPECT(count == 2);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 2);
 }
 
 // NOLINTNEXTLINE(*-complexity)
@@ -399,21 +375,21 @@ ASL_TEST(move_assign_from_heap)
 
 ASL_TEST(move_assign_trivial_heap_to_inline)
 {
-    isize_t alloc_count = 0;
-    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator{&alloc_count}};
-    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator{&alloc_count}};
+    CountingAllocator::Stats stats;
+    asl::buffer<int64_t, CountingAllocator> buf{CountingAllocator{&stats}};
+    asl::buffer<int64_t, CountingAllocator> buf2{CountingAllocator{&stats}};
 
     buf.push(1);
     buf.push(2);
-    ASL_TEST_EXPECT(alloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 0);
 
     buf2.push(3);
     buf2.push(4);
     buf2.push(5);
-    ASL_TEST_EXPECT(alloc_count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     buf = std::move(buf2);
-    ASL_TEST_EXPECT(alloc_count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     ASL_TEST_EXPECT(buf.size() == 3);
     ASL_TEST_EXPECT(buf[0] == 3);
@@ -423,21 +399,21 @@ ASL_TEST(move_assign_trivial_heap_to_inline)
 
 ASL_TEST(move_assign_trivial_inline_to_heap)
 {
-    isize_t alloc_count = 0;
-    asl::buffer<int64_t, CounterAllocator> buf{CounterAllocator{&alloc_count}};
-    asl::buffer<int64_t, CounterAllocator> buf2{CounterAllocator{&alloc_count}};
+    CountingAllocator::Stats stats;
+    asl::buffer<int64_t, CountingAllocator> buf{CountingAllocator{&stats}};
+    asl::buffer<int64_t, CountingAllocator> buf2{CountingAllocator{&stats}};
 
     buf.push(1);
     buf.push(2);
-    ASL_TEST_EXPECT(alloc_count == 0);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 0);
 
     buf2.push(3);
     buf2.push(4);
     buf2.push(5);
-    ASL_TEST_EXPECT(alloc_count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     buf2 = std::move(buf);
-    ASL_TEST_EXPECT(alloc_count == 1);
+    ASL_TEST_EXPECT(stats.any_alloc_count() == 1);
 
     ASL_TEST_EXPECT(buf2.size() == 2);
     ASL_TEST_EXPECT(buf2[0] == 1);
@@ -634,4 +610,7 @@ ASL_TEST(resize_zero)
         ASL_TEST_EXPECT(buf[100 + i] == 0);
     }
 }
+
+static_assert(asl::same_as<decltype(asl::declval<asl::buffer<int>>().data()), int*>);
+static_assert(asl::same_as<decltype(asl::declval<const asl::buffer<int>>().data()), const int*>);
 

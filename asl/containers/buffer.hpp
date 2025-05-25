@@ -91,7 +91,7 @@ private:
         return is_on_heap(load_size_encoded());
     }
 
-    constexpr T* push_uninit()
+    constexpr void* push_uninit()
     {
         const isize_t sz = size();
         resize_uninit_inner(sz + 1);
@@ -100,10 +100,13 @@ private:
 
     constexpr void resize_uninit_inner(isize_t new_size)
     {
-        const isize_t old_size = size();
-        if (!trivially_destructible<T> && new_size < old_size)
+        if constexpr (!trivially_destructible<T>)
         {
-            destroy_n(data() + new_size, old_size - new_size);
+            const isize_t old_size = size();
+            if (new_size < old_size)
+            {
+                destroy_n(data() + new_size, old_size - new_size);
+            }
         }
         reserve_capacity(new_size);
         set_size(new_size);
@@ -136,18 +139,26 @@ private:
     {
         if (other.is_on_heap())
         {
+            // If the other in on heap, destroy here and adopt their
+            // data. We'll soon adopt the allocator as well.
             destroy();
             m_data = other.m_data;
             m_capacity = other.m_capacity;
             store_size_encoded(other.load_size_encoded());
         }
-        else if (trivially_move_constructible<T>)
-        {
-            destroy();
-            asl::memcpy(this, &other, kInlineRegionSize);
-        }
         else if (!assign || m_allocator == other.m_allocator)
         {
+            // If allocators are compatible, we can move other's inline
+            // data here, even if it's on heap here, because that
+            // memory can be freed by other's allocator, which we will
+            // soon adopt.
+            //
+            // @Note There is an argument to be made for not doing this and
+            // instead destroying our data here and moving into inline
+            // storage, which frees one allocation. But also this avoids
+            // freeing. So I don't know.
+            // Maybe If this storage is much much larger than the inline
+            // data, it's worth freeing.
             const isize_t other_n = other.size();
             const isize_t this_n = size();
             resize_uninit_inner(other_n);
@@ -163,11 +174,28 @@ private:
         }
         else
         {
+            // Otherwise, if we have to free, because the allocators are
+            // not compatible, well we free and move into our inline
+            // storage region.
+            // There is an optimization here when the data is trivially
+            // move constructible (which implies trivially destructible),
+            // we copy the whole inline region, which includes the size.
+            // Very magic.
+
             destroy();
-            const isize_t n = other.size();
-            ASL_ASSERT(n <= kInlineCapacity);
-            relocate_uninit_n(data(), other.data(), n);
-            set_size_inline(n);
+            if constexpr (trivially_move_constructible<T>)
+            {
+                ASL_ASSERT(!is_on_heap());
+                asl::memcpy(this, &other, kInlineRegionSize);
+            }
+            else
+            {
+                const isize_t n = other.size();
+                ASL_ASSERT(n <= kInlineCapacity);
+                resize_uninit_inner(n);
+                ASL_ASSERT(!is_on_heap());
+                relocate_uninit_n(data(), other.data(), n);
+            }
         }
 
         other.set_size_inline(0);
@@ -270,6 +298,14 @@ public:
         destroy();
     }
 
+    constexpr Allocator allocator_copy() const
+        requires copy_constructible<Allocator>
+    {
+        return m_allocator;
+    }
+
+    constexpr Allocator& allocator() { return m_allocator; }
+
     [[nodiscard]] constexpr isize_t size() const
     {
         return decode_size(load_size_encoded());
@@ -315,7 +351,6 @@ public:
     void reserve_capacity(isize_t new_capacity)
     {
         ASL_ASSERT(new_capacity >= 0);
-        ASL_ASSERT_RELEASE(new_capacity <= 0x4000'0000'0000'0000);
 
         if (new_capacity <= capacity()) { return; }
         ASL_ASSERT(new_capacity > kInlineCapacity);
@@ -352,17 +387,16 @@ public:
     }
 
     constexpr void resize_uninit(isize_t new_size)
-        requires trivially_default_constructible<T> && trivially_destructible<T>
+        requires trivially_default_constructible<T>
     {
-        reserve_capacity(new_size);
-        set_size(new_size);
+        resize_uninit_inner(new_size);
     }
 
     constexpr void resize_zero(isize_t new_size)
-        requires trivially_default_constructible<T> && trivially_destructible<T>
+        requires trivially_default_constructible<T>
     {
         const isize_t old_size = size();
-        resize_uninit(new_size);
+        resize_uninit_inner(new_size);
 
         if (new_size > old_size)
         {
@@ -373,7 +407,14 @@ public:
     void resize(isize_t new_size)
         requires default_constructible<T>
     {
-        resize_inner(new_size);
+        if constexpr (trivially_default_constructible<T>)
+        {
+            resize_zero(new_size);
+        }
+        else
+        {
+            resize_inner(new_size);
+        }
     }
 
     void resize(isize_t new_size, const T& value)
@@ -384,14 +425,14 @@ public:
     constexpr T& push(auto&&... args)
         requires constructible_from<T, decltype(args)&&...>
     {
-        T* uninit = push_uninit();
+        void* uninit = push_uninit();
         T* init = construct_at<T>(uninit, std::forward<decltype(args)>(args)...);
         return *init;
     }
 
     auto data(this auto&& self)
     {
-        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
+        using return_type = as_ptr_t<copy_const_t<un_ref_t<decltype(self)>, T>>;
         // NOLINTNEXTLINE(*-reinterpret-cast)
         auto&& buffer = reinterpret_cast<copy_cref_t<decltype(self), class buffer>>(self);
         if constexpr (kInlineCapacity == 0)
@@ -437,7 +478,7 @@ public:
 
     constexpr auto&& operator[](this auto&& self, isize_t i)
     {
-        ASL_ASSERT(i >= 0 && i <= self.size());
+        ASL_ASSERT(i >= 0 && i < self.size());
         return std::forward_like<decltype(self)>(std::forward<decltype(self)>(self).data()[i]);
     }
 

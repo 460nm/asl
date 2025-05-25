@@ -41,6 +41,21 @@ T* alloc_new(allocator auto& a, auto&&... args)
 }
 
 template<typename T>
+T* alloc_uninit(allocator auto& a)
+    requires trivially_default_constructible<T>
+{
+    void* ptr = a.alloc(layout::of<T>());
+    return reinterpret_cast<T*>(ptr); // NOLINT(*-reinterpret-cast)
+}
+
+template<typename T>
+T* alloc_uninit_unsafe(allocator auto& a)
+{
+    void* ptr = a.alloc(layout::of<T>());
+    return reinterpret_cast<T*>(ptr); // NOLINT(*-reinterpret-cast)
+}
+
+template<typename T>
 void alloc_delete(allocator auto& a, T* ptr)
 {
     destroy(ptr);
