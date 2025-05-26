@@ -68,7 +68,7 @@ public:
         , m_size{size}
     {}
 
-    constexpr explicit span(T* data, isize_t size)
+    constexpr explicit span(T* data, [[maybe_unused]] isize_t size)
         requires (!kIsDynamic)
         : m_data{data}
     {

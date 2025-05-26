@@ -114,7 +114,7 @@ constexpr T rotl(T v, int s) // NOLINT(*-no-recursion)
 {
     static constexpr int N = sizeof(decltype(v)) * 8;
     s = s % N;
-    return (s >= 0) ? (v << s) | (v >> (N - s)) : rotr(v, -s);
+    return (s >= 0) ? (v << s) | (v >> ((N - s) % N)) : rotr(v, -s);
 }
 
 template<is_unsigned_integer T>
@@ -122,7 +122,7 @@ constexpr T rotr(T v, int s) // NOLINT(*-no-recursion)
 {
     static constexpr int N = sizeof(decltype(v)) * 8;
     s = s % N;
-    return (s >= 0) ? (v >> s) | (v << (N - s)) : rotl(v, -s);
+    return (s >= 0) ? (v >> s) | (v << ((N - s) % N)) : rotl(v, -s);
 }
 
 constexpr uint16_t byteswap(uint16_t v)

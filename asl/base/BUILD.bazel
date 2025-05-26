@@ -24,6 +24,13 @@ cc_library(
     srcs = [
         "assert.cpp",
     ],
+    defines = select({
+        "//asl:debug": ["ASL_DEBUG=1"],
+        "//conditions:default": ["ASL_DEBUG=0"],
+    }) + select({
+        "//asl:optimized": ["ASL_OPTIMIZED=1"],
+        "//conditions:default": ["ASL_OPTIMIZED=0"],
+    }),
     visibility = ["//visibility:public"],
 )
 
