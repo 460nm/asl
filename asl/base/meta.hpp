@@ -317,15 +317,33 @@ template<typename T> concept is_integer = is_signed_integer<T> || is_unsigned_in
 template<is_integer T> using as_unsigned_integer = _integer_traits<T>::as_unsigned;
 template<is_integer T> using as_signed_integer   = _integer_traits<T>::as_signed;
 
+template<int N>
+struct smallest_unsigned_integer_type_for_width_helper { using type = void; };
+
+template<int N> requires (N >= 1 and N <= 8)
+struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint8_t; };
+
+template<int N> requires (N >= 9 and N <= 16)
+struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint16_t; };
+
+template<int N> requires (N >= 17 and N <= 32)
+struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint32_t; };
+
+template<int N> requires (N >= 33 and N <= 64)
+struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint64_t; };
+
+template<int N> using smallest_unsigned_integer_type_for_width
+    = smallest_unsigned_integer_type_for_width_helper<N>::type;
+
 template<typename T> concept is_enum = __is_enum(T);
 
 template<is_enum T> using underlying_t = __underlying_type(T);
 
-template<typename T>     struct is_uniquely_represented : false_type {};
-template<is_integer T>   struct is_uniquely_represented<T> : true_type {};
-template<is_enum T>      struct is_uniquely_represented<T> : true_type {};
+template<typename T>     struct is_uniquely_represented            : false_type {};
+template<is_integer T>   struct is_uniquely_represented<T>         : true_type {};
+template<is_enum T>      struct is_uniquely_represented<T>         : true_type {};
 template<>               struct is_uniquely_represented<uint128_t> : true_type {};
-template<>               struct is_uniquely_represented<byte> : true_type {};
+template<>               struct is_uniquely_represented<byte>      : true_type {};
 
 template<typename T> concept uniquely_represented = is_uniquely_represented<un_cv_t<T>>::value;
 

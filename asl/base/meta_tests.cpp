@@ -389,3 +389,39 @@ enum EnumI64 : int64_t {};
 static_assert(asl::same_as<asl::underlying_t<EnumU8>, uint8_t>);
 static_assert(asl::same_as<asl::underlying_t<EnumI64>, int64_t>);
 
+static_assert(!asl::is_integer<EnumU8>);
+static_assert(!asl::is_integer<EnumI64>);
+
+static_assert(asl::same_as<asl::as_unsigned_integer<uint8_t>,  uint8_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<uint16_t>, uint16_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<uint32_t>, uint32_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<uint64_t>, uint64_t>);
+
+static_assert(asl::same_as<asl::as_unsigned_integer<int8_t>,  uint8_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<int16_t>, uint16_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<int32_t>, uint32_t>);
+static_assert(asl::same_as<asl::as_unsigned_integer<int64_t>, uint64_t>);
+
+static_assert(asl::same_as<asl::as_signed_integer<uint8_t>,  int8_t>);
+static_assert(asl::same_as<asl::as_signed_integer<uint16_t>, int16_t>);
+static_assert(asl::same_as<asl::as_signed_integer<uint32_t>, int32_t>);
+static_assert(asl::same_as<asl::as_signed_integer<uint64_t>, int64_t>);
+
+static_assert(asl::same_as<asl::as_signed_integer<int8_t>,  int8_t>);
+static_assert(asl::same_as<asl::as_signed_integer<int16_t>, int16_t>);
+static_assert(asl::same_as<asl::as_signed_integer<int32_t>, int32_t>);
+static_assert(asl::same_as<asl::as_signed_integer<int64_t>, int64_t>);
+
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<1>, uint8_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<2>, uint8_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<4>, uint8_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<8>, uint8_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<12>, uint16_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<16>, uint16_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<20>, uint32_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<30>, uint32_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<31>, uint32_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<32>, uint32_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<50>, uint64_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<63>, uint64_t>);
+static_assert(asl::same_as<asl::smallest_unsigned_integer_type_for_width<64>, uint64_t>);
