@@ -1,0 +1,33 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+package(
+    default_applicable_licenses = ["//:license"],
+)
+
+cc_library(
+    name = "index_pool",
+    hdrs = [
+        "index_pool.hpp",
+    ],
+    deps = [
+        "//asl/memory",
+        "//asl/memory:allocator",
+        "//asl/base",
+        "//asl/containers:chunked_buffer",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_test(
+    name = "index_pool_tests",
+    srcs = [
+        "index_pool_tests.cpp",
+    ],
+    deps = [
+        ":index_pool",
+        "//asl/tests:utils",
+        "//asl/testing",
+    ],
+)
