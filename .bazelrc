@@ -1,3 +1,6 @@
+common --registry=https://bcr.bazel.build/
+common --registry=https://bazel.stevenlr.com/registry/
+
 startup --windows_enable_symlinks
 build:windows --enable_runfiles=true
 
