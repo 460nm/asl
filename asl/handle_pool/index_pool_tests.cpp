@@ -44,6 +44,67 @@ static_assert(Cfg3::kUserMask  == uint16_t{0x7800});
 static_assert(Cfg3::kGenShift  == 5);
 static_assert(Cfg3::kUserShift == 11);
 
-ASL_TEST(test)
+static_assert(asl::default_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::trivially_copy_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::trivially_move_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::trivially_copy_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::trivially_move_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::trivially_destructible<asl::index_pool_handle<5, 5, uint8_t>>);
+
+ASL_TEST(default_is_invalid)
 {
+    const asl::index_pool_handle<5, 5, uint8_t> idx;
+    ASL_TEST_EXPECT(!idx.is_valid());
+}
+
+ASL_TEST(construct)
+{
+    const asl::index_pool_handle<5, 5> idx(9, 11);
+    ASL_TEST_EXPECT(idx.is_valid());
+    ASL_TEST_EXPECT(idx.index() == 9);
+    ASL_TEST_EXPECT(idx.gen() == 11);
+}
+
+ASL_TEST(construct_user)
+{
+    const asl::index_pool_handle<5, 5, Flags, 4> idx(9, 11, kFlag2);
+    ASL_TEST_EXPECT(idx.is_valid());
+    ASL_TEST_EXPECT(idx.index() == 9);
+    ASL_TEST_EXPECT(idx.gen() == 11);
+    ASL_TEST_EXPECT(idx.user() == kFlag2);
+    static_assert(asl::same_as<Flags, decltype(idx.user())>);
+}
+
+
+ASL_TEST(compare) // NOLINT
+{
+    const asl::index_pool_handle<5, 5, Flags, 4> idx_default;
+    const asl::index_pool_handle<5, 5, Flags, 4> idx0;
+    const asl::index_pool_handle<5, 5, Flags, 4> idx1(9, 11, kFlag2);
+    const asl::index_pool_handle<5, 5, Flags, 4> idx2(9, 11, kFlag1);
+    const asl::index_pool_handle<5, 5, Flags, 4> idx3(9, 11, kFlag1);
+    const asl::index_pool_handle<5, 5, Flags, 4> idx4(9, 10, kFlag2);
+    const asl::index_pool_handle<5, 5, Flags, 4> idx5(8, 11, kFlag2);
+
+    ASL_TEST_EXPECT(idx0 == idx_default);
+
+    ASL_TEST_EXPECT(idx0 != idx1);
+    ASL_TEST_EXPECT(idx0 != idx2);
+    ASL_TEST_EXPECT(idx0 != idx3);
+    ASL_TEST_EXPECT(idx0 != idx4);
+    ASL_TEST_EXPECT(idx0 != idx5);
+
+    ASL_TEST_EXPECT(idx1 != idx2);
+    ASL_TEST_EXPECT(idx1 != idx3);
+    ASL_TEST_EXPECT(idx1 != idx4);
+    ASL_TEST_EXPECT(idx1 != idx5);
+
+    ASL_TEST_EXPECT(idx2 == idx3);
+    ASL_TEST_EXPECT(idx2 != idx4);
+    ASL_TEST_EXPECT(idx2 != idx5);
+
+    ASL_TEST_EXPECT(idx3 != idx4);
+    ASL_TEST_EXPECT(idx3 != idx5);
+
+    ASL_TEST_EXPECT(idx4 != idx5);
 }
