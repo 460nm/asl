@@ -69,7 +69,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 
     asl::testing::Test* failed_head = nullptr;
 
-    for (auto* it = g_state.head; it != nullptr; it = it->m_next)
+    for (auto* it = g_state.head; it != nullptr;)
     {
         asl::eprint(GREEN("[ RUN      ]") " {}\n", it->m_case_name);
 
@@ -80,13 +80,17 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         {
             asl::eprint(GREEN("[       OK ]") " {}\n", it->m_case_name);
             pass += 1;
+            it = it->m_next;
         }
         else
         {
             asl::eprint(RED("[  FAILED  ]") " {}\n", it->m_case_name);
             fail += 1;
 
-            it->m_next = asl::exchange(failed_head, it);
+            auto* this_test = it;
+            it = it->m_next;
+
+            this_test->m_next = asl::exchange(failed_head, this_test);
         }
     }
 
