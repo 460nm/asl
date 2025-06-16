@@ -16,6 +16,7 @@ cc_library(
         "//asl/memory:allocator",
         "//asl/base",
         "//asl/containers:chunked_buffer",
+        "//asl/types:option",
     ],
     visibility = ["//visibility:public"],
 )
@@ -27,6 +28,7 @@ cc_test(
     ],
     deps = [
         ":index_pool",
+        "//asl/hashing",
         "//asl/tests:utils",
         "//asl/testing",
     ],
