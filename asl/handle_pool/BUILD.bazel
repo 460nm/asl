@@ -21,6 +21,17 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "dense_handle_pool",
+    hdrs = [
+        "dense_handle_pool.hpp",
+    ],
+    deps = [
+        ":index_pool",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 cc_test(
     name = "index_pool_tests",
     srcs = [
@@ -29,6 +40,18 @@ cc_test(
     deps = [
         ":index_pool",
         "//asl/hashing",
+        "//asl/tests:utils",
+        "//asl/testing",
+    ],
+)
+
+cc_test(
+    name = "dense_handle_pool_tests",
+    srcs = [
+        "dense_handle_pool_tests.cpp",
+    ],
+    deps = [
+        ":dense_handle_pool",
         "//asl/tests:utils",
         "//asl/testing",
     ],
