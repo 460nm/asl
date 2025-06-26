@@ -442,16 +442,16 @@ ASL_TEST(move_assign_inline_to_heap)
         ASL_TEST_EXPECT(buf2.size() == 2);
         ASL_TEST_EXPECT(d[0] == false);
         ASL_TEST_EXPECT(d[1] == false);
-        ASL_TEST_EXPECT(d[2] == false); // moved but not destroyed
-        ASL_TEST_EXPECT(d[3] == false); // moved but not destroyed
+        ASL_TEST_EXPECT(d[2] == true);
+        ASL_TEST_EXPECT(d[3] == true);
         ASL_TEST_EXPECT(d[4] == true);
         ASL_TEST_EXPECT(d[5] == true);
     }
 
     ASL_TEST_EXPECT(d[0] == true);
     ASL_TEST_EXPECT(d[1] == true);
-    ASL_TEST_EXPECT(d[2] == false); // moved but not destroyed
-    ASL_TEST_EXPECT(d[3] == false); // moved but not destroyed
+    ASL_TEST_EXPECT(d[2] == true);
+    ASL_TEST_EXPECT(d[3] == true);
     ASL_TEST_EXPECT(d[4] == true);
     ASL_TEST_EXPECT(d[5] == true);
 }

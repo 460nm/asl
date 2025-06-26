@@ -77,7 +77,7 @@ struct DestructorObserver
     {
         if (this != &other)
         {
-            destroyed = asl::exchange(other.destroyed, nullptr);
+            asl::swap(destroyed, other.destroyed);
         }
         return *this;
     }

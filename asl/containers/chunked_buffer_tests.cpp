@@ -135,6 +135,48 @@ ASL_TEST(push)
     }
 }
 
+ASL_TEST(pop)
+{
+    asl::chunked_buffer<int, 2> b;
+
+    for (int i = 0; i < 8; ++i)
+    {
+        b.push(i);
+    }
+    ASL_TEST_EXPECT(b.size() == 8);
+
+    b.pop();
+    ASL_TEST_EXPECT(b.size() == 7);
+    for (int i = 0; i < 7; ++i)
+    {
+        ASL_TEST_EXPECT(b[i] == i);
+    }
+}
+
+ASL_TEST(pop_destruct)
+{
+    asl::chunked_buffer<DestructorObserver, 16> b;
+    bool d[3];
+
+    b.push(&d[0]);
+    b.push(&d[1]);
+    b.push(&d[2]);
+
+    ASL_TEST_EXPECT(!d[0]);
+    ASL_TEST_EXPECT(!d[1]);
+    ASL_TEST_EXPECT(!d[2]);
+
+    b.pop();
+    ASL_TEST_EXPECT(!d[0]);
+    ASL_TEST_EXPECT(!d[1]);
+    ASL_TEST_EXPECT(d[2]);
+
+    b.pop();
+    ASL_TEST_EXPECT(!d[0]);
+    ASL_TEST_EXPECT(d[1]);
+    ASL_TEST_EXPECT(d[2]);
+}
+
 ASL_TEST(clear_destroy)
 {
     bool destroyed[5]{};

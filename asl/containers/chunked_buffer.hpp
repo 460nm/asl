@@ -335,6 +335,12 @@ public:
         resize_uninit_inner(new_size);
     }
 
+    void pop()
+    {
+        ASL_ASSERT(size() > 0);
+        resize_uninit_inner(size() - 1);
+    }
+
     template<typename Chunk>
     class generic_iterator
     {
