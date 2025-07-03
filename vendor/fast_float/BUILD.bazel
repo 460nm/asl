@@ -7,16 +7,16 @@ load("@rules_license//rules:license.bzl", "license")
 license(
     name = "license",
     license_kinds = [
-        "@rules_license//licenses/spdx:Apache-2.0",
+        "@rules_license//licenses/spdx:MIT",
     ],
     license_text = "LICENSE.txt",
-    package_name = "Dragonbox",
-    package_url = "https://github.com/jk-jeon/dragonbox",
+    package_name = "fast_float",
+    package_url = "https://github.com/fastfloat/fast_float",
 )
 
 cc_library(
-    name = "dragonbox",
-    hdrs = ["dragonbox.h"],
+    name = "fast_float",
+    hdrs = ["fast_float.h"],
     includes = ["."],
     visibility = ["//asl:__subpackages__"],
     applicable_licenses = [

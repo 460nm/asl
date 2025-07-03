@@ -21,3 +21,4 @@ Checks:
   - "-cppcoreguidelines-pro-type-union-access"
   - "-*-copy-assignment-signature"
   - "-*-unconventional-assign-operator"
+  - "-readability-math-missing-parentheses"

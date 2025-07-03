@@ -45,6 +45,24 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "parse_number",
+    hdrs = [
+        "parse_number.hpp",
+    ],
+    srcs = [
+        "parse_number_float.cpp",
+        "parse_number.cpp",
+    ],
+    deps = [
+        "//asl/base",
+        "//asl/types:status",
+        ":string_view",
+        "//vendor/fast_float",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 [cc_test(
     name = "%s_tests" % name,
     srcs = [
@@ -54,6 +72,7 @@ cc_library(
         ":string",
         ":string_builder",
         ":string_view",
+        ":parse_number",
         "//asl/tests:utils",
         "//asl/testing",
     ],
@@ -61,4 +80,5 @@ cc_library(
     "string",
     "string_view",
     "string_builder",
+    "parse_number",
 ]]

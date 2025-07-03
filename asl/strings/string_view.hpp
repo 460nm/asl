@@ -28,6 +28,13 @@ public:
         , m_size{size}
     {}
 
+    constexpr string_view(const char* begin, const char* end)
+        : m_data{begin}
+        , m_size{end - begin}
+    {
+        ASL_ASSERT(begin <= end);
+    }
+
     template<isize_t kSize>
     constexpr string_view(const char (&str)[kSize]) // NOLINT(*explicit*)
         requires (kSize >= 1)
