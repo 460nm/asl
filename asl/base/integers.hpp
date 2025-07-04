@@ -40,5 +40,25 @@ namespace asl
 
 enum class byte : uint8_t {};
 
+template<typename T> struct integer_traits {};
+
+#define ASL_INTEGER_TRAITS(T, MIN, MAX) \
+    template<> struct integer_traits<T> \
+    {                                   \
+        static constexpr T kMin = MIN;  \
+        static constexpr T kMax = MAX;  \
+    }
+
+ASL_INTEGER_TRAITS(uint8_t,   0,                     0xff);
+ASL_INTEGER_TRAITS(uint16_t,  0,                     0xffff);
+ASL_INTEGER_TRAITS(uint32_t,  0,                     0xffff'ffff);
+ASL_INTEGER_TRAITS(uint64_t,  0,                     0xffff'ffff'ffff'ffff);
+ASL_INTEGER_TRAITS(int8_t,   -0x80,                  0x7f);
+ASL_INTEGER_TRAITS(int16_t,  -0x8000,                0x7fff);
+ASL_INTEGER_TRAITS(int32_t,  -0x8000'0000,           0x7fff'ffff);
+ASL_INTEGER_TRAITS(int64_t,  -0x8000'0000'0000'0000, 0x7fff'ffff'ffff'ffff);
+
+#undef ASL_INTEGER_TRAITS
+
 } // namespace asl
 
