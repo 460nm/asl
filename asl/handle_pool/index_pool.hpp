@@ -252,7 +252,8 @@ public:
 
     [[nodiscard]] bool is_full() const
     {
-        return m_first_available.is_null() && m_slots.size() > config::kMaxIndex;
+        return m_first_available.is_null()
+            && static_cast<uint64_t>(m_slots.size()) > config::kMaxIndex;
     }
 
     option<handle> acquire()

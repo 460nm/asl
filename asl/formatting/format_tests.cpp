@@ -79,7 +79,7 @@ ASL_TEST(format_floats)
     s = asl::format_to_string("{}", 123e-8);
     ASL_TEST_EXPECT(s == "0.00000123"_sv);
 
-    s = asl::format_to_string("{} {}", asl::infinity<float>(), -asl::infinity<double>());
+    s = asl::format_to_string("{} {}", asl::infinity<float32_t>(), -asl::infinity<float64_t>());
     ASL_TEST_EXPECT(s == "Infinity -Infinity"_sv);
 
     s = asl::format_to_string("{}", asl::nan<float>());

@@ -35,8 +35,8 @@ class DenseHandlePool
         T obj;
 
         template<typename... Args>
-        explicit Slot(ThisIndexPool::handle h, Args&&... args)
-            : h{h}
+        explicit Slot(ThisIndexPool::handle h_, Args&&... args)
+            : h{h_}
             , obj(std::forward<Args>(args)...)
         {}
     };

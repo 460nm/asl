@@ -5,6 +5,7 @@
 #pragma once
 
 #include "asl/base/integers.hpp"
+#include "asl/base/float.hpp"
 #include "asl/base/bit.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/base/assert.hpp"
@@ -52,6 +53,48 @@ template<is_numeric T>
 constexpr T clamp(T x, T a, T b)
 {
     return min(max(x, a), b);
+}
+
+constexpr float32_t abs(float32_t x) { return __builtin_fabsf(x); }
+constexpr float64_t abs(float64_t x) { return __builtin_fabs(x); }
+
+template<is_floating_point T>
+bool are_nearly_equal(T a, T b)
+{
+    // This is a fast path for identical values and correctly handles
+    // the case where +0.0 == -0.0.
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wfloat-equal"
+    if (a == b) { return true; }
+    #pragma clang diagnostic pop
+
+    // NaNs are never equal to anything, including themselves.
+    if (is_nan(a) || is_nan(b)) { return false; }
+
+    // Infinities are only equal if they are identical (which is handled by the
+    // `a == b` check above). If one is infinity and the other is not, they
+    // are not equal. The relative comparison below would fail with infinities.
+    if (is_infinity(a) || is_infinity(b)) { return false; }
+
+    static constexpr T kMin = float_traits<T>::kSmallest;
+    static constexpr T kEps = float_traits<T>::kEpsilon;
+
+    const T abs_a = abs(a);
+    const T abs_b = abs(b);
+    const T abs_diff = abs(a - b);
+
+    // The relative error comparison (`|a-b| <= ε * max(|a|, |b|)`) breaks
+    // down when `a` and `b` are near zero. In this case, we switch to an
+    // absolute error comparison. `DBL_MIN` is the smallest positive
+    // normalized double, so it's a good threshold for this check.
+    if (abs_a < kMin || abs_b < kMin)
+    {
+        return abs_diff < kEps;
+    }
+
+    // For all other cases, we use the standard relative error formula.
+    // The error is scaled by the magnitude of the numbers.
+    return abs_diff <= kEps * max(abs_a, abs_b);
 }
 
 } // namespace asl

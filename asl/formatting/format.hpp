@@ -5,6 +5,7 @@
 #pragma once
 
 #include "asl/base/integers.hpp"
+#include "asl/base/float.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/io/writer.hpp"
 #include "asl/types/span.hpp"
@@ -93,8 +94,8 @@ inline void AslFormat(Formatter& f, string_view sv)
     f.write(sv);
 }
 
-void AslFormat(Formatter& f, float);
-void AslFormat(Formatter& f, double);
+void AslFormat(Formatter& f, float32_t);
+void AslFormat(Formatter& f, float64_t);
 
 void AslFormat(Formatter& f, bool);
 

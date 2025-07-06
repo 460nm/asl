@@ -3,38 +3,36 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/strings/parse_number.hpp"
+#include "asl/base/numeric.hpp"
 #include "asl/testing/testing.hpp"
-
-// @Todo Once we have an equivalent of std::numeric_limits,
-// properly compare floating point values in these tests.
 
 ASL_TEST(parse_float_error)
 {
     const asl::string_view sv = "this is not a number lmao";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(!res.ok());
 }
 
 ASL_TEST(parse_float_empty)
 {
     const asl::string_view sv = "";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(!res.ok());
 }
 
 ASL_TEST(parse_float_simple)
 {
     const asl::string_view sv = "3.1415";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(res.ok());
-    ASL_TEST_EXPECT(res.value().value == 3.1415F);
+    ASL_TEST_EXPECT(asl::are_nearly_equal(res.value().value, 3.1415F));
     ASL_TEST_EXPECT(res.value().remaining.size() == 0);
 }
 
 ASL_TEST(parse_float_integer)
 {
     const asl::string_view sv = "31415";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(res.ok());
     ASL_TEST_EXPECT(res.value().value == 31415.0F);
     ASL_TEST_EXPECT(res.value().remaining.size() == 0);
@@ -43,18 +41,18 @@ ASL_TEST(parse_float_integer)
 ASL_TEST(parse_float_scientific)
 {
     const asl::string_view sv = "314.15e-2";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(res.ok());
-    ASL_TEST_EXPECT(res.value().value == 3.1415F);
+    ASL_TEST_EXPECT(asl::are_nearly_equal(res.value().value, 3.1415F));
     ASL_TEST_EXPECT(res.value().remaining.size() == 0);
 }
 
 ASL_TEST(parse_float_suffix)
 {
     const asl::string_view sv = "3.1415 yoyoyo";
-    auto res = asl::parse_float(sv);
+    auto res = asl::parse_float32(sv);
     ASL_TEST_EXPECT(res.ok());
-    ASL_TEST_EXPECT(res.value().value == 3.1415F);
+    ASL_TEST_EXPECT(asl::are_nearly_equal(res.value().value, 3.1415F));
     ASL_TEST_EXPECT(res.value().remaining == " yoyoyo");
 }
 

@@ -12,9 +12,36 @@ using float64_t = double;
 namespace asl
 {
 
-template<is_floating_point T> constexpr T infinity() { return __builtin_inf(); }
+template<typename T> struct float_traits {};
 
-template<is_floating_point T> constexpr T nan() { return static_cast<T>(__builtin_nanf("")); }
+#define ASL_FLOAT_TRAITS(T, INF, NAN, EPS, SMALLEST) \
+    template<> struct float_traits<T> \
+    { \
+        static constexpr T kInfinity{__builtin_bit_cast(T, INF)}; \
+        static constexpr T kNaN{__builtin_bit_cast(T, NAN)}; \
+        static constexpr T kEpsilon{EPS}; \
+        static constexpr T kSmallest{__builtin_bit_cast(T, SMALLEST)}; \
+    };
+
+ASL_FLOAT_TRAITS(
+    float32_t,
+    0x7F800000,
+    0x7FC00000,
+    __builtin_bit_cast(float32_t, 0x3F800001) - float32_t{1},
+    0x00800000
+);
+
+ASL_FLOAT_TRAITS(
+    float64_t,
+    0x7FF0000000000000,
+    0x7FF8000000000000,
+    __builtin_bit_cast(float64_t, 0x3FF0000000000001) - float64_t{1},
+    0x0010000000000000
+);
+
+template<is_floating_point T> constexpr T infinity() { return float_traits<T>::kInfinity; }
+
+template<is_floating_point T> constexpr T nan() { return float_traits<T>::kNaN; }
 
 template<is_floating_point T> constexpr bool is_infinity(T f) { return __builtin_isinf(f); }
 

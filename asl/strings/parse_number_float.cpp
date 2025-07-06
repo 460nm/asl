@@ -2,12 +2,17 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <fast_float.h>
+#pragma clang diagnostic pop
 
 // We need to isolate fast_float.h completely from asl
 // because it conflicts with our redefinitions of things
 // from the STL. In this case it's operator new, but there
 // might be other conflicts.
+
+#pragma clang diagnostic ignored "-Wmissing-prototypes"
 
 namespace asl
 {

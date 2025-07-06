@@ -155,8 +155,8 @@ ASL_TEST(pop)
 
 ASL_TEST(pop_destruct)
 {
+    bool d[3]{};
     asl::chunked_buffer<DestructorObserver, 16> b;
-    bool d[3];
 
     b.push(&d[0]);
     b.push(&d[1]);

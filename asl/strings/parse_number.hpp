@@ -6,6 +6,7 @@
 
 #include "asl/types/status_or.hpp"
 #include "asl/strings/string_view.hpp"
+#include "asl/base/float.hpp"
 
 namespace asl
 {
@@ -17,8 +18,8 @@ struct parse_number_result
     string_view remaining;
 };
 
-status_or<parse_number_result<float>>  parse_float(string_view);
-status_or<parse_number_result<double>> parse_double(string_view);
+status_or<parse_number_result<float32_t>> parse_float32(string_view);
+status_or<parse_number_result<float64_t>> parse_float64(string_view);
 
 status_or<parse_number_result<uint8_t>>  parse_uint8(string_view, int base = 10);
 status_or<parse_number_result<uint16_t>> parse_uint16(string_view, int base = 10);

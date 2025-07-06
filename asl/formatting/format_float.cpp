@@ -6,9 +6,12 @@
 #include "asl/base/float.hpp"
 #include "asl/base/numeric.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #define JKJ_STD_REPLACEMENT_NAMESPACE_DEFINED 0
 #define JKJ_STATIC_DATA_SECTION_DEFINED 0
 #include <dragonbox.h>
+#pragma clang diagnostic pop
 
 static constexpr isize_t kZeroCount = 100;
 static constexpr char kZeros[kZeroCount] = {
@@ -24,12 +27,12 @@ static constexpr char kZeros[kZeroCount] = {
     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
 };
 
-static constexpr bool is_zero(float x)
+static constexpr bool is_zero(float32_t x)
 {
     return (asl::bit_cast<uint32_t>(x) & 0x7fff'ffffU) == 0;
 }
 
-static constexpr bool is_zero(double x)
+static constexpr bool is_zero(float64_t x)
 {
     return (asl::bit_cast<uint64_t>(x) & 0x7fff'ffff'ffff'ffffULL) == 0;
 }
@@ -102,12 +105,12 @@ static void format_float(asl::Formatter& f, T value)
     }
 }
 
-void asl::AslFormat(Formatter& f, float value)
+void asl::AslFormat(Formatter& f, float32_t value)
 {
     format_float(f, value);
 }
 
-void asl::AslFormat(Formatter& f, double value)
+void asl::AslFormat(Formatter& f, float64_t value)
 {
     format_float(f, value);
 }

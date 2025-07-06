@@ -12,14 +12,14 @@ bool parse_double_impl(const char** begin, const char* end, double*);
 
 } // namespace asl
 
-asl::status_or<asl::parse_number_result<float>> asl::parse_float(asl::string_view sv)
+asl::status_or<asl::parse_number_result<float32_t>> asl::parse_float32(asl::string_view sv)
 {
     const auto* begin = sv.data();
     // NOLINTNEXTLINE(*-pointer-arithmetic)
     const auto* end = begin + sv.size();
-    if (float value{}; parse_float_impl(&begin, end, &value))
+    if (float32_t value{}; parse_float_impl(&begin, end, &value))
     {
-        return parse_number_result<float>{
+        return parse_number_result<float32_t>{
             .value     = value,
             .remaining = string_view{begin, end},
         };
@@ -27,14 +27,14 @@ asl::status_or<asl::parse_number_result<float>> asl::parse_float(asl::string_vie
     return invalid_argument_error();
 }
 
-asl::status_or<asl::parse_number_result<double>> asl::parse_double(asl::string_view sv)
+asl::status_or<asl::parse_number_result<float64_t>> asl::parse_float64(asl::string_view sv)
 {
     const auto* begin = sv.data();
     // NOLINTNEXTLINE(*-pointer-arithmetic)
     const auto* end = begin + sv.size();
-    if (float value{}; parse_float_impl(&begin, end, &value))
+    if (float64_t value{}; parse_double_impl(&begin, end, &value))
     {
-        return parse_number_result<double>{
+        return parse_number_result<float64_t>{
             .value     = value,
             .remaining = string_view{begin, end},
         };
@@ -96,7 +96,7 @@ asl::status_or<asl::parse_number_result<T>> parse_integer(asl::string_view sv, i
 
         if (asl::is_signed_integer<T> && is_negative)
         {
-            digit = static_cast<T>(-digit);
+            digit = static_cast<int8_t>(-digit);
         }
 
         if (__builtin_add_overflow(value, static_cast<T>(digit), &value))

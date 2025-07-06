@@ -42,11 +42,11 @@ enum class byte : uint8_t {};
 
 template<typename T> struct integer_traits {};
 
-#define ASL_INTEGER_TRAITS(T, MIN, MAX) \
-    template<> struct integer_traits<T> \
-    {                                   \
-        static constexpr T kMin = MIN;  \
-        static constexpr T kMax = MAX;  \
+#define ASL_INTEGER_TRAITS(T, MIN, MAX)               \
+    template<> struct integer_traits<T>               \
+    {                                                 \
+        static constexpr T kMin{static_cast<T>(MIN)}; \
+        static constexpr T kMax{static_cast<T>(MAX)}; \
     }
 
 ASL_INTEGER_TRAITS(uint8_t,   0,                     0xff);
