@@ -1,0 +1,19 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load(":toolchain_config.bzl", "declare_toolchain")
+
+filegroup(name = "empty")
+
+PAIRS = [
+    ("windows", "x86_64"),
+    ("linux",   "x86_64"),
+    ("linux",   "aarch64"),
+]
+
+[
+    declare_toolchain(name = "%s_%s_toolchain" % (os, arch), os = os, arch = arch)
+    for (os, arch) in PAIRS
+]
+

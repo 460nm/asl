@@ -1,0 +1,2 @@
+constexpr cast from void* +cpp26 https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2738r1.pdf
+
