@@ -15,11 +15,11 @@
 
 void* asl::GlobalHeap::alloc(const layout& layout)
 {
-#if ASL_OS_WINDOWS
+#if defined(ASL_OS_WINDOWS)
     void* ptr = ::_aligned_malloc(
         static_cast<size_t>(layout.size),
         static_cast<size_t>(layout.align));
-#elif ASL_OS_LINUX
+#elif defined(ASL_OS_LINUX)
     void* ptr = ::aligned_alloc(
         static_cast<size_t>(layout.align),
         static_cast<size_t>(layout.size));
@@ -30,11 +30,11 @@ void* asl::GlobalHeap::alloc(const layout& layout)
 
 void* asl::GlobalHeap::realloc(void* old_ptr, [[maybe_unused]] const layout& old_layout, const layout& new_layout)
 {
-#if ASL_OS_WINDOWS
+#if defined(ASL_OS_WINDOWS)
     return ::_aligned_realloc(old_ptr,
         static_cast<size_t>(new_layout.size),
         static_cast<size_t>(new_layout.align));
-#elif ASL_OS_LINUX
+#elif defined(ASL_OS_LINUX)
     if (new_layout.align <= old_layout.align)
     {
         void* new_ptr = ::realloc(old_ptr, static_cast<size_t>(new_layout.size));
@@ -51,9 +51,9 @@ void* asl::GlobalHeap::realloc(void* old_ptr, [[maybe_unused]] const layout& old
 
 void asl::GlobalHeap::dealloc(void* ptr, const layout&)
 {
-#if ASL_OS_WINDOWS
+#if defined(ASL_OS_WINDOWS)
     ::_aligned_free(ptr);
-#elif ASL_OS_LINUX
+#elif defined(ASL_OS_LINUX)
     ::free(ptr);
 #endif
 }

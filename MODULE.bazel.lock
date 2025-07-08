@@ -146,6 +146,22 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//bazel/clang_toolchain:config_detection.bzl%clang_toolchain": {
+      "general": {
+        "bzlTransitiveDigest": "xXTcNvgp9bMnw/1ZKi1vOOoz139EHr8Hw3Ugd9+eos0=",
+        "usagesDigest": "CRr/eSLZQiKHqCq8MWfzhslrj4Mqar1310aEoa4BzJw=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "clang_toolchain": {
+            "repoRuleId": "@@//bazel/clang_toolchain:config_detection.bzl%_config_detection",
+            "attributes": {}
+          }
+        },
+        "recordedRepoMappingEntries": []
+      }
+    },
     "@@rules_kotlin+//src/main/starlark/core/repositories:bzlmod_setup.bzl%rules_kotlin_extensions": {
       "general": {
         "bzlTransitiveDigest": "hUTp2w+RUVdL7ma5esCXZJAFnX7vLbVfLd7FwnQI6bU=",

@@ -18,9 +18,9 @@ void report_assert_failure(const char* msg, const source_location& sl = source_l
 
 } // namespace asl
 
-#if ASL_COMPILER_CLANG_CL
+#if defined(ASL_COMPILER_CLANG_CL)
     #define ASL_DEBUG_BREAK() __debugbreak()
-#elif ASL_COMPILER_CLANG
+#elif defined(ASL_COMPILER_CLANG)
     #define ASL_DEBUG_BREAK() __builtin_debugtrap()
 #endif
 

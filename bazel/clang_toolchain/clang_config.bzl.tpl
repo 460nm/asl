@@ -1,0 +1,8 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+CLANG_BINDIR = "{CLANG_BINDIR}"
+CLANG_LIBDIR = "{CLANG_LIBDIR}"
+CLANG_INCLUDE_DIRS = {CLANG_INCLUDE_DIRS}
+

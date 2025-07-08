@@ -15,6 +15,11 @@ ASL_TEST(has_single_bit)
     ASL_TEST_EXPECT(!asl::has_single_bit(0U));
     ASL_TEST_EXPECT(!asl::has_single_bit(3U));
     ASL_TEST_EXPECT(!asl::has_single_bit(341U));
+    int k = 0x7fffffff;
+  k += 1;
+  int *array = new int[100];
+  delete [] array;
+  ASL_TEST_EXPECT(array[1] == 0);  // BOOM
 }
 
 ASL_TEST(popcount) // NOLINT(*-cognitive-complexity)
