@@ -11,9 +11,10 @@ cc_library(
     hdrs = [
         "array.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/types:span",
+        "//src/asl/base",
+        "//src/asl/types:span",
     ],
     visibility = ["//visibility:public"],
 )
@@ -23,11 +24,12 @@ cc_library(
     hdrs = [
         "box.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/hashing",
+        "//src/asl/base",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
 )
@@ -37,9 +39,10 @@ cc_library(
     hdrs = [
         "span.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
+        "//src/asl/base",
+        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
@@ -49,9 +52,10 @@ cc_library(
     hdrs = [
         "maybe_uninit.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
+        "//src/asl/base",
+        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
@@ -61,10 +65,11 @@ cc_library(
     hdrs = [
         "option.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/types:maybe_uninit",
-        "//asl/hashing",
+        "//src/asl/base",
+        "//src/asl/types:maybe_uninit",
+        "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
 )
@@ -75,18 +80,19 @@ cc_library(
         "status.hpp",
         "status_or.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "status.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/strings:string",
-        "//asl/strings:string_builder",
-        "//asl/formatting",
-        "//asl/memory",
-        "//asl/synchronization:atomic",
-        "//asl/types:maybe_uninit",
-        "//asl/hashing",
+        "//src/asl/base",
+        "//src/asl/strings:string",
+        "//src/asl/strings:string_builder",
+        "//src/asl/formatting",
+        "//src/asl/memory",
+        "//src/asl/synchronization:atomic",
+        "//src/asl/types:maybe_uninit",
+        "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
 )
@@ -96,10 +102,11 @@ cc_library(
     hdrs = [
         "function.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
-        "//asl/memory:allocator",
+        "//src/asl/base",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
     ],
     visibility = ["//visibility:public"],
 )
@@ -109,9 +116,10 @@ cc_library(
     hdrs = [
         "function_ref.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
+        "//src/asl/base",
+        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
@@ -120,9 +128,9 @@ cc_test(
     name = "function_tests",
     srcs = ["function_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:function",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:function",
     ],
 )
 
@@ -130,9 +138,9 @@ cc_test(
     name = "function_ref_tests",
     srcs = ["function_ref_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:function_ref",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:function_ref",
     ],
 )
 
@@ -140,9 +148,9 @@ cc_test(
     name = "array_tests",
     srcs = ["array_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:array",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:array",
     ],
 )
 
@@ -150,12 +158,12 @@ cc_test(
     name = "box_tests",
     srcs = ["box_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:box",
-        "//asl/types:option",
-        "//asl/types:maybe_uninit",
-        "//asl/hashing",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:box",
+        "//src/asl/types:option",
+        "//src/asl/types:maybe_uninit",
+        "//src/asl/hashing",
     ],
 )
 
@@ -163,9 +171,9 @@ cc_test(
     name = "maybe_uninit_tests",
     srcs = ["maybe_uninit_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:maybe_uninit",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:maybe_uninit",
     ],
 )
 
@@ -173,9 +181,9 @@ cc_test(
     name = "span_tests",
     srcs = ["span_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:span",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:span",
     ],
 )
 
@@ -183,9 +191,9 @@ cc_test(
     name = "option_tests",
     srcs = ["option_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:option",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:option",
     ],
 )
 
@@ -193,9 +201,9 @@ cc_test(
     name = "status_tests",
     srcs = ["status_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:status",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:status",
     ],
 )
 
@@ -203,9 +211,9 @@ cc_test(
     name = "status_or_tests",
     srcs = ["status_or_tests.cpp"],
     deps = [
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/types:status",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:status",
     ],
 )
 

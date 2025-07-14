@@ -11,13 +11,14 @@ cc_library(
     hdrs = [
         "testing.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "testing.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/formatting",
-        "//asl/io:print",
+        "//src/asl/base",
+        "//src/asl/formatting",
+        "//src/asl/io:print",
     ],
     visibility = ["//visibility:public"],
 )

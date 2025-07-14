@@ -11,8 +11,9 @@ cc_library(
     hdrs = [
         "atomic.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
+        "//src/asl/base",
     ],
     visibility = ["//visibility:public"],
 )

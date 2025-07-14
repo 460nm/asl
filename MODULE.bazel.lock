@@ -149,7 +149,7 @@
     "//bazel/clang_toolchain:config_detection.bzl%clang_toolchain": {
       "general": {
         "bzlTransitiveDigest": "xXTcNvgp9bMnw/1ZKi1vOOoz139EHr8Hw3Ugd9+eos0=",
-        "usagesDigest": "CRr/eSLZQiKHqCq8MWfzhslrj4Mqar1310aEoa4BzJw=",
+        "usagesDigest": "ASGReyHtOq7zPJqUtsK0x2Dqz5wRelbfzZFVRItz3XM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

@@ -11,12 +11,13 @@ cc_library(
     hdrs = [
         "index_pool.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/base",
-        "//asl/containers:chunked_buffer",
-        "//asl/types:option",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/base",
+        "//src/asl/containers:chunked_buffer",
+        "//src/asl/types:option",
     ],
     visibility = ["//visibility:public"],
 )
@@ -26,6 +27,7 @@ cc_library(
     hdrs = [
         "dense_handle_pool.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
         ":index_pool",
     ],
@@ -37,6 +39,7 @@ cc_library(
     hdrs = [
         "sparse_handle_pool.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
         ":index_pool",
     ],
@@ -50,9 +53,9 @@ cc_test(
     ],
     deps = [
         ":index_pool",
-        "//asl/hashing",
-        "//asl/tests:utils",
-        "//asl/testing",
+        "//src/asl/hashing",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
     ],
 )
 
@@ -63,8 +66,8 @@ cc_test(
     ],
     deps = [
         ":dense_handle_pool",
-        "//asl/tests:utils",
-        "//asl/testing",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
     ],
 )
 
@@ -75,7 +78,7 @@ cc_test(
     ],
     deps = [
         ":sparse_handle_pool",
-        "//asl/tests:utils",
-        "//asl/testing",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
     ],
 )

@@ -11,12 +11,13 @@ cc_library(
     hdrs = [
         "buffer.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/base",
-        "//asl/types:span",
-        "//asl/hashing",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/base",
+        "//src/asl/types:span",
+        "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
 )
@@ -26,13 +27,14 @@ cc_library(
     hdrs = [
         "chunked_buffer.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/base",
-        "//asl/containers:buffer",
-        "//asl/types:array",
-        "//asl/types:maybe_uninit",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/base",
+        "//src/asl/containers:buffer",
+        "//src/asl/types:array",
+        "//src/asl/types:maybe_uninit",
     ],
     visibility = ["//visibility:public"],
 )
@@ -42,12 +44,13 @@ cc_library(
     hdrs = [
         "hash_set.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/types:maybe_uninit",
-        "//asl/hashing",
+        "//src/asl/base",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/types:maybe_uninit",
+        "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
 )
@@ -57,11 +60,12 @@ cc_library(
     hdrs = [
         "hash_map.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/memory",
-        "//asl/memory:allocator",
-        "//asl/hashing",
+        "//src/asl/base",
+        "//src/asl/memory",
+        "//src/asl/memory:allocator",
+        "//src/asl/hashing",
         ":hash_set",
     ],
     visibility = ["//visibility:public"],
@@ -72,8 +76,9 @@ cc_library(
     hdrs = [
         "intrusive_list.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
+        "//src/asl/base",
     ],
     visibility = ["//visibility:public"],
 )
@@ -85,9 +90,9 @@ cc_library(
     ],
     deps = [
         ":%s" % name,
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/strings:string",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/strings:string",
     ],
 ) for name in [
     "buffer",

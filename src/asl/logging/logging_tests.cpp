@@ -28,6 +28,6 @@ ASL_TEST(custom_writer)
     ASL_LOG_INFO("Hello");
     auto sv = string_writer.as_string_view();
 
-    ASL_TEST_EXPECT(sv == "[  INFO   ] asl/logging/logging_tests.cpp:28: Hello\n");
+    ASL_TEST_EXPECT(sv == "[  INFO   ] src/asl/logging/logging_tests.cpp:28: Hello\n");
 }
 

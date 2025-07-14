@@ -11,16 +11,17 @@ cc_library(
     hdrs = [
         "format.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "format.cpp",
         "format_float.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/memory",
-        "//asl/strings:string_view",
-        "//asl/types:span",
-        "//asl/io:writer",
+        "//src/asl/base",
+        "//src/asl/memory",
+        "//src/asl/strings:string_view",
+        "//src/asl/types:span",
+        "//src/asl/io:writer",
         "//vendor/dragonbox",
     ],
     visibility = ["//visibility:public"],
@@ -33,8 +34,8 @@ cc_test(
     ],
     deps = [
         ":formatting",
-        "//asl/tests:utils",
-        "//asl/testing",
-        "//asl/strings:string_builder",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/strings:string_builder",
     ],
 )

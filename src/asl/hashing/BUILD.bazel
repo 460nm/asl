@@ -11,12 +11,13 @@ cc_library(
     hdrs = [
         "hash.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "hash_cityhash.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/types:span",
+        "//src/asl/base",
+        "//src/asl/types:span",
     ],
     applicable_licenses = [
         "//vendor/cityhash:license",
@@ -30,15 +31,15 @@ cc_test(
         "hash_tests.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/tests:utils",
-        "//asl/testing",
+        "//src/asl/base",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
         ":hashing",
-        "//asl/strings:string_view",
-        "//asl/strings:string",
-        "//asl/containers:buffer",
-        "//asl/types:box",
-        "//asl/types:option",
-        "//asl/types:status",
+        "//src/asl/strings:string_view",
+        "//src/asl/strings:string",
+        "//src/asl/containers:buffer",
+        "//src/asl/types:box",
+        "//src/asl/types:option",
+        "//src/asl/types:status",
     ],
 )

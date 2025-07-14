@@ -11,9 +11,10 @@ cc_library(
     hdrs = [
         "writer.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/types:span",
+        "//src/asl/base",
+        "//src/asl/types:span",
     ],
     visibility = ["//visibility:public"],
 )
@@ -23,11 +24,12 @@ cc_library(
     hdrs = [
         "print.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "print.cpp",
     ],
     deps = [
-        "//asl/formatting",
+        "//src/asl/formatting",
         ":writer",
     ],
     visibility = ["//visibility:public"],

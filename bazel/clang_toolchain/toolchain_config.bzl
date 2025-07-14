@@ -126,10 +126,11 @@ def _impl(ctx):
         ))
 
     features = [
-        feature(name = "no_legacy_features"),
+        feature(name = "no_legacy_features", enabled = True),
         feature(name = "opt"),
         feature(name = "fastbuild"),
         feature(name = "dbg"),
+        feature(name = "copy_dynamic_libraries_to_binary", enabled = True),
         feature(
             name = "default_flags",
             enabled = True,

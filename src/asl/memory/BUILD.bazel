@@ -12,8 +12,9 @@ cc_library(
         "layout.hpp",
         "memory.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
+        "//src/asl/base",
     ],
     visibility = ["//visibility:public"],
 )
@@ -23,12 +24,13 @@ cc_library(
     hdrs = [
         "allocator.hpp",
     ],
+    strip_include_prefix = "/src",
     srcs = [
         "allocator.cpp",
     ],
     deps = [
-        "//asl/base",
-        "//asl/memory",
+        "//src/asl/base",
+        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )

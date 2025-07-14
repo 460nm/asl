@@ -18,7 +18,7 @@ cc_library(
     name = "dragonbox",
     hdrs = ["dragonbox.h"],
     includes = ["."],
-    visibility = ["//asl:__subpackages__"],
+    visibility = ["//src/asl:__subpackages__"],
     applicable_licenses = [
         ":license",
     ],

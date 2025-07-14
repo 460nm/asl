@@ -14,12 +14,13 @@ cc_library(
     hdrs = [
         "logging.hpp",
     ],
+    strip_include_prefix = "/src",
     deps = [
-        "//asl/base",
-        "//asl/containers:intrusive_list",
-        "//asl/formatting",
-        "//asl/io:print",
-        "//asl/strings:string_builder",
+        "//src/asl/base",
+        "//src/asl/containers:intrusive_list",
+        "//src/asl/formatting",
+        "//src/asl/io:print",
+        "//src/asl/strings:string_builder",
     ],
     visibility = ["//visibility:public"],
 )
@@ -31,7 +32,7 @@ cc_test(
     ],
     deps = [
         ":logging",
-        "//asl/testing",
+        "//src/asl/testing",
     ],
     visibility = ["//visibility:public"],
 )
