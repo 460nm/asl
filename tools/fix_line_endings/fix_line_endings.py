@@ -44,6 +44,7 @@ def fix_file(file):
         fp.writelines(lines)
 
 if __name__ == "__main__":
+    print(os.getenv("BUILD_WORKSPACE_DIRECTORY"))
     os.chdir(os.getenv("BUILD_WORKSPACE_DIRECTORY"))
 
     files = get_git_files()

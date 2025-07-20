@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 load("@rules_python//python:py_binary.bzl", "py_binary")
-load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -14,10 +13,5 @@ py_binary(
     srcs = [
         "fix_line_endings.py",
     ],
-    visibility = ["//:__subpackages__"],
-)
-
-refresh_compile_commands(
-    name = "refresh_clangd",
-    targets = "//...",
+    visibility = ["//visibility:public"],
 )
