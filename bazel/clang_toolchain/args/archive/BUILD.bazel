@@ -1,0 +1,89 @@
+
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+load("@rules_cc//cc/toolchains:nested_args.bzl", "cc_nested_args")
+load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
+
+alias(
+    name = "actions",
+    actual = "@rules_cc//cc/toolchains/actions:ar_actions",
+)
+
+cc_args(
+    name = "first_args",
+    actions = [":actions"],
+    args = ["rcsD"],
+)
+
+cc_args(
+    name = "output_args",
+    actions = [":actions"],
+    args = ["{output}"],
+    format = {
+        "output": "@rules_cc//cc/toolchains/variables:output_execpath",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:output_execpath",
+)
+
+cc_args(
+    name = "files_list_args",
+    actions = [":actions"],
+    nested = [
+        ":files_list_object_file_args",
+        ":files_list_object_file_group_args",
+    ],
+    requires_not_none = "@rules_cc//cc/toolchains/variables:libraries_to_link",
+    iterate_over = "@rules_cc//cc/toolchains/variables:libraries_to_link",
+)
+
+cc_nested_args(
+    name = "files_list_object_file_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name",
+    },
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file",
+)
+
+cc_nested_args(
+    name = "files_list_object_file_group_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files",
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files",
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file_group",
+)
+
+cc_args_list(
+    name = "args",
+    args = [
+        ":first_args",
+        ":output_args",
+        ":files_list_args",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+
+# @Todo See how this evolves with rules_cc, if they introduce a variable at some point
+# @Todo This is not working at the moment
+cc_feature(
+    name = "archive_param_file",
+    feature_name = "archive_param_file",
+)
+
+cc_feature_set(
+    name = "enabled_features",
+    all_of = [
+        ":archive_param_file",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+

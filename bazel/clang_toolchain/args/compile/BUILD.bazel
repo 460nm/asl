@@ -1,0 +1,188 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
+load("@rules_cc//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_exclusive_category")
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
+load("@clang_info//:info.bzl", "SYSTEM_INCLUDE_DIRS")
+
+alias(
+    name = "actions",
+    actual = "@rules_cc//cc/toolchains/actions:compile_actions",
+)
+
+cc_args(
+    name = "dependency_file_args",
+    actions = [":actions"],
+    args = ["-MD", "-MF", "{dependency_file}"],
+    format = {
+        "dependency_file": "@rules_cc//cc/toolchains/variables:dependency_file",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:dependency_file",
+)
+
+cc_args(
+    name = "output_file_args",
+    actions = [":actions"],
+    args = ["-o", "{output_file}"],
+    format = {
+        "output_file": "@rules_cc//cc/toolchains/variables:output_file",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:output_file",
+)
+
+cc_args(
+    name = "random_seed_args",
+    actions = [":actions"],
+    args = ["-frandom-seed={output_file}"],
+    format = {
+        "output_file": "@rules_cc//cc/toolchains/variables:output_file",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:output_file",
+)
+
+cc_args(
+    name = "source_file_args",
+    actions = [":actions"],
+    args = ["{source_file}"],
+    format = {
+        "source_file": "@rules_cc//cc/toolchains/variables:source_file",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:source_file",
+)
+
+cc_args(
+    name = "system_include_args",
+    actions = [":actions"],
+    args = ["-isystem", "{path}"],
+    format = {
+        "path": "@rules_cc//cc/toolchains/variables:system_include_paths",
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:system_include_paths",
+)
+
+cc_args(
+    name = "quote_include_args",
+    actions = [":actions"],
+    args = ["-iquote", "{path}"],
+    format = {
+        "path": "@rules_cc//cc/toolchains/variables:quote_include_paths",
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:quote_include_paths",
+)
+
+cc_args(
+    name = "include_args",
+    actions = [":actions"],
+    args = ["-I", "{path}"],
+    format = {
+        "path": "@rules_cc//cc/toolchains/variables:include_paths",
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:include_paths",
+)
+
+cc_args(
+    name = "preprocessor_defines_args",
+    actions = [":actions"],
+    args = ["-D", "{define}"],
+    format = {
+        "define": "@rules_cc//cc/toolchains/variables:preprocessor_defines",
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:preprocessor_defines",
+)
+
+cc_args(
+    name = "user_args",
+    actions = [":actions"],
+    args = ["{flag}"],
+    format = {
+        "flag": "@rules_cc//cc/toolchains/variables:user_compile_flags",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:user_compile_flags",
+    iterate_over = "@rules_cc//cc/toolchains/variables:user_compile_flags",
+)
+
+cc_args(
+    name = "common_args",
+    actions = [":actions"],
+    args = [
+        "-c",
+        "-no-canonical-prefixes",
+        "-fcolor-diagnostics",
+    ],
+    allowlist_absolute_include_directories = SYSTEM_INCLUDE_DIRS,
+)
+
+cc_args_list(
+    name = "args",
+    args = [
+        ":common_args",
+        ":random_seed_args",
+        ":dependency_file_args",
+        ":system_include_args",
+        ":quote_include_args",
+        ":include_args",
+        ":preprocessor_defines_args",
+        ":output_file_args",
+        ":user_args",
+        ":source_file_args",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+
+cc_mutually_exclusive_category(
+    name = "cpp_standard_category",
+)
+
+cc_args(
+    name = "cpp20_args",
+    actions = [":actions"],
+    args = ["-std=c++20"],
+)
+
+cc_args(
+    name = "cpp23_args",
+    actions = [":actions"],
+    args = ["-std=c++23"],
+)
+
+cc_feature(
+    name = "cpp20_feature",
+    feature_name = "c++20",
+    mutually_exclusive = [":cpp_standard_category"],
+    args = [":cpp20_args"],
+)
+
+cc_feature(
+    name = "cpp23_feature",
+    feature_name = "c++23",
+    mutually_exclusive = [":cpp_standard_category"],
+    args = [":cpp23_args"],
+)
+
+cc_feature_set(
+    name = "known_features",
+    all_of = [
+        ":cpp20_feature",
+        ":cpp23_feature",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+
+# @Todo See how this evolves with rules_cc, if they introduce a variable at some point
+cc_feature(
+    name = "compiler_param_file",
+    feature_name = "compiler_param_file",
+)
+
+cc_feature_set(
+    name = "enabled_features",
+    all_of = [
+        ":compiler_param_file",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+

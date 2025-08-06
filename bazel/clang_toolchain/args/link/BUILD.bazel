@@ -1,0 +1,219 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
+load("@rules_cc//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_exclusive_category")
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+load("@rules_cc//cc/toolchains:nested_args.bzl", "cc_nested_args")
+load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
+load("@clang_info//:info.bzl", "SYSTEM_INCLUDE_DIRS")
+
+alias(
+    name = "actions",
+    actual = "@rules_cc//cc/toolchains/actions:link_actions",
+)
+
+cc_args(
+    name = "common_args",
+    actions = [":actions"],
+    args = [
+        "-fuse-ld=lld",
+        "-no-canonical-prefixes",
+        "-fcolor-diagnostics",
+    ],
+    allowlist_absolute_include_directories = SYSTEM_INCLUDE_DIRS,
+)
+
+cc_args(
+    name = "user_args",
+    actions = [":actions"],
+    args = ["{flag}"],
+    format = {
+        "flag": "@rules_cc//cc/toolchains/variables:user_link_flags",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:user_link_flags",
+    iterate_over = "@rules_cc//cc/toolchains/variables:user_link_flags",
+)
+
+cc_args(
+    name = "output_file_args",
+    actions = [":actions"],
+    args = ["-o", "{output}"],
+    format = {
+        "output": "@rules_cc//cc/toolchains/variables:output_execpath",
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:output_execpath",
+)
+
+cc_args(
+    name = "input_files_args",
+    actions = [":actions"],
+    nested = ["input_files_args_inner"],
+    requires_not_none = "@rules_cc//cc/toolchains/variables:libraries_to_link",
+    iterate_over = "@rules_cc//cc/toolchains/variables:libraries_to_link",
+)
+
+cc_nested_args(
+    name = "input_files_args_inner",
+    nested = [
+        ":start_lib_arg",
+        ":object_file_group_args",
+        ":end_lib_arg",
+        ":object_file_args",
+        ":static_library_args",
+        ":interface_library_args",
+    ],
+)
+
+cc_nested_args(
+    name = "start_lib_arg",
+    args = ["-Wl,--start-lib"],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file_group",
+)
+
+cc_nested_args(
+    name = "object_file_group_args",
+    nested = [
+        ":object_file_group_force_load_args",
+        ":object_file_group_no_force_load_args",
+    ],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file_group",
+)
+
+cc_nested_args(
+    name = "object_file_group_force_load_args",
+    args = ["-force_load", "{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files"
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files",
+    requires_true = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "object_file_group_no_force_load_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files"
+    },
+    iterate_over = "@rules_cc//cc/toolchains/variables:libraries_to_link.object_files",
+    requires_false = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "end_lib_arg",
+    args = ["-Wl,--end-lib"],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file_group",
+)
+
+cc_nested_args(
+    name = "object_file_args",
+    nested = [
+        ":object_file_force_load_args",
+        ":object_file_no_force_load_args",
+    ],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "object_file",
+)
+
+cc_nested_args(
+    name = "object_file_force_load_args",
+    args = ["-force_load", "{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_true = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "object_file_no_force_load_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_false = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "interface_library_args",
+    nested = [
+        ":interface_library_force_load_args",
+        ":interface_library_no_force_load_args",
+    ],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "interface_library",
+)
+
+cc_nested_args(
+    name = "interface_library_force_load_args",
+    args = ["-force_load", "{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_true = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "interface_library_no_force_load_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_false = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "static_library_args",
+    nested = [
+        ":static_library_force_load_args",
+        ":static_library_no_force_load_args",
+    ],
+    requires_equal = "@rules_cc//cc/toolchains/variables:libraries_to_link.type",
+    requires_equal_value = "static_library",
+)
+
+cc_nested_args(
+    name = "static_library_force_load_args",
+    args = ["-force_load", "{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_true = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_nested_args(
+    name = "static_library_no_force_load_args",
+    args = ["{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:libraries_to_link.name"
+    },
+    requires_false = "@rules_cc//cc/toolchains/variables:libraries_to_link.is_whole_archive",
+)
+
+cc_args(
+    name = "param_file",
+    actions = [":actions"],
+    args = ["@{file}"],
+    format = {
+        "file": "@rules_cc//cc/toolchains/variables:linker_param_file"
+    },
+    requires_not_none = "@rules_cc//cc/toolchains/variables:linker_param_file",
+)
+
+cc_args_list(
+    name = "args",
+    args = [
+        ":common_args",
+        ":output_file_args",
+        ":user_args",
+        ":input_files_args",
+        ":param_file",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+

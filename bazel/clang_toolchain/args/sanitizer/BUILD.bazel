@@ -1,0 +1,102 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("@rules_cc//cc/toolchains:feature_set.bzl", "cc_feature_set")
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+
+alias(
+    name = "compile_actions",
+    actual = "@rules_cc//cc/toolchains/actions:compile_actions",
+)
+
+alias(
+    name = "link_actions",
+    actual = "@rules_cc//cc/toolchains/actions:link_actions",
+)
+
+cc_args(
+    name = "asan_args",
+    actions = [
+        ":compile_actions",
+        ":link_actions",
+    ],
+    args = [
+        "-fsanitize=address",
+        "-fno-sanitize-ignorelist",
+    ],
+)
+
+cc_args(
+    name = "asan_compile_args",
+    actions = [
+        ":compile_actions",
+    ],
+    args = [
+        "-fno-omit-frame-pointer",
+    ] + select({
+        "@platforms//os:windows": [
+            "-D_DISABLE_STRING_ANNOTATION=1",
+            "-D_DISABLE_VECTOR_ANNOTATION=1",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+cc_feature(
+    name = "asan_feature",
+    feature_name = "asan",
+    implies = [":sanitizer_feature"],
+    args = [
+        ":asan_args",
+        ":asan_compile_args",
+    ],
+)
+
+cc_args(
+    name = "ubsan_args",
+    actions = [
+        ":compile_actions",
+        ":link_actions",
+    ],
+    args = [
+        "-fsanitize=undefined",
+    ],
+)
+
+cc_feature(
+    name = "ubsan_feature",
+    feature_name = "ubsan",
+    implies = [":sanitizer_feature"],
+    args = [":ubsan_args"],
+)
+
+cc_args(
+    name = "sanitizer_args",
+    actions = [
+        ":compile_actions",
+    ],
+    args = [
+        "-fno-sanitize-recover=all",
+    ],
+)
+
+cc_feature(
+    name = "sanitizer_feature",
+    feature_name = "sanitizer",
+    args = [
+        "sanitizer_args",
+    ],
+)
+
+cc_feature_set(
+    name = "known_features",
+    all_of = [
+        ":asan_feature",
+        ":ubsan_feature",
+        ":sanitizer_feature",
+    ],
+    visibility = ["//bazel/clang_toolchain:__subpackages__"],
+)
+

@@ -2,3 +2,107 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
+load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
+load("@rules_cc//cc/toolchains:artifacts.bzl", "cc_artifact_name_pattern")
+load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("@rules_cc//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_exclusive_category")
+load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
+load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
+
+cc_feature(
+    name = "no_legacy_features",
+    feature_name = "no_legacy_features",
+)
+
+cc_tool_map(
+    name = "clang_tool_map",
+    tools = {
+        "@rules_cc//cc/toolchains/actions:c_compile_actions": "@clang_info//:clang",
+        "@rules_cc//cc/toolchains/actions:cpp_compile_actions": "@clang_info//:clangxx",
+        "@rules_cc//cc/toolchains/actions:link_actions": "@clang_info//:clangxx",
+        "@rules_cc//cc/toolchains/actions:ar_actions": "@clang_info//:ar",
+        "@rules_cc//cc/toolchains/actions:strip": "@clang_info//:strip",
+    },
+)
+
+cc_artifact_name_pattern(
+    name = "artifact_static_library",
+    category = "@rules_cc//cc/toolchains/artifacts:static_library",
+    prefix = select({
+        "@platforms//os:windows": "",
+        "//conditions:default": "lib",
+    }),
+    extension = select({
+        "@platforms//os:windows": ".lib",
+        "//conditions:default": ".a",
+    }),
+)
+
+cc_artifact_name_pattern(
+    name = "artifact_dynamic_library",
+    category = "@rules_cc//cc/toolchains/artifacts:dynamic_library",
+    prefix = select({
+        "@platforms//os:windows": "",
+        "//conditions:default": "lib",
+    }),
+    extension = select({
+        "@platforms//os:windows": ".dll",
+        "//conditions:default": ".so",
+    }),
+)
+
+cc_artifact_name_pattern(
+    name = "artifact_object_file",
+    category = "@rules_cc//cc/toolchains/artifacts:object_file",
+    prefix = "",
+    extension = select({
+        "@platforms//os:windows": ".obj",
+        "//conditions:default": ".o",
+    }),
+)
+
+cc_artifact_name_pattern(
+    name = "artifact_executable",
+    category = "@rules_cc//cc/toolchains/artifacts:executable",
+    prefix = "",
+    extension = select({
+        "@platforms//os:windows": ".exe",
+        "//conditions:default": "",
+    }),
+)
+
+cc_toolchain(
+    name = "clang",
+    tool_map = ":clang_tool_map",
+    artifact_name_patterns = [
+        ":artifact_static_library",
+        ":artifact_dynamic_library",
+        ":artifact_object_file",
+        ":artifact_executable",
+    ],
+    args = [
+        "//bazel/clang_toolchain/args/compile:args",
+        "//bazel/clang_toolchain/args/archive:args",
+        "//bazel/clang_toolchain/args/link:args",
+    ],
+    enabled_features = [
+        ":no_legacy_features",
+        "//bazel/clang_toolchain/args/compile:enabled_features",
+        "//bazel/clang_toolchain/args/archive:enabled_features",
+    ],
+    known_features = [
+        "//bazel/clang_toolchain/args/compile:known_features",
+        "//bazel/clang_toolchain/args/compilation_mode:known_features",
+        "//bazel/clang_toolchain/args/sanitizer:known_features",
+    ],
+    supports_param_files = True,
+)
+
+toolchain(
+    name = "clang_toolchain",
+    toolchain = ":clang",
+    toolchain_type = "@rules_cc//cc:toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
