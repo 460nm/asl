@@ -1,0 +1,22 @@
+name: Publish package to Bazel registry
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  publish-package:
+    runs-on: 460nm-base-alpine
+    steps:
+      - name: Write private key
+        run: echo "${{ secrets.BAZEL_REGISTRY_DEPLOY_KEY }}" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+      - uses: 460nm/actions/checkout@v3
+        with:
+          repository: ssh://${{ vars.SSH_HOST }}/460nm/bazel-registry.git
+          ref: main
+      - uses: 460nm/bazel-registry/actions/publish_forgejo_module@actions-v1
+        with:
+          version: ${FORGEJO_REF_NAME:1}
+      - uses: 460nm/actions/send-pr@v3
+        with:
+          topic: release_asl_${{ forge.ref_name }}
