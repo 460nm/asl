@@ -7,16 +7,16 @@
 #include "asl/tests/types.hpp"
 
 static_assert(asl::copyable<asl::status_or<TrivialType>>);
-static_assert(asl::moveable<asl::status_or<TrivialType>>);
+static_assert(asl::movable<asl::status_or<TrivialType>>);
 
 static_assert(asl::copyable<asl::status_or<Copyable>>);
-static_assert(asl::moveable<asl::status_or<Copyable>>);
+static_assert(asl::movable<asl::status_or<Copyable>>);
 
 static_assert(!asl::copyable<asl::status_or<MoveableOnly>>);
-static_assert(asl::moveable<asl::status_or<MoveableOnly>>);
+static_assert(asl::movable<asl::status_or<MoveableOnly>>);
 
 static_assert(!asl::copyable<asl::status_or<Pinned>>);
-static_assert(!asl::moveable<asl::status_or<Pinned>>);
+static_assert(!asl::movable<asl::status_or<Pinned>>);
 
 ASL_TEST(ok)
 {

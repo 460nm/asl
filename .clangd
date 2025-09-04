@@ -5,3 +5,6 @@ CompilerFlags:
 Diagnostics:
   ClangTidy:
     FastCheckFilter: None
+  Includes:
+    IgnoreHeader:
+      - asl/base/.*\.hpp

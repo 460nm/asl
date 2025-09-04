@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/base/functional.hpp"
-#include "asl/memory/memory.hpp"
+#include "asl/base/memory.hpp"
 
 namespace asl
 {
@@ -39,26 +38,26 @@ public:
     template<typename T>
     function_ref(T&& t) // NOLINT(*-missing-std-forward, *explicit*)
         requires (
-            !same_as<un_cvref_t<T>, function_ref>
+            !same_as<remove_cvref_t<T>, function_ref>
             && invocable<T, Args...>
             && same_as<invoke_result_t<T, Args...>, R>
         )
         // NOLINTNEXTLINE(*cast*)
         : m_obj{const_cast<void*>(reinterpret_cast<const void*>(address_of(t)))}
-        , m_invoke{invoke<un_ref_t<T>>}
+        , m_invoke{invoke<remove_ref_t<T>>}
     {}
 
     template<typename T>
     function_ref& operator=(T&& t) // NOLINT(*-missing-std-forward)
         requires (
-            !same_as<un_cvref_t<T>, function_ref>
+            !same_as<remove_cvref_t<T>, function_ref>
             && invocable<T, Args...>
             && same_as<invoke_result_t<T, Args...>, R>
         )
     {
         // NOLINTNEXTLINE(*cast*)
         m_obj = const_cast<void*>(reinterpret_cast<const void*>(address_of(t)));
-        m_invoke = invoke<un_ref_t<T>>;
+        m_invoke = invoke<remove_ref_t<T>>;
 
         return *this;
     }

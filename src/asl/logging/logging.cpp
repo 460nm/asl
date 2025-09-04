@@ -49,7 +49,7 @@ static constexpr asl::string_view kLevelName[] = {
 void asl::log::DefaultLoggerBase::log_inner(Writer& writer, const message& msg)
 {
     asl::format(&writer, "[{}] {}:{}: {}\n",
-        kLevelName[msg.level], // NOLINT
+        kLevelName[asl::to_underlying(msg.level)], // NOLINT
         msg.location.file,
         msg.location.line,
         msg.message);

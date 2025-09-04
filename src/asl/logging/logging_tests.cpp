@@ -10,7 +10,7 @@
 
 ASL_TEST(log)
 {
-    asl::log::log(asl::log::kInfo, asl::source_location{}, "Hello, {}!", "world"_sv);
+    asl::log::log(asl::log::level::kInfo, asl::source_location{}, "Hello, {}!", "world"_sv);
 
     ASL_LOG_ERROR("Oh no! {}", 42);
 }

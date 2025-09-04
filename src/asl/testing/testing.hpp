@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
 
 namespace asl::testing

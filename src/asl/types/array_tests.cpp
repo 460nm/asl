@@ -3,36 +3,37 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/types/array.hpp"
+#include "asl/base/integers.hpp"
 
 #include "asl/testing/testing.hpp"
 #include "asl/tests/types.hpp"
 
 static_assert(sizeof(asl::array<int32_t, 8>) == 32);
 
-static_assert(asl::default_constructible<asl::array<int, 6>>);
-static_assert(asl::trivially_default_constructible<asl::array<int, 6>>);
+static_assert(asl::is_default_constructible<asl::array<int, 6>>);
+static_assert(asl::is_trivially_default_constructible<asl::array<int, 6>>);
 
-static_assert(asl::default_constructible<asl::array<TrivialType, 6>>);
-static_assert(asl::trivially_default_constructible<asl::array<TrivialType, 6>>);
-static_assert(asl::trivially_copy_constructible<asl::array<TrivialType, 6>>);
-static_assert(asl::trivially_copy_assignable<asl::array<TrivialType, 6>>);
-static_assert(asl::trivially_move_constructible<asl::array<TrivialType, 6>>);
-static_assert(asl::trivially_move_assignable<asl::array<TrivialType, 6>>);
+static_assert(asl::is_default_constructible<asl::array<TrivialType, 6>>);
+static_assert(asl::is_trivially_default_constructible<asl::array<TrivialType, 6>>);
+static_assert(asl::is_trivially_copy_constructible<asl::array<TrivialType, 6>>);
+static_assert(asl::is_trivially_copy_assignable<asl::array<TrivialType, 6>>);
+static_assert(asl::is_trivially_move_constructible<asl::array<TrivialType, 6>>);
+static_assert(asl::is_trivially_move_assignable<asl::array<TrivialType, 6>>);
 
-static_assert(asl::default_constructible<asl::array<TrivialTypeDefaultValue, 6>>);
-static_assert(!asl::trivially_default_constructible<asl::array<TrivialTypeDefaultValue, 6>>);
+static_assert(asl::is_default_constructible<asl::array<TrivialTypeDefaultValue, 6>>);
+static_assert(!asl::is_trivially_default_constructible<asl::array<TrivialTypeDefaultValue, 6>>);
 
-static_assert(asl::trivially_destructible<asl::array<int, 6>>);
-static_assert(asl::trivially_destructible<asl::array<TrivialType, 6>>);
-static_assert(!asl::trivially_destructible<asl::array<WithDestructor, 6>>);
+static_assert(asl::is_trivially_destructible<asl::array<int, 6>>);
+static_assert(asl::is_trivially_destructible<asl::array<TrivialType, 6>>);
+static_assert(!asl::is_trivially_destructible<asl::array<WithDestructor, 6>>);
 
 static_assert(asl::copyable<asl::array<Copyable, 6>>);
 static_assert(!asl::copyable<asl::array<MoveableOnly, 6>>);
 static_assert(!asl::copyable<asl::array<Pinned, 6>>);
 
-static_assert(asl::moveable<asl::array<Copyable, 6>>);
-static_assert(asl::moveable<asl::array<MoveableOnly, 6>>);
-static_assert(!asl::moveable<asl::array<Pinned, 6>>);
+static_assert(asl::movable<asl::array<Copyable, 6>>);
+static_assert(asl::movable<asl::array<MoveableOnly, 6>>);
+static_assert(!asl::movable<asl::array<Pinned, 6>>);
 
 ASL_TEST(construct_default)
 {

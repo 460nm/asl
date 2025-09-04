@@ -4,8 +4,7 @@
 
 #pragma once
 
-#include "asl/base/config.hpp"
-#include "asl/base/meta.hpp"
+#include "asl/base/support.hpp"
 
 namespace asl
 {
@@ -18,11 +17,7 @@ void report_assert_failure(const char* msg, const source_location& sl = source_l
 
 } // namespace asl
 
-#if defined(ASL_COMPILER_CLANG_CL)
-    #define ASL_DEBUG_BREAK() __debugbreak()
-#elif defined(ASL_COMPILER_CLANG)
-    #define ASL_DEBUG_BREAK() __builtin_debugtrap()
-#endif
+#define ASL_DEBUG_BREAK() __builtin_debugtrap()
 
 #if !ASL_OPTIMIZED
     #define ASL_ASSERT(...)                                                 \

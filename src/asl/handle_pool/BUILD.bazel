@@ -15,8 +15,7 @@ cc_library(
     ],
     strip_include_prefix = "/src",
     deps = [
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/base",
         "//src/asl/containers:chunked_buffer",
         "//src/asl/types:option",

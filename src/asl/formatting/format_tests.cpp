@@ -4,7 +4,7 @@
 
 #include "asl/formatting/format.hpp"
 #include "asl/testing/testing.hpp"
-#include "asl/base/float.hpp"
+#include "asl/base/floats.hpp"
 #include "asl/strings/string_builder.hpp"
 
 static_assert(asl::formattable<decltype("Hello")>);

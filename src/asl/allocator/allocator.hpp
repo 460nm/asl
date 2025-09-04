@@ -5,14 +5,14 @@
 #pragma once
 
 #include "asl/base/meta.hpp"
-#include "asl/memory/layout.hpp"
-#include "asl/memory/memory.hpp"
+#include "asl/base/layout.hpp"
+#include "asl/base/memory_ops.hpp"
 
 namespace asl
 {
 
 template<typename T>
-concept allocator = moveable<T> && equality_comparable<T> &&
+concept allocator = movable<T> && equality_comparable<T> &&
     requires(T& alloc, layout layout, void* ptr)
     {
         { alloc.alloc(layout) } -> same_as<void*>;
@@ -42,7 +42,7 @@ T* alloc_new(allocator auto& a, auto&&... args)
 
 template<typename T>
 T* alloc_uninit(allocator auto& a)
-    requires trivially_default_constructible<T>
+    requires is_trivially_default_constructible<T>
 {
     void* ptr = a.alloc(layout::of<T>());
     return reinterpret_cast<T*>(ptr); // NOLINT(*-reinterpret-cast)

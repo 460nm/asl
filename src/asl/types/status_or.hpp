@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "asl/base/memory.hpp"
 #include "asl/types/status.hpp"
 #include "asl/types/maybe_uninit.hpp"
 #include "asl/hashing/hash.hpp"
@@ -67,7 +68,7 @@ public:
     }
 
     constexpr status_or& operator=(status_or&& other)
-        requires moveable<T>
+        requires movable<T>
     {
         if (&other != this)
         {
@@ -118,11 +119,11 @@ public:
     status_or(U&& value)
         requires (
             constructible_from<T, U&&> &&
-            !same_as<un_cvref_t<U>, status_or> &&
-            !same_as<un_cvref_t<U>, status>
+            !same_as<remove_cvref_t<U>, status_or> &&
+            !same_as<remove_cvref_t<U>, status>
         )
         : m_status{status_code::ok}
-        , m_value{in_place, std::forward<U>(value)}
+        , m_value{in_place_t{}, std::forward<U>(value)}
     {}
 
     [[nodiscard]] constexpr bool ok() const { return m_status.ok(); }

@@ -3,9 +3,10 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/formatting/format.hpp"
-#include "asl/base/utility.hpp"
 #include "asl/base/assert.hpp"
-#include "asl/memory/memory.hpp"
+#include "asl/base/bits.hpp"
+#include "asl/base/meta.hpp"
+#include "asl/base/numeric.hpp"
 
 void asl::format_internals::format(
     Writer* writer,
@@ -195,7 +196,7 @@ void asl::AslFormat(Formatter& f, int64_t v)
     if (v < 0)
     {
         f.write("-");
-        const uint64_t absolute_value = ~(bit_cast<uint64_t>(v) - 1);
+        const uint64_t absolute_value = ~(std::bit_cast<uint64_t>(v) - 1);
         AslFormat(f, absolute_value);
     }
     else
@@ -203,3 +204,126 @@ void asl::AslFormat(Formatter& f, int64_t v)
         AslFormat(f, static_cast<uint64_t>(v));
     }
 }
+static constexpr isize_t kZeroCount = 100;
+static constexpr char kZeros[kZeroCount] = {
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+    '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+};
+
+static constexpr bool is_zero(float32_t x)
+{
+    return (std::bit_cast<uint32_t>(x) & 0x7fff'ffffU) == 0;
+}
+
+static constexpr bool is_zero(float64_t x)
+{
+    return (std::bit_cast<uint64_t>(x) & 0x7fff'ffff'ffff'ffffULL) == 0;
+}
+
+namespace asl
+{
+
+void jkj_dragonbox_to_decimal(
+    float value,
+    bool* is_negative,
+    int* exponent,
+    uint64_t* significand);
+
+void jkj_dragonbox_to_decimal(
+    double value,
+    bool* is_negative,
+    int* exponent,
+    uint64_t* significand);
+
+} // namespace asl
+
+template<asl::is_floating_point T>
+static void format_float(asl::Formatter& f, T value)
+{
+    if (asl::is_infinity(value))
+    {
+        if (value > 0)
+        {
+            f.write("Infinity"_sv);
+        }
+        else
+        {
+            f.write("-Infinity"_sv);
+        }
+        return;
+    }
+
+    if (is_zero(value))
+    {
+        f.write("0"_sv);
+        return;
+    }
+
+    if (asl::is_nan(value))
+    {
+        f.write("NaN"_sv);
+        return;
+    }
+
+    bool is_negative{};
+    int exponent{};
+    uint64_t significand{};
+
+    asl::jkj_dragonbox_to_decimal(value, &is_negative, &exponent, &significand);
+
+    if (is_negative) { f.write("-"); }
+
+    char buffer[20];
+    const asl::string_view digits = asl::format_uint64(significand, buffer);
+
+    if (exponent >= 0)
+    {
+        f.write(digits);
+        while (exponent > 0)
+        {
+            const isize_t to_write = asl::min(static_cast<isize_t>(exponent), kZeroCount);
+            f.write(asl::string_view(static_cast<const char*>(kZeros), to_write));
+            exponent -= static_cast<int>(to_write);
+        }
+    }
+    else
+    {
+        if (digits.size() <= -exponent)
+        {
+            f.write("0.");
+            exponent = -exponent - static_cast<int>(digits.size());
+            while (exponent > 0)
+            {
+                const isize_t to_write = asl::min(static_cast<isize_t>(exponent), kZeroCount);
+                f.write(asl::string_view(static_cast<const char*>(kZeros), to_write));
+                exponent -= static_cast<int>(to_write);
+            }
+            f.write(digits);
+        }
+        else
+        {
+            f.write(digits.first(digits.size() + exponent));
+            f.write(".");
+            f.write(digits.last(-exponent));
+        }
+    }
+}
+
+void asl::AslFormat(Formatter& f, float32_t value)
+{
+    format_float(f, value);
+}
+
+void asl::AslFormat(Formatter& f, float64_t value)
+{
+    format_float(f, value);
+}
+

@@ -4,20 +4,21 @@
 
 #pragma once
 
+#include "asl/base/support.hpp"
+#include "asl/base/memory.hpp"
+#include "asl/base/bits.hpp"
+#include "asl/base/memory_ops.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/memory/allocator.hpp"
-#include "asl/memory/memory.hpp"
-#include "asl/base/annotations.hpp"
 #include "asl/base/assert.hpp"
-#include "asl/base/bit.hpp"
 #include "asl/types/span.hpp"
 #include "asl/hashing/hash.hpp"
+#include "asl/allocator/allocator.hpp"
 
 namespace asl
 {
 
 template<typename T, allocator Allocator = DefaultAllocator>
-requires is_object<T> && moveable<T>
+requires is_object<T> && movable<T>
 class buffer
 {
     T*         m_data{};
@@ -32,7 +33,7 @@ class buffer
 
     ASL_NO_UNIQUE_ADDRESS Allocator m_allocator;
 
-    static constexpr isize_t kInlineRegionSize = size_of<T*> + size_of<isize_t> + size_of<size_t>;
+    static constexpr isize_t kInlineRegionSize = sizeof(T*) + sizeof(isize_t) + sizeof(size_t);
 
 public:
     static constexpr isize_t kInlineCapacity = []() {
@@ -40,13 +41,13 @@ public:
         // This is enough because we have at most 24 bytes available,
         // so 23 chars of capacity.
         const isize_t available_size = kInlineRegionSize - 1;
-        return available_size / size_of<T>;
+        return available_size / sizeof(T);
     }();
 
 private:
-    static_assert(align_of<T> <= align_of<T*>);
-    static_assert(align_of<T*> == align_of<isize_t>);
-    static_assert(align_of<T*> == align_of<size_t>);
+    static_assert(alignof(T) <= alignof(T*));
+    static_assert(alignof(T*) == alignof(isize_t));
+    static_assert(alignof(T*) == alignof(size_t));
 
     [[nodiscard]] constexpr size_t load_size_encoded() const
     {
@@ -100,7 +101,7 @@ private:
 
     constexpr void resize_uninit_inner(isize_t new_size)
     {
-        if constexpr (!trivially_destructible<T>)
+        if constexpr (!is_trivially_destructible<T>)
         {
             const isize_t old_size = size();
             if (new_size < old_size)
@@ -117,7 +118,7 @@ private:
         ASL_ASSERT(new_size >= 0 && new_size <= kInlineCapacity);
         const size_t size_encoded =
             (load_size_encoded() & size_t{0x00ff'ffff'ffff'ffff})
-            | (bit_cast<size_t>(new_size) << 56U);
+            | (std::bit_cast<size_t>(new_size) << 56U);
         store_size_encoded(size_encoded);
     }
 
@@ -164,13 +165,14 @@ private:
             resize_uninit_inner(other_n);
             if (other_n <= this_n)
             {
-                relocate_assign_n(data(), other.data(), other_n);
+                move_assign_n(data(), other.data(), other_n);
             }
             else
             {
-                relocate_assign_n(data(), other.data(), this_n);
-                relocate_uninit_n(data() + this_n, other.data() + this_n, other_n - this_n);
+                move_assign_n(data(), other.data(), this_n);
+                move_uninit_n(data() + this_n, other.data() + this_n, other_n - this_n);
             }
+            destroy_n(other.data(), other_n);
         }
         else
         {
@@ -183,7 +185,7 @@ private:
             // Very magic.
 
             destroy();
-            if constexpr (trivially_move_constructible<T>)
+            if constexpr (is_trivially_move_constructible<T>)
             {
                 ASL_ASSERT(!is_on_heap());
                 asl::memcpy(this, &other, kInlineRegionSize);
@@ -194,7 +196,8 @@ private:
                 ASL_ASSERT(n <= kInlineCapacity);
                 resize_uninit_inner(n);
                 ASL_ASSERT(!is_on_heap());
-                relocate_uninit_n(data(), other.data(), n);
+                move_uninit_n(data(), other.data(), n);
+                destroy_n(other.data(), n);
             }
         }
 
@@ -246,10 +249,10 @@ private:
     }
 
 public:
-    constexpr buffer() requires default_constructible<Allocator> = default;
+    constexpr buffer() requires is_default_constructible<Allocator> = default;
 
     explicit constexpr buffer(span<const T> s)
-        requires default_constructible<Allocator>
+        requires is_default_constructible<Allocator>
         : buffer{}
     {
         copy_range(s);
@@ -365,7 +368,7 @@ public:
         auto old_layout = layout::array<T>(old_capacity);
         auto new_layout = layout::array<T>(new_capacity);
 
-        if (currently_on_heap && trivially_move_constructible<T>)
+        if (currently_on_heap && is_trivially_move_constructible<T>)
         {
             m_data = static_cast<T*>(m_allocator.realloc(m_data, old_layout, new_layout));
             m_capacity = new_capacity;
@@ -374,7 +377,8 @@ public:
 
         T* new_data = static_cast<T*>(m_allocator.alloc(new_layout));
 
-        relocate_uninit_n(new_data, old_data, current_size);
+        move_uninit_n(new_data, old_data, current_size);
+        destroy_n(old_data, current_size);
 
         if (currently_on_heap)
         {
@@ -387,27 +391,27 @@ public:
     }
 
     constexpr void resize_uninit(isize_t new_size)
-        requires trivially_default_constructible<T>
+        requires is_trivially_default_constructible<T>
     {
         resize_uninit_inner(new_size);
     }
 
     constexpr void resize_zero(isize_t new_size)
-        requires trivially_default_constructible<T>
+        requires is_trivially_default_constructible<T>
     {
         const isize_t old_size = size();
         resize_uninit_inner(new_size);
 
         if (new_size > old_size)
         {
-            memzero(data() + old_size, (new_size - old_size) * size_of<T>);
+            memzero(data() + old_size, (new_size - old_size) * static_cast<isize_t>(sizeof(T)));
         }
     }
 
     void resize(isize_t new_size)
-        requires default_constructible<T>
+        requires is_default_constructible<T>
     {
-        if constexpr (trivially_default_constructible<T>)
+        if constexpr (is_trivially_default_constructible<T>)
         {
             resize_zero(new_size);
         }
@@ -432,7 +436,7 @@ public:
 
     auto data(this auto&& self)
     {
-        using return_type = as_ptr_t<copy_const_t<un_ref_t<decltype(self)>, T>>;
+        using return_type = add_ptr_t<copy_const_t<remove_ref_t<decltype(self)>, T>>;
         // NOLINTNEXTLINE(*-reinterpret-cast)
         auto&& buffer = reinterpret_cast<copy_cref_t<decltype(self), class buffer>>(self);
         if constexpr (kInlineCapacity == 0)
@@ -450,13 +454,13 @@ public:
 
     constexpr auto begin(this auto&& self)
     {
-        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
+        using type = copy_const_t<remove_ref_t<decltype(self)>, T>;
         return contiguous_iterator<type>{self.data()};
     }
 
     constexpr auto end(this auto&& self)
     {
-        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
+        using type = copy_const_t<remove_ref_t<decltype(self)>, T>;
         return contiguous_iterator<type>{self.data() + self.size()};
     }
 
@@ -472,7 +476,7 @@ public:
 
     constexpr auto as_span(this auto&& self)
     {
-        using type = copy_const_t<un_ref_t<decltype(self)>, T>;
+        using type = copy_const_t<remove_ref_t<decltype(self)>, T>;
         return span<type>{self.data(), self.size()};
     }
 

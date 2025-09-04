@@ -4,13 +4,12 @@
 
 #pragma once
 
-#include "asl/base/annotations.hpp"
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/base/bit.hpp"
+#include "asl/base/bits.hpp"
 #include "asl/base/numeric.hpp"
-#include "asl/memory/allocator.hpp"
-#include "asl/memory/memory.hpp"
+#include "asl/base/memory_ops.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/types/maybe_uninit.hpp"
 #include "asl/hashing/hash.hpp"
 
@@ -53,7 +52,7 @@ template<
     key_hasher<T> KeyHasher = default_key_hasher<T>,
     key_comparator<T> KeyComparator = default_key_comparator<T>
 >
-requires moveable<T>
+requires movable<T>
 class hash_set
 {
 protected:
@@ -168,7 +167,7 @@ protected:
 
     void clear_values()
     {
-        if constexpr (!trivially_destructible<T>)
+        if constexpr (!is_trivially_destructible<T>)
         {
             if (m_size > 0)
             {
@@ -308,7 +307,7 @@ protected:
     }
 
 public:
-    constexpr hash_set() requires default_constructible<Allocator>
+    constexpr hash_set() requires is_default_constructible<Allocator>
         : m_allocator{}
     {}
 
@@ -336,10 +335,10 @@ public:
 
     hash_set(hash_set&& other)
         requires move_constructible<Allocator>
-        : m_tags{exchange(other.m_tags, nullptr)}
-        , m_values{exchange(other.m_values, nullptr)}
-        , m_capacity{exchange(other.m_capacity, 0)}
-        , m_size{exchange(other.m_size, 0)}
+        : m_tags{std::exchange(other.m_tags, nullptr)}
+        , m_values{std::exchange(other.m_values, nullptr)}
+        , m_capacity{std::exchange(other.m_capacity, 0)}
+        , m_size{std::exchange(other.m_size, 0)}
         , m_allocator{std::move(other.m_allocator)}
     {}
 
@@ -348,10 +347,10 @@ public:
         if (&other != this)
         {
             destroy();
-            m_tags = exchange(other.m_tags, nullptr);
-            m_values = exchange(other.m_values, nullptr);
-            m_capacity = exchange(other.m_capacity, 0);
-            m_size = exchange(other.m_size, 0);
+            m_tags = std::exchange(other.m_tags, nullptr);
+            m_values = std::exchange(other.m_values, nullptr);
+            m_capacity = std::exchange(other.m_capacity, 0);
+            m_size = std::exchange(other.m_size, 0);
             m_allocator = std::move(other.m_allocator);
         }
         return *this;

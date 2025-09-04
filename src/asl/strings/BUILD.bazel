@@ -16,7 +16,6 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
         "//src/asl/types:span",
     ],
     visibility = ["//visibility:public"],

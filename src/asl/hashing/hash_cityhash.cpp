@@ -28,7 +28,7 @@
 // compromising on hash quality.
 
 #include "asl/hashing/hash.hpp"
-#include "asl/memory/memory.hpp"
+#include "asl/base/memory_ops.hpp"
 
 using uint8 = uint8_t;
 using uint32 = uint32_t;
@@ -145,7 +145,7 @@ static uint32 Rotate32(uint32 val, int shift) {
 }
 
 #undef PERMUTE3
-#define PERMUTE3(a, b, c) do { asl::swap(a, b); asl::swap(a, c); } while (0)
+#define PERMUTE3(a, b, c) do { std::swap(a, b); std::swap(a, c); } while (0)
 
 static uint32 Mur(uint32 a, uint32 h) {
   // Helper from Murmur3 for combining two 32-bit values.
@@ -395,7 +395,7 @@ uint64 asl::city_hash::CityHash64(const char *s, size_t len) {
     z = Rotate(z + w.high, 33) * k1;
     v = WeakHashLen32WithSeeds(s, v.low * k1, x + w.high);
     w = WeakHashLen32WithSeeds(s + 32, z + w.low, y + Fetch64(s + 16));
-    asl::swap(z, x);
+    std::swap(z, x);
     s += 64;
     len -= 64;
   } while (len != 0);
@@ -469,7 +469,7 @@ uint128 asl::city_hash::CityHash128WithSeed(const char *s, size_t len, uint128 s
     z = Rotate(z + w.high, 33) * k1;
     v = WeakHashLen32WithSeeds(s, v.low * k1, x + w.high);
     w = WeakHashLen32WithSeeds(s + 32, z + w.low, y + Fetch64(s + 16));
-    asl::swap(z, x);
+    std::swap(z, x);
     s += 64;
     x = Rotate(x + y + v.high + Fetch64(s + 8), 37) * k1;
     y = Rotate(y + v.low + Fetch64(s + 48), 42) * k1;
@@ -478,7 +478,7 @@ uint128 asl::city_hash::CityHash128WithSeed(const char *s, size_t len, uint128 s
     z = Rotate(z + w.high, 33) * k1;
     v = WeakHashLen32WithSeeds(s, v.low * k1, x + w.high);
     w = WeakHashLen32WithSeeds(s + 32, z + w.low, y + Fetch64(s + 16));
-    asl::swap(z, x);
+    std::swap(z, x);
     s += 64;
     len -= 128;
   } while (LIKELY(len >= 128));

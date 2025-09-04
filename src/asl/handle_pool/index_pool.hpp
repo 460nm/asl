@@ -5,7 +5,7 @@
 #include "asl/base/integers.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/containers/chunked_buffer.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/types/option.hpp"
 
 namespace asl
@@ -23,30 +23,30 @@ struct index_pool_config
     static constexpr bool kHasUser = !same_as<UserType_, empty>;
 
     using UserType          = UserType_;
-    using PrimitiveUserType = smallest_unsigned_integer_type_for_width<size_of<UserType> * 8>;
+    using PrimitiveUserType = smallest_unsigned_integer_for_width_t<sizeof(UserType) * 8>;
 
-    static_assert(trivially_copy_constructible<UserType>);
-    static_assert(trivially_destructible<UserType>);
-    static_assert(size_of<UserType> == size_of<PrimitiveUserType>, "UserType should be of size 1, 2 or 4");
+    static_assert(is_trivially_copy_constructible<UserType>);
+    static_assert(is_trivially_destructible<UserType>);
+    static_assert(sizeof(UserType) == sizeof(PrimitiveUserType), "UserType should be of size 1, 2 or 4");
 
     static constexpr int kUserBits = []() static -> int {
         if constexpr (!kHasUser) { return 0; };
-        return kUserBits_ == 0 ? size_of<UserType> * 8 : kUserBits_;
+        return kUserBits_ == 0 ? sizeof(UserType) * 8 : kUserBits_;
     }();
 
-    static_assert(kUserBits <= size_of<UserType> * 8);
+    static_assert(kUserBits <= sizeof(UserType) * 8);
 
     static constexpr int kIndexBits = kIndexBits_;
     static constexpr int kGenBits   = kGenBits_;
 
     static_assert(kIndexBits + kGenBits + kUserBits <= 63);
 
-    using HandleType = smallest_unsigned_integer_type_for_width<kIndexBits + kGenBits + kUserBits + 1>;
+    using HandleType = smallest_unsigned_integer_for_width_t<kIndexBits + kGenBits + kUserBits + 1>;
 
     static constexpr int        kGenShift  = kIndexBits;
     static constexpr int        kUserShift = kIndexBits + kGenBits;
 
-    static constexpr HandleType kValidMask = HandleType{1} << (size_of<HandleType> * 8 - 1);
+    static constexpr HandleType kValidMask = HandleType{1} << (sizeof(HandleType) * 8 - 1);
     static constexpr HandleType kIndexMask = (HandleType{1} << kIndexBits) - 1;
     static constexpr HandleType kGenMask   = ((HandleType{1} << kGenBits) - 1) << kGenShift;
     static constexpr HandleType kUserMask  = ((HandleType{1} << kUserBits) - 1) << kUserShift;
@@ -94,11 +94,11 @@ public:
             config::kValidMask |
             (index & config::kIndexMask) |
             ((gen << config::kGenShift) & config::kGenMask) |
-            ((static_cast<config::HandleType>(bit_cast<typename config::PrimitiveUserType>(user)) << config::kUserShift) & config::kUserMask))}
+            ((static_cast<config::HandleType>(std::bit_cast<typename config::PrimitiveUserType>(user)) << config::kUserShift) & config::kUserMask))}
     {
         ASL_ASSERT((index & uint64_t{config::kIndexMask}) == index);
         ASL_ASSERT((gen & (uint64_t{config::kGenMask} >> config::kGenShift)) == gen);
-        ASL_ASSERT((bit_cast<typename config::PrimitiveUserType>(user) & (uint64_t{config::kUserMask} >> config::kUserShift)) == bit_cast<typename config::PrimitiveUserType>(user));
+        ASL_ASSERT((std::bit_cast<typename config::PrimitiveUserType>(user) & (uint64_t{config::kUserMask} >> config::kUserShift)) == std::bit_cast<typename config::PrimitiveUserType>(user));
     }
 
     constexpr bool is_null(this index_pool_handle self)
@@ -118,7 +118,7 @@ public:
 
     constexpr config::UserType user(this index_pool_handle self)
     {
-        return bit_cast<typename config::UserType>(static_cast<config::PrimitiveUserType>(
+        return std::bit_cast<typename config::UserType>(static_cast<config::PrimitiveUserType>(
             ((self.m_handle & config::kUserMask) >> config::kUserShift)));
     }
 
@@ -136,7 +136,7 @@ template<
     typename UserType_,
     int kUserBits_
 >
-struct is_uniquely_represented<index_pool_handle<kIndexBits_, kGenBits_, UserType_, kUserBits_>> : true_type {};
+struct has_unique_object_representations<index_pool_handle<kIndexBits_, kGenBits_, UserType_, kUserBits_>> : true_type {};
 
 template<
     int kIndexBits_,
@@ -165,9 +165,9 @@ private:
     // @Todo Remove need for default constructible & trivially destructible for payload
     // Use maybe_uninit for it
 
-    static_assert(default_constructible<Payload>);
+    static_assert(is_default_constructible<Payload>);
     static_assert(copy_constructible<Payload>);
-    static_assert(trivially_destructible<Payload>);
+    static_assert(is_trivially_destructible<Payload>);
 
     struct Slot
     {
@@ -229,7 +229,7 @@ private:
     }
 
     auto get_slot_if_valid(this auto&& self, handle h)
-        -> copy_const_t<decltype(self), Slot>*
+        -> copy_const_t<remove_ref_t<decltype(self)>, Slot>*
     {
         if (h.is_null()) { return nullptr; }
 
@@ -246,7 +246,7 @@ private:
     }
 
 public:
-    IndexPool() requires default_constructible<Allocator> = default;
+    IndexPool() requires is_default_constructible<Allocator> = default;
 
     explicit IndexPool(Allocator allocator) : m_slots{std::move(allocator)} {}
 
@@ -368,7 +368,7 @@ public:
     {
         if (Slot* slot = get_slot_if_valid(h); slot != nullptr)
         {
-            return asl::exchange(slot->payload, new_payload);
+            return std::exchange(slot->payload, new_payload);
         }
         return nullopt;
     }

@@ -16,7 +16,7 @@ public:
         : m_handle{handle}
     {}
 
-    void write(asl::span<const asl::byte> s) override
+    void write(asl::span<const std::byte> s) override
     {
         (void)fwrite(s.data(), 1, static_cast<size_t>(s.size()), m_handle);
     }

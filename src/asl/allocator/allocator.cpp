@@ -2,10 +2,13 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "asl/memory/allocator.hpp"
+#include "allocator.hpp"
+
 #include "asl/base/assert.hpp"
-#include "asl/base/numeric.hpp"
-#include "asl/memory/layout.hpp"
+
+#if defined(ASL_OS_LINUX)
+    #include "asl/base/numeric.hpp"
+#endif
 
 #include <cstdlib>
 

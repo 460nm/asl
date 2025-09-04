@@ -4,10 +4,11 @@
 
 #include "asl/types/maybe_uninit.hpp"
 #include "asl/tests/types.hpp"
+#include "asl/base/layout.hpp"
 
 static_assert(asl::layout::of<int>() == asl::layout::of<asl::maybe_uninit<int>>());
-static_assert(asl::size_of<int> == asl::size_of<asl::maybe_uninit<int>>);
-static_assert(asl::align_of<int> == asl::align_of<asl::maybe_uninit<int>>);
+static_assert(sizeof(int) == sizeof(asl::maybe_uninit<int>));
+static_assert(alignof(int) == alignof(asl::maybe_uninit<int>));
 
 #define TEST_TYPE_PROPERTIES(PRP) \
     static_assert(asl::PRP<asl::maybe_uninit<int>> == asl::PRP<int>); \
@@ -21,12 +22,12 @@ static_assert(asl::align_of<int> == asl::align_of<asl::maybe_uninit<int>>);
 
 // @Todo(C++26) We expect this to break once trivial unions land.
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3074r7.html#just-make-it-work
-TEST_TYPE_PROPERTIES(trivially_default_constructible);
-TEST_TYPE_PROPERTIES(trivially_copy_constructible);
-TEST_TYPE_PROPERTIES(trivially_move_constructible);
-TEST_TYPE_PROPERTIES(trivially_copy_assignable);
-TEST_TYPE_PROPERTIES(trivially_move_assignable);
-TEST_TYPE_PROPERTIES(trivially_destructible);
+TEST_TYPE_PROPERTIES(is_trivially_default_constructible);
+TEST_TYPE_PROPERTIES(is_trivially_copy_constructible);
+TEST_TYPE_PROPERTIES(is_trivially_move_constructible);
+TEST_TYPE_PROPERTIES(is_trivially_copy_assignable);
+TEST_TYPE_PROPERTIES(is_trivially_move_assignable);
+TEST_TYPE_PROPERTIES(is_trivially_destructible);
 
 static_assert(asl::same_as<int&, decltype(asl::declval<asl::maybe_uninit<int>&>().as_init_unsafe())>);
 static_assert(asl::same_as<int&&, decltype(asl::declval<asl::maybe_uninit<int>&&>().as_init_unsafe())>);

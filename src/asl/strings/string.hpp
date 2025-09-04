@@ -23,7 +23,7 @@ class string : protected buffer<char, Allocator>
     friend class StringBuilder;
 
 public:
-    constexpr string() requires default_constructible<Allocator> = default;
+    constexpr string() requires is_default_constructible<Allocator> = default;
 
     explicit constexpr string(Allocator allocator)
         : Base{std::move(allocator)}
@@ -31,7 +31,7 @@ public:
 
     // NOLINTNEXTLINE(*explicit*)
     constexpr string(string_view sv)
-        requires default_constructible<Allocator>
+        requires is_default_constructible<Allocator>
         : Base{sv.as_span()}
     {}
 

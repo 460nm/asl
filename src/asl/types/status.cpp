@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/types/status.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/strings/string.hpp"
 #include "asl/synchronization/atomic.hpp"
 #include "asl/formatting/format.hpp"

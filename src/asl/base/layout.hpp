@@ -4,17 +4,11 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
 
 namespace asl
 {
-
-template<typename T>
-inline constexpr isize_t size_of = static_cast<isize_t>(sizeof(T));
-
-template<typename T>
-inline constexpr isize_t align_of = static_cast<isize_t>(alignof(T));
 
 struct layout
 {
@@ -26,16 +20,21 @@ struct layout
     template<is_object T>
     static constexpr layout of()
     {
-        return layout{ size_of<T>, align_of<T> };
+        return layout{
+            .size = static_cast<isize_t>(sizeof(T)),
+            .align = static_cast<isize_t>(alignof(T)),
+        };
     }
 
     template<is_object T>
     static constexpr layout array(isize_t size)
     {
-        return layout{ size_of<T> * size, align_of<T> };
+        return layout{
+            .size = static_cast<isize_t>(sizeof(T)) * size,
+            .align = static_cast<isize_t>(alignof(T)),
+        };
     }
 };
 
 } // namespace asl
 
-#define AslOffsetOf(S, M) (static_cast<isize_t>(__builtin_offsetof(S, M)))

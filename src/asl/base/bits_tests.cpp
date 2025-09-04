@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "asl/base/bit.hpp"
+#include "asl/base/bits.hpp"
 
 #include "asl/testing/testing.hpp"
 
@@ -196,3 +196,4 @@ ASL_TEST(bit_width) // NOLINT(*-cognitive-complexity)
     ASL_TEST_EXPECT(asl::bit_width(uint64_t{65536}) == 17);
     ASL_TEST_EXPECT(asl::bit_width(uint64_t{0xffff'ffff}) == 32);
 }
+

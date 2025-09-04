@@ -5,7 +5,7 @@
 #pragma once
 
 #include "asl/base/integers.hpp"
-#include "asl/base/float.hpp"
+#include "asl/base/floats.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/io/writer.hpp"
 #include "asl/types/span.hpp"
@@ -67,7 +67,7 @@ public:
 template<formattable... Args>
 void format(Writer* w, string_view fmt, const Args&... args)
 {
-    if constexpr (types_count<Args...> > 0)
+    if constexpr (sizeof...(Args) > 0)
     {
         const format_internals::type_erased_arg type_erased_args[] = {
             format_internals::type_erased_arg(args)...

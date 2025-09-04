@@ -15,8 +15,7 @@ cc_library(
     ],
     strip_include_prefix = "/src",
     deps = [
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/base",
         "//src/asl/types:span",
         "//src/asl/hashing",
@@ -31,8 +30,7 @@ cc_library(
     ],
     strip_include_prefix = "/src",
     deps = [
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/base",
         "//src/asl/containers:buffer",
         "//src/asl/types:array",
@@ -49,8 +47,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/types:maybe_uninit",
         "//src/asl/hashing",
     ],
@@ -65,8 +62,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/hashing",
         ":hash_set",
     ],

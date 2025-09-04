@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/base/defer.hpp"
+#include "asl/base/integers.hpp"
 #include "asl/testing/testing.hpp"
 
 ASL_TEST(defer)

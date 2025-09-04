@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include "asl/types/option.hpp"
+#include "asl/base/meta.hpp"
 #include "asl/tests/types.hpp"
 #include "asl/testing/testing.hpp"
 
@@ -32,32 +33,32 @@ static_assert(!asl::is_option<int>);
 static_assert(asl::is_option<asl::option<int>>);
 static_assert(asl::is_option<const asl::option<int>>);
 
-static_assert(asl::trivially_destructible<asl::option<TrivialType>>);
-static_assert(!asl::trivially_destructible<asl::option<WithDestructor>>);
+static_assert(asl::is_trivially_destructible<asl::option<TrivialType>>);
+static_assert(!asl::is_trivially_destructible<asl::option<WithDestructor>>);
 
-static_assert(asl::trivially_copy_constructible<asl::option<int>>);
-static_assert(asl::trivially_copy_constructible<asl::option<NonZero>>);
+static_assert(asl::is_trivially_copy_constructible<asl::option<int>>);
+static_assert(asl::is_trivially_copy_constructible<asl::option<NonZero>>);
 static_assert(asl::copy_constructible<asl::option<Copyable>>);
 static_assert(!asl::copy_constructible<asl::option<MoveableOnly>>);
 static_assert(!asl::copy_constructible<asl::option<Pinned>>);
 
-static_assert(asl::trivially_move_constructible<asl::option<int>>);
-static_assert(asl::trivially_move_constructible<asl::option<NonZero>>);
+static_assert(asl::is_trivially_move_constructible<asl::option<int>>);
+static_assert(asl::is_trivially_move_constructible<asl::option<NonZero>>);
 static_assert(asl::move_constructible<asl::option<Copyable>>);
 static_assert(asl::move_constructible<asl::option<MoveableOnly>>);
 static_assert(!asl::move_constructible<asl::option<Pinned>>);
 
-static_assert(asl::trivially_copy_assignable<asl::option<int>>);
-static_assert(asl::trivially_copy_assignable<asl::option<NonZero>>);
-static_assert(asl::copy_assignable<asl::option<Copyable>>);
-static_assert(!asl::copy_assignable<asl::option<MoveableOnly>>);
-static_assert(!asl::copy_assignable<asl::option<Pinned>>);
+static_assert(asl::is_trivially_copy_assignable<asl::option<int>>);
+static_assert(asl::is_trivially_copy_assignable<asl::option<NonZero>>);
+static_assert(asl::is_copy_assignable<asl::option<Copyable>>);
+static_assert(!asl::is_copy_assignable<asl::option<MoveableOnly>>);
+static_assert(!asl::is_copy_assignable<asl::option<Pinned>>);
 
-static_assert(asl::trivially_move_assignable<asl::option<int>>);
-static_assert(asl::trivially_move_assignable<asl::option<NonZero>>);
-static_assert(asl::move_assignable<asl::option<Copyable>>);
-static_assert(asl::move_assignable<asl::option<MoveableOnly>>);
-static_assert(!asl::move_assignable<asl::option<Pinned>>);
+static_assert(asl::is_trivially_move_assignable<asl::option<int>>);
+static_assert(asl::is_trivially_move_assignable<asl::option<NonZero>>);
+static_assert(asl::is_move_assignable<asl::option<Copyable>>);
+static_assert(asl::is_move_assignable<asl::option<MoveableOnly>>);
+static_assert(!asl::is_move_assignable<asl::option<Pinned>>);
 
 static_assert(asl::assignable_from<asl::option<Base*>&, asl::option<Derived*>>);
 static_assert(!asl::assignable_from<asl::option<Derived*>&, asl::option<Base*>>);
@@ -77,25 +78,25 @@ static_assert(asl::convertible_to<int, asl::option<ImplicitConversion>>);
 static_assert(!asl::convertible_to<asl::option<int>, asl::option<ExplicitConversion>>);
 static_assert(asl::convertible_to<asl::option<int>, asl::option<ImplicitConversion>>);
 
-static_assert(asl::trivially_copy_constructible<asl::option<int>>);
-static_assert(asl::trivially_copy_constructible<asl::option<TrivialType>>);
-static_assert(asl::trivially_copy_constructible<asl::option<TrivialTypeDefaultValue>>);
-static_assert(!asl::trivially_copy_constructible<asl::option<Copyable>>);
+static_assert(asl::is_trivially_copy_constructible<asl::option<int>>);
+static_assert(asl::is_trivially_copy_constructible<asl::option<TrivialType>>);
+static_assert(asl::is_trivially_copy_constructible<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::is_trivially_copy_constructible<asl::option<Copyable>>);
 
-static_assert(asl::trivially_move_constructible<asl::option<int>>);
-static_assert(asl::trivially_move_constructible<asl::option<TrivialType>>);
-static_assert(asl::trivially_move_constructible<asl::option<TrivialTypeDefaultValue>>);
-static_assert(!asl::trivially_move_constructible<asl::option<MoveableOnly>>);
+static_assert(asl::is_trivially_move_constructible<asl::option<int>>);
+static_assert(asl::is_trivially_move_constructible<asl::option<TrivialType>>);
+static_assert(asl::is_trivially_move_constructible<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::is_trivially_move_constructible<asl::option<MoveableOnly>>);
 
-static_assert(asl::trivially_copy_assignable<asl::option<int>>);
-static_assert(asl::trivially_copy_assignable<asl::option<TrivialType>>);
-static_assert(asl::trivially_copy_assignable<asl::option<TrivialTypeDefaultValue>>);
-static_assert(!asl::trivially_copy_assignable<asl::option<Copyable>>);
+static_assert(asl::is_trivially_copy_assignable<asl::option<int>>);
+static_assert(asl::is_trivially_copy_assignable<asl::option<TrivialType>>);
+static_assert(asl::is_trivially_copy_assignable<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::is_trivially_copy_assignable<asl::option<Copyable>>);
 
-static_assert(asl::trivially_move_assignable<asl::option<int>>);
-static_assert(asl::trivially_move_assignable<asl::option<TrivialType>>);
-static_assert(asl::trivially_move_assignable<asl::option<TrivialTypeDefaultValue>>);
-static_assert(!asl::trivially_move_assignable<asl::option<MoveableOnly>>);
+static_assert(asl::is_trivially_move_assignable<asl::option<int>>);
+static_assert(asl::is_trivially_move_assignable<asl::option<TrivialType>>);
+static_assert(asl::is_trivially_move_assignable<asl::option<TrivialTypeDefaultValue>>);
+static_assert(!asl::is_trivially_move_assignable<asl::option<MoveableOnly>>);
 
 ASL_TEST(make_null)
 {

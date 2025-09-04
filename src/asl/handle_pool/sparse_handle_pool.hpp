@@ -5,7 +5,7 @@
 #pragma once
 
 #include "asl/handle_pool/index_pool.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/containers/chunked_buffer.hpp"
 
 
@@ -68,7 +68,7 @@ class SparseHandlePool
 public:
     using handle = ThisIndexPool::handle;
 
-    SparseHandlePool() requires default_constructible<Allocator> = default;
+    SparseHandlePool() requires is_default_constructible<Allocator> = default;
 
     explicit SparseHandlePool(const Allocator& allocator)
         : m_index_pool(allocator)
@@ -139,7 +139,7 @@ public:
     }
 
     auto get(this auto&& self, handle h)
-        -> copy_const_t<un_ref_t<decltype(self)>, T>*
+        -> copy_const_t<remove_ref_t<decltype(self)>, T>*
     {
         if (!self.is_valid(h)) { return nullptr; }
         return &std::forward<decltype(self)>(self).m_buffer[static_cast<isize_t>(h.index())]

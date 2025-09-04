@@ -144,10 +144,10 @@ struct MoveableType
     }
     ~MoveableType() = default;
 };
-static_assert(!asl::trivially_copy_constructible<MoveableType>);
-static_assert(!asl::trivially_move_constructible<MoveableType>);
+static_assert(!asl::is_trivially_copy_constructible<MoveableType>);
+static_assert(!asl::is_trivially_move_constructible<MoveableType>);
 static_assert(!asl::copyable<MoveableType>);
-static_assert(asl::moveable<MoveableType>);
+static_assert(asl::movable<MoveableType>);
 
 // NOLINTNEXTLINE(*-complexity)
 ASL_TEST(push_move)

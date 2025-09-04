@@ -5,10 +5,10 @@
 #pragma once
 
 #include "asl/base/assert.hpp"
-#include "asl/base/annotations.hpp"
-#include "asl/base/utility.hpp"
-#include "asl/memory/memory.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/base/support.hpp"
+#include "asl/base/meta.hpp"
+#include "asl/base/memory.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/hashing/hash.hpp"
 
 namespace asl
@@ -22,7 +22,7 @@ class box
 
 public:
     explicit constexpr box(niche_t)
-        requires default_constructible<Allocator>
+        requires is_default_constructible<Allocator>
         : m_ptr{nullptr}
         , m_alloc{}
     {}
@@ -35,14 +35,14 @@ public:
     }
 
     constexpr box(box&& other)
-        : m_ptr{exchange(other.m_ptr, nullptr)}
+        : m_ptr{std::exchange(other.m_ptr, nullptr)}
         , m_alloc{std::move(other.m_alloc)}
     {}
 
     template<is_object U>
     requires convertible_to<U*, T*>
     constexpr box(box<U, Allocator>&& other) // NOLINT(*explicit*,*-not-moved)
-        : m_ptr{exchange(other.m_ptr, nullptr)}
+        : m_ptr{std::exchange(other.m_ptr, nullptr)}
         , m_alloc{std::move(other.m_alloc)}
     {}
 
@@ -52,7 +52,7 @@ public:
 
         if (m_ptr != nullptr) { reset(); }
 
-        m_ptr = exchange(other.m_ptr, nullptr);
+        m_ptr = std::exchange(other.m_ptr, nullptr);
         m_alloc = std::move(other.m_alloc);
 
         return *this;
@@ -123,7 +123,7 @@ constexpr box<T, Allocator> make_box_in(Allocator allocator, Args&&... args)
 
 template<is_object T, allocator Allocator = DefaultAllocator, typename... Args>
 constexpr box<T, Allocator> make_box(Args&&... args)
-    requires default_constructible<Allocator> && constructible_from<T, Args&&...>
+    requires is_default_constructible<Allocator> && constructible_from<T, Args&&...>
 {
     Allocator allocator{};
     void* raw_ptr = allocator.alloc(layout::of<T>());
@@ -134,7 +134,7 @@ constexpr box<T, Allocator> make_box(Args&&... args)
 template<is_object T, allocator A>
 constexpr T* leak(box<T, A>&& b)
 {
-    return exchange(std::move(b).m_ptr, nullptr);
+    return std::exchange(std::move(b).m_ptr, nullptr);
 }
 
 } // namespace asl

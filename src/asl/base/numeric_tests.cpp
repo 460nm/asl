@@ -66,3 +66,4 @@ ASL_TEST(round_up_pow2) // NOLINT
     ASL_TEST_EXPECT(asl::round_up_pow2(255, 16) == 256);
     ASL_TEST_EXPECT(asl::round_up_pow2(-255, 16) == -240);
 }
+

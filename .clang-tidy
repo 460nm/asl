@@ -10,6 +10,7 @@ Checks:
   - "-*-non-private-member-variables-in-classes"
   - "-*-use-anonymous-namespace"
   - "-cert-err58-cpp"
+  - "-cert-dcl58-cpp"
   - "-*noexcept*"
   - "-*-magic-numbers"
   - "-*-named-parameter"

@@ -4,14 +4,14 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/meta.hpp"
 #include "asl/formatting/format.hpp"
 #include "asl/containers/intrusive_list.hpp"
 
 namespace asl::log
 {
 
-enum level : uint8_t
+enum class level : uint8_t
 {
     kDebug = 0,
     kInfo,
@@ -88,25 +88,25 @@ void log(level l, const source_location& sl, string_view fmt, const Args&... arg
 } // namespace asl::log
 
 #if !defined(ASL_LOG_LEVEL) || ASL_LOG_LEVEL >= 4
-    #define ASL_LOG_DEBUG(...)   ::asl::log::log(::asl::log::kDebug,   ::asl::source_location{}, __VA_ARGS__)
+    #define ASL_LOG_DEBUG(...)   ::asl::log::log(::asl::log::level::kDebug,   ::asl::source_location{}, __VA_ARGS__)
 #else
     #define ASL_LOG_DEBUG(...)
 #endif
 
 #if !defined(ASL_LOG_LEVEL) || ASL_LOG_LEVEL >= 3
-    #define ASL_LOG_INFO(...)    ::asl::log::log(::asl::log::kInfo,    ::asl::source_location{}, __VA_ARGS__)
+    #define ASL_LOG_INFO(...)    ::asl::log::log(::asl::log::level::kInfo,    ::asl::source_location{}, __VA_ARGS__)
 #else
     #define ASL_LOG_DEBUG(...)
 #endif
 
 #if !defined(ASL_LOG_LEVEL) || ASL_LOG_LEVEL >= 2
-    #define ASL_LOG_WARNING(...) ::asl::log::log(::asl::log::kWarning, ::asl::source_location{}, __VA_ARGS__)
+    #define ASL_LOG_WARNING(...) ::asl::log::log(::asl::log::level::kWarning, ::asl::source_location{}, __VA_ARGS__)
 #else
     #define ASL_LOG_DEBUG(...)
 #endif
 
 #if !defined(ASL_LOG_LEVEL) || ASL_LOG_LEVEL >= 1
-    #define ASL_LOG_ERROR(...)   ::asl::log::log(::asl::log::kError,   ::asl::source_location{}, __VA_ARGS__)
+    #define ASL_LOG_ERROR(...)   ::asl::log::log(::asl::log::level::kError,   ::asl::source_location{}, __VA_ARGS__)
 #else
     #define ASL_LOG_DEBUG(...)
 #endif

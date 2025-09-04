@@ -20,7 +20,6 @@ cc_library(
     ],
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
         "//src/asl/strings:string_view",
         "//src/asl/types:span",
         "//src/asl/io:writer",

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "asl/handle_pool/index_pool.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/containers/chunked_buffer.hpp"
 
 
@@ -24,7 +24,7 @@ template<
     int kUserBits = 0,
     isize_t kChunkSize = 32,
     allocator Allocator = DefaultAllocator>
-requires moveable<T> && copyable<Allocator>
+requires movable<T> && copyable<Allocator>
 class DenseHandlePool
 {
     using ThisIndexPool = IndexPool<kIndexBits, kGenBits, UserType, kUserBits, isize_t, Allocator>;
@@ -59,7 +59,7 @@ class DenseHandlePool
 public:
     using handle = ThisIndexPool::handle;
 
-    DenseHandlePool() requires default_constructible<Allocator> = default;
+    DenseHandlePool() requires is_default_constructible<Allocator> = default;
 
     explicit DenseHandlePool(const Allocator& allocator)
         : m_index_pool(allocator)
@@ -143,7 +143,7 @@ public:
     }
 
     auto get(this auto&& self, handle h)
-        -> copy_const_t<un_ref_t<decltype(self)>, T>*
+        -> copy_const_t<remove_ref_t<decltype(self)>, T>*
     {
         if (!self.is_valid(h)) { return nullptr; }
         const auto index = *self.m_index_pool.get_payload(h);

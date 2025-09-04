@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/assert.hpp"
 #include "asl/base/numeric.hpp"
 #include "asl/containers/buffer.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/types/array.hpp"
 #include "asl/types/maybe_uninit.hpp"
 
@@ -81,7 +81,7 @@ class chunked_buffer
     {
         ASL_ASSERT(new_size >= 0);
 
-        if constexpr (!trivially_destructible<T>)
+        if constexpr (!is_trivially_destructible<T>)
         {
             const isize_t old_size = size();
             if (new_size < old_size)
@@ -167,7 +167,7 @@ class chunked_buffer
 
 public:
     constexpr chunked_buffer()
-        requires default_constructible<Allocator>
+        requires is_default_constructible<Allocator>
         = default;
 
     explicit constexpr chunked_buffer(Allocator allocator)
@@ -183,7 +183,7 @@ public:
 
     constexpr chunked_buffer(chunked_buffer&& other)
         : m_chunks{std::move(other.m_chunks)}
-        , m_size{asl::exchange(other.m_size, 0)}
+        , m_size{std::exchange(other.m_size, 0)}
     {
         ASL_ASSERT(other.m_chunks.size() == 0);
     }
@@ -201,7 +201,7 @@ public:
         if (&other == this) { return *this; }
         destroy();
         m_chunks = std::move(other.m_chunks);
-        m_size = asl::exchange(other.m_size, 0);
+        m_size = std::exchange(other.m_size, 0);
         ASL_ASSERT(other.m_chunks.size() == 0);
         return *this;
     }
@@ -213,7 +213,7 @@ public:
 
     void clear()
     {
-        if constexpr (trivially_destructible<T>)
+        if constexpr (is_trivially_destructible<T>)
         {
             m_size = 0;
         }
@@ -293,9 +293,9 @@ public:
     }
 
     void resize(isize_t new_size)
-        requires default_constructible<T>
+        requires is_default_constructible<T>
     {
-        if constexpr (trivially_default_constructible<T>)
+        if constexpr (is_trivially_default_constructible<T>)
         {
             resize_zero(new_size);
         }
@@ -312,7 +312,7 @@ public:
     }
 
     void resize_zero(isize_t new_size)
-        requires trivially_default_constructible<T>
+        requires is_trivially_default_constructible<T>
     {
         const isize_t old_size = m_size;
         resize_uninit_inner(new_size);
@@ -330,7 +330,7 @@ public:
     }
 
     void resize_uninit(isize_t new_size)
-        requires trivially_default_constructible<T>
+        requires is_trivially_default_constructible<T>
     {
         resize_uninit_inner(new_size);
     }

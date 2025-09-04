@@ -4,61 +4,59 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
-#include "asl/base/float.hpp"
-#include "asl/base/bit.hpp"
 #include "asl/base/meta.hpp"
 #include "asl/base/assert.hpp"
+#include "asl/base/bits.hpp"
+#include "asl/base/floats.hpp"
 
 namespace asl
 {
 
-template<is_integer T>
+template<integral T>
 constexpr bool is_pow2(T x)
 {
-    using unsigned_type = as_unsigned_integer<T>;
+    using unsigned_type = make_unsigned_t<T>;
     return x > 0 && has_single_bit(static_cast<unsigned_type>(x));
 }
 
-template<is_integer T>
+template<integral T>
 constexpr T round_down_pow2(T x, T div)
 {
     ASL_ASSERT(is_pow2(div));
     return x & (-div);
 }
 
-template<is_integer T>
+template<integral T>
 constexpr T round_up_pow2(T x, T div)
 {
     ASL_ASSERT(is_pow2(div));
     return (x + (div - 1)) & (-div);
 }
 
-template<typename T>
-concept is_numeric = is_integer<T> || is_floating_point<T>;
-
-template<is_numeric T>
+template<is_arithmetic T>
 constexpr T min(T a, T b)
 {
-    return (a <= b) ? a : b;
+    return (a < b) ? a : b;
+
 }
 
-template<is_numeric T>
+template<is_arithmetic T>
 constexpr T max(T a, T b)
 {
-    return (a >= b) ? a : b;
+    return (a > b) ? a : b;
+
 }
 
-template<is_numeric T>
+template<is_arithmetic T>
 constexpr T clamp(T x, T a, T b)
 {
     return min(max(x, a), b);
 }
 
-constexpr float32_t abs(float32_t x) { return __builtin_fabsf(x); }
-constexpr float64_t abs(float64_t x) { return __builtin_fabs(x); }
+constexpr float  abs(float x)  { return __builtin_fabsf(x); }
+constexpr double abs(double x) { return __builtin_fabs(x); }
 
-template<is_floating_point T>
+template<floating_point T>
 bool are_nearly_equal(T a, T b)
 {
     // This is a fast path for identical values and correctly handles

@@ -6,7 +6,7 @@
 
 #include "asl/base/meta.hpp"
 #include "asl/base/assert.hpp"
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 
 namespace asl
 {
@@ -82,13 +82,13 @@ public:
 
     constexpr auto front(this auto&& self)
     {
-        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
+        using return_type = copy_const_t<remove_ref_t<decltype(self)>, T>*;
         return return_type{ self.m_head };
     }
 
     constexpr auto back(this auto&& self)
     {
-        using return_type = copy_const_t<un_ref_t<decltype(self)>, T>*;
+        using return_type = copy_const_t<remove_ref_t<decltype(self)>, T>*;
         return return_type{ self.m_head != nullptr ? self.m_head->m_prev : nullptr };
     }
 
@@ -163,7 +163,7 @@ public:
         constexpr generic_iterator operator++(int)
         {
             return iterator{
-                exchange(m_node, m_node->m_next), exchange(m_advanced, true)
+                std::exchange(m_node, m_node->m_next), std::exchange(m_advanced, true)
             };
         }
 
@@ -177,13 +177,13 @@ public:
 
     auto begin(this auto&& self)
     {
-        using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
+        using iterator_type = conditional_t<is_const<remove_ref_t<decltype(self)>>, const_iterator, iterator>;
         return iterator_type{ self.front(), self.is_empty() };
     }
 
     auto end(this auto&& self)
     {
-        using iterator_type = select_t<is_const<un_ref_t<decltype(self)>>, const_iterator, iterator>;
+        using iterator_type = conditional_t<is_const<remove_ref_t<decltype(self)>>, const_iterator, iterator>;
         return iterator_type{ self.front(), true };
     }
 };

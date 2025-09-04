@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
 #include "asl/base/meta.hpp"
+#include "asl/base/integers.hpp"
 #include "asl/types/span.hpp"
-#include "asl/base/utility.hpp"
 
 namespace asl::city_hash
 {
@@ -76,7 +75,7 @@ struct HashState
     template<typename T>
     static HashState combine_contiguous(HashState h, span<const T> s)
     {
-        if constexpr (uniquely_represented<T>)
+        if constexpr (has_unique_object_representations_v<T>)
         {
             auto bytes = as_bytes(s);
             auto hashed = city_hash::CityHash128WithSeed(
@@ -110,8 +109,9 @@ struct HashState
 template<typename T>
 concept hashable = hashable_generic<T, HashState>;
 
-template<typename H, uniquely_represented T>
+template<typename H, typename T>
 constexpr H AslHashValue(H h, const T& value)
+    requires has_unique_object_representations_v<T>
 {
     return H::combine_contiguous(std::move(h), span<const T>{&value, 1});
 }

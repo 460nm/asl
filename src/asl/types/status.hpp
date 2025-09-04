@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "asl/base/bits.hpp"
 #include "asl/base/integers.hpp"
 #include "asl/strings/string_view.hpp"
 #include "asl/formatting/format.hpp"
@@ -32,17 +33,17 @@ class status
     {
         return code == status_code::ok
             ? nullptr
-            : bit_cast<StatusInternal*>((static_cast<uintptr_t>(code) << 1) | 1);
+            : std::bit_cast<StatusInternal*>((static_cast<uintptr_t>(code) << 1) | 1);
     }
 
     static constexpr status_code payload_to_status(void* payload)
     {
-        return static_cast<status_code>(bit_cast<uintptr_t>(payload) >> 1);
+        return static_cast<status_code>(std::bit_cast<uintptr_t>(payload) >> 1);
     }
 
     [[nodiscard]] constexpr bool is_inline() const
     {
-        return m_payload == nullptr || (bit_cast<uintptr_t>(m_payload) & 1) != 0;
+        return m_payload == nullptr || (std::bit_cast<uintptr_t>(m_payload) & 1) != 0;
     }
 
     [[nodiscard]] constexpr status_code code_inline() const
@@ -81,7 +82,7 @@ public:
     }
 
     constexpr status(status&& other)
-        : m_payload{exchange(other.m_payload, status_to_payload(other.code()))}
+        : m_payload{std::exchange(other.m_payload, status_to_payload(other.code()))}
     {}
 
     constexpr status& operator=(const status& other)
@@ -100,7 +101,7 @@ public:
         if (&other != this)
         {
             if (!is_inline()) { unref(); }
-            m_payload = exchange(other.m_payload, status_to_payload(other.code()));
+            m_payload = std::exchange(other.m_payload, status_to_payload(other.code()));
         }
         return *this;
     }

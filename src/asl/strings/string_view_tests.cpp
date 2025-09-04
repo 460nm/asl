@@ -5,8 +5,8 @@
 #include "asl/strings/string_view.hpp"
 #include "asl/testing/testing.hpp"
 
-static_assert(asl::trivially_destructible<asl::string_view>);
-static_assert(asl::trivially_copy_constructible<asl::string_view>);
+static_assert(asl::is_trivially_destructible<asl::string_view>);
+static_assert(asl::is_trivially_copy_constructible<asl::string_view>);
 
 ASL_TEST(default)
 {

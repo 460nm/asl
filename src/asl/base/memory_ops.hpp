@@ -4,29 +4,11 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/base/utility.hpp"
-#include "asl/memory/layout.hpp"
-
-constexpr void* operator new(size_t, void* ptr) noexcept
-{
-    return ptr;
-}
 
 namespace asl
 {
-
-template<typename T>
-[[nodiscard]]
-constexpr T* address_of(T& obj)
-{
-    return __builtin_addressof(obj);
-}
-
-template<typename T>
-void address_of(const T&& obj) = delete;
-
 [[nodiscard]]
 constexpr isize_t memcmp(const void* a, const void* b, isize_t size)
 {
@@ -58,7 +40,7 @@ constexpr T* construct_at(void* ptr, Args&&... args)
 template<typename T>
 constexpr void destroy(T* data)
 {
-    if constexpr (!trivially_destructible<T>)
+    if constexpr (!is_trivially_destructible<T>)
     {
         data->~T();
     }
@@ -67,7 +49,7 @@ constexpr void destroy(T* data)
 template<typename T>
 constexpr void destroy_n(T* data, isize_t n)
 {
-    if constexpr (!trivially_destructible<T>)
+    if constexpr (!is_trivially_destructible<T>)
     {
         for (isize_t i = 0; i < n; ++i)
         {
@@ -76,12 +58,12 @@ constexpr void destroy_n(T* data, isize_t n)
     }
 }
 
-template<copy_constructible T>
+template<is_copy_constructible T>
 constexpr void copy_uninit_n(T* to, const T* from, isize_t n)
 {
-    if constexpr (trivially_copy_constructible<T>)
+    if constexpr (is_trivially_copy_constructible<T>)
     {
-        memcpy(to, from, size_of<T> * n);
+        memcpy(to, from, static_cast<isize_t>(sizeof(T)) * n);
     }
     else
     {
@@ -93,12 +75,12 @@ constexpr void copy_uninit_n(T* to, const T* from, isize_t n)
     }
 }
 
-template<copy_assignable T>
+template<is_copy_assignable T>
 constexpr void copy_assign_n(T* to, const T* from, isize_t n)
 {
-    if constexpr (trivially_copy_constructible<T>)
+    if constexpr (is_trivially_copy_assignable<T>)
     {
-        memcpy(to, from, size_of<T> * n);
+        memcpy(to, from, static_cast<isize_t>(sizeof(T)) * n);
     }
     else
     {
@@ -110,13 +92,13 @@ constexpr void copy_assign_n(T* to, const T* from, isize_t n)
     }
 }
 
-template<move_constructible T>
-constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
+template<is_move_constructible T>
+constexpr void move_uninit_n(T* to, T* from, isize_t n)
 {
-    if constexpr (trivially_move_constructible<T>)
+    if constexpr (is_trivially_move_constructible<T>)
     {
-        static_assert(trivially_destructible<T>);
-        memcpy(to, from, size_of<T> * n);
+        static_assert(is_trivially_destructible<T>);
+        memcpy(to, from, static_cast<isize_t>(sizeof(T)) * n);
     }
     else
     {
@@ -125,17 +107,16 @@ constexpr void relocate_uninit_n(T* to, T* from, isize_t n)
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             construct_at<T>(to + i, std::move(from[i]));
         }
-        destroy_n(from, n);
     }
 }
 
-template<move_assignable T>
-constexpr void relocate_assign_n(T* to, T* from, isize_t n)
+template<is_move_assignable T>
+constexpr void move_assign_n(T* to, T* from, isize_t n)
 {
-    if constexpr (trivially_move_assignable<T>)
+    if constexpr (is_trivially_move_assignable<T>)
     {
-        static_assert(trivially_destructible<T>);
-        memcpy(to, from, size_of<T> * n);
+        static_assert(is_trivially_destructible<T>);
+        memcpy(to, from, static_cast<isize_t>(sizeof(T)) * n);
     }
     else
     {
@@ -144,9 +125,7 @@ constexpr void relocate_assign_n(T* to, T* from, isize_t n)
             // NOLINTNEXTLINE(*-pointer-arithmetic)
             to[i] = std::move(from[i]);
         }
-        destroy_n(from, n);
     }
 }
 
 } // namespace asl
-

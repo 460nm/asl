@@ -6,8 +6,8 @@
 
 #include "asl/base/assert.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/base/functional.hpp"
-#include "asl/base/annotations.hpp"
+#include "asl/base/support.hpp"
+#include "asl/base/memory.hpp"
 #include "asl/types/maybe_uninit.hpp"
 #include "asl/hashing/hash.hpp"
 
@@ -51,7 +51,7 @@ template<typename T>
 concept is_option = requires
 {
     typename T::type;
-    requires same_as<un_cvref_t<T>, option<typename T::type>>;
+    requires same_as<remove_cvref_t<T>, option<typename T::type>>;
 };
 
 template<is_object T>
@@ -59,7 +59,7 @@ class option
 {
     static constexpr bool kHasNiche = has_niche<T>;
 
-    using HasValueMarker = select_t<kHasNiche, empty, bool>;
+    using HasValueMarker = conditional_t<kHasNiche, empty, bool>;
 
     maybe_uninit<T> m_payload{};
     ASL_NO_UNIQUE_ADDRESS HasValueMarker m_has_value{};
@@ -79,7 +79,7 @@ class option
         }
         else
         {
-            if constexpr (move_assignable<T>)
+            if constexpr (is_move_assignable<T>)
             {
                 m_payload.assign_unsafe(T{std::forward<Args>(args)...});
             }
@@ -107,7 +107,7 @@ public:
     constexpr option(nullopt_t) requires (!kHasNiche) {}
 
      // NOLINTNEXTLINE(*explicit*)
-    constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place, niche_t{}} {}
+    constexpr option(nullopt_t) requires kHasNiche : m_payload{in_place_t{}, niche_t{}} {}
 
     template<typename U = T>
     constexpr explicit (!convertible_to<U&&, T>)
@@ -115,9 +115,9 @@ public:
         requires (
             kHasNiche &&
             constructible_from<T, U&&> &&
-            !same_as<un_cvref_t<U>, option>
+            !same_as<remove_cvref_t<U>, option>
         )
-        : m_payload{in_place, std::forward<U>(value)}
+        : m_payload{in_place_t{}, std::forward<U>(value)}
     {}
 
     template<typename U = T>
@@ -128,15 +128,15 @@ public:
             constructible_from<T, U&&> &&
             !is_option<U>
         )
-        : m_payload{in_place, std::forward<U>(value)}
+        : m_payload{in_place_t{}, std::forward<U>(value)}
         , m_has_value{true}
     {}
 
-    constexpr option(const option& other) requires trivially_copy_constructible<T> = default;
+    constexpr option(const option& other) requires is_trivially_copy_constructible<T> = default;
     constexpr option(const option& other) requires (!copy_constructible<T>) = delete;
 
     constexpr option(const option& other)
-        requires copy_constructible<T> && (!trivially_copy_constructible<T>)
+        requires copy_constructible<T> && (!is_trivially_copy_constructible<T>)
         : option{nullopt}
     {
         if (other.has_value())
@@ -145,11 +145,11 @@ public:
         }
     }
 
-    constexpr option(option&& other) requires trivially_move_constructible<T> = default;
+    constexpr option(option&& other) requires is_trivially_move_constructible<T> = default;
     constexpr option(option&& other) requires (!move_constructible<T>) = delete;
 
     constexpr option(option&& other)
-        requires move_constructible<T> && (!trivially_move_constructible<T>)
+        requires move_constructible<T> && (!is_trivially_move_constructible<T>)
         : option{nullopt}
     {
         if (other.has_value())
@@ -215,13 +215,13 @@ public:
     }
 
     constexpr option& operator=(const option& other) &
-        requires (!copy_assignable<T>) = delete;
+        requires (!is_copy_assignable<T>) = delete;
 
     constexpr option& operator=(const option& other) &
-        requires trivially_copy_assignable<T> = default;
+        requires is_trivially_copy_assignable<T> = default;
 
     constexpr option& operator=(const option& other) &
-        requires copy_assignable<T> && (!trivially_copy_constructible<T>)
+        requires is_copy_assignable<T> && (!is_trivially_copy_constructible<T>)
     {
         if (&other == this) { return *this; }
 
@@ -245,13 +245,13 @@ public:
     }
 
     constexpr option& operator=(option&& other) &
-        requires (!move_assignable<T>) = delete;
+        requires (!is_move_assignable<T>) = delete;
 
     constexpr option& operator=(option&& other) &
-        requires trivially_move_assignable<T> = default;
+        requires is_trivially_move_assignable<T> = default;
 
     constexpr option& operator=(option&& other) &
-        requires move_assignable<T> && (!trivially_move_constructible<T>)
+        requires is_move_assignable<T> && (!is_trivially_move_constructible<T>)
     {
         if (&other == this) { return *this; }
 
@@ -328,8 +328,8 @@ public:
         return *this;
     }
 
-    constexpr ~option() requires trivially_destructible<T> = default;
-    constexpr ~option() requires (!trivially_destructible<T>)
+    constexpr ~option() requires is_trivially_destructible<T> = default;
+    constexpr ~option() requires (!is_trivially_destructible<T>)
     {
         reset();
     }
@@ -340,7 +340,7 @@ public:
 
         if constexpr (kHasNiche)
         {
-            if constexpr (move_assignable<T>)
+            if constexpr (is_move_assignable<T>)
             {
                 m_payload.assign_unsafe(std::move(T{niche_t{}}));
             }
@@ -416,29 +416,29 @@ public:
         using Result = invoke_result_t<F, copy_cref_t<decltype(self), T>>;
         if (self.has_value())
         {
-            return option<un_cvref_t<Result>>{
+            return option<remove_cvref_t<Result>>{
                 invoke(std::forward<F>(f), std::forward<decltype(self)>(self).value())
             };
         }
-        return option<un_cvref_t<Result>>{ asl::nullopt };
+        return option<remove_cvref_t<Result>>{ asl::nullopt };
     }
 
     template<typename F>
     constexpr option or_else(F&& f) const&
-        requires same_as<un_cvref_t<invoke_result_t<F>>, option>
+        requires same_as<remove_cvref_t<invoke_result_t<F>>, option>
     {
         return has_value() ? *this : invoke(std::forward<F>(f));
     }
 
     template<typename F>
     constexpr option or_else(F&& f) &&
-        requires same_as<un_cvref_t<invoke_result_t<F>>, option>
+        requires same_as<remove_cvref_t<invoke_result_t<F>>, option>
     {
         return has_value() ? std::move(*this) : invoke(std::forward<F>(f));
     }
 
     template<typename H>
-    requires (!uniquely_represented<option>) && hashable<T>
+    requires (!has_unique_object_representations_v<option>) && hashable<T>
     friend H AslHashValue(H h, const option& opt)
     {
         if (!opt.has_value())
@@ -450,8 +450,8 @@ public:
 };
 
 template<typename T>
-requires has_niche<T> && uniquely_represented<T>
-struct is_uniquely_represented<option<T>> : true_type {};
+requires (has_niche<T> && has_unique_object_representations_v<T>)
+struct has_unique_object_representations<option<T>> : true_type {};
 
 template<typename T>
 option(T) -> option<T>;

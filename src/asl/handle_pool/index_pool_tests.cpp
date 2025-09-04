@@ -51,12 +51,12 @@ static_assert(Cfg3::kUserShift == 11);
 static_assert(Cfg3::kMaxGen    == 63);
 static_assert(Cfg3::kMaxIndex  == 31);
 
-static_assert(asl::default_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
-static_assert(asl::trivially_copy_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
-static_assert(asl::trivially_move_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
-static_assert(asl::trivially_copy_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
-static_assert(asl::trivially_move_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
-static_assert(asl::trivially_destructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_default_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_trivially_copy_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_trivially_move_constructible<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_trivially_copy_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_trivially_move_assignable<asl::index_pool_handle<5, 5, uint8_t>>);
+static_assert(asl::is_trivially_destructible<asl::index_pool_handle<5, 5, uint8_t>>);
 
 static_assert(asl::hashable<asl::index_pool_handle<5, 5, uint8_t>>);
 static_assert(asl::has_niche<asl::index_pool_handle<5, 5, uint8_t>>);

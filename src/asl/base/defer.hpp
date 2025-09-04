@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
-#include "asl/base/functional.hpp"
+#include "asl/base/support.hpp"
+#include "asl/base/meta.hpp"
 
 namespace asl
 {
@@ -19,7 +19,7 @@ class DeferCallback
 public:
     template<typename T>
     explicit DeferCallback(T&& callback)
-        requires (!same_as<un_cvref_t<T>, DeferCallback>)
+        requires (!same_as<remove_cvref_t<T>, DeferCallback>)
         : m_callback(std::forward<T>(callback))
     {
     }
@@ -27,7 +27,7 @@ public:
     ASL_DELETE_COPY(DeferCallback);
 
     DeferCallback(DeferCallback&& other) :
-        m_callback(std::move(other.m_callback)), m_moved(exchange(other.m_moved, true))
+        m_callback(std::move(other.m_callback)), m_moved(std::exchange(other.m_moved, true))
     {
     }
 

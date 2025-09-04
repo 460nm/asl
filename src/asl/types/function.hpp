@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
+#include "asl/base/memory.hpp"
 #include "asl/base/integers.hpp"
-#include "asl/memory/allocator.hpp"
-#include "asl/base/functional.hpp"
+#include "asl/base/byte.hpp"
+#include "asl/base/assert.hpp"
+#include "asl/allocator/allocator.hpp"
 
 namespace asl
 {
@@ -16,11 +18,11 @@ namespace asl
 namespace function_detail
 {
 
-static constexpr isize_t kStorageSize = size_of<void*> * 2;
+static constexpr isize_t kStorageSize = sizeof(void*) * 2;
 
 struct Storage
 {
-    alignas(align_of<void*>) byte raw[kStorageSize];
+    alignas(alignof(void*)) std::byte raw[kStorageSize];
 
     [[nodiscard]]
     void* get_ptr() const
@@ -32,8 +34,8 @@ struct Storage
 
 template<typename T>
 concept can_be_stored_inline =
-    size_of<T> <= size_of<Storage> &&
-    align_of<Storage> % align_of<T> == 0;
+    sizeof(T) <= sizeof(Storage) &&
+    alignof(Storage) % alignof(T) == 0;
 
 enum class FunctionOp : uint8_t
 {
@@ -52,7 +54,7 @@ struct FunctionImplBase
     {
         Allocator allocator{};
         auto* ptr = alloc_new<Functor>(allocator, std::forward<T>(t));
-        asl::memcpy(storage->get_ptr(), static_cast<void*>(&ptr), size_of<void*>);
+        asl::memcpy(storage->get_ptr(), static_cast<void*>(&ptr), sizeof(void*));
     }
 
     static Functor** get_functor_ptr(const Storage* storage)
@@ -84,8 +86,8 @@ struct FunctionImplBase
             }
             case kMoveFromOtherToThisUninit:
             {
-                auto* ptr = asl::exchange(*get_functor_ptr(other_storage), nullptr);
-                asl::memcpy(this_storage->get_ptr(), static_cast<void*>(&ptr), size_of<void*>);
+                auto* ptr = std::exchange(*get_functor_ptr(other_storage), nullptr);
+                asl::memcpy(this_storage->get_ptr(), static_cast<void*>(&ptr), sizeof(void*));
                 break;
             }
             default: break;
@@ -182,7 +184,7 @@ public:
     template<typename T>
     function(T&& func) // NOLINT(*explicit*,*-member-init)
         requires (
-            !same_as<function, un_cvref_t<T>>
+            !same_as<function, remove_cvref_t<T>>
             && function_detail::valid_functor<T, R, Args...>
         )
     {
@@ -208,8 +210,8 @@ public:
     }
 
     function(function&& other) // NOLINT(*-member-init)
-        : m_invoke{asl::exchange(other.m_invoke, nullptr)}
-        , m_op{asl::exchange(other.m_op, nullptr)}
+        : m_invoke{std::exchange(other.m_invoke, nullptr)}
+        , m_op{std::exchange(other.m_op, nullptr)}
     {
         if (m_op != nullptr)
         {
@@ -248,8 +250,8 @@ public:
         {
             destroy();
 
-            m_invoke = asl::exchange(other.m_invoke, nullptr);
-            m_op = asl::exchange(other.m_op, nullptr);
+            m_invoke = std::exchange(other.m_invoke, nullptr);
+            m_op = std::exchange(other.m_op, nullptr);
 
             m_op(
                 &m_storage,
@@ -262,7 +264,7 @@ public:
     template<typename T>
     function& operator=(T&& func)
         requires (
-            !same_as<function, un_cvref_t<T>>
+            !same_as<function, remove_cvref_t<T>>
             && function_detail::valid_functor<T, R, Args...>
         )
     {

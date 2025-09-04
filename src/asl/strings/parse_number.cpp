@@ -76,7 +76,7 @@ asl::status_or<asl::parse_number_result<T>> parse_integer(asl::string_view sv, i
     T value = 0;
     bool is_negative = false;
 
-    if (asl::is_signed_integer<T> && sv[0] == '-')
+    if (asl::signed_integral<T> && sv[0] == '-')
     {
         is_negative = true;
         sv = sv.substr(1);
@@ -94,7 +94,7 @@ asl::status_or<asl::parse_number_result<T>> parse_integer(asl::string_view sv, i
             return asl::invalid_argument_error("overflow");
         }
 
-        if (asl::is_signed_integer<T> && is_negative)
+        if (asl::signed_integral<T> && is_negative)
         {
             digit = static_cast<int8_t>(-digit);
         }

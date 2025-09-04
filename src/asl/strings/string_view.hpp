@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
-#include "asl/base/meta.hpp"
+#include "asl/base/assert.hpp"
+#include "asl/base/memory_ops.hpp"
 #include "asl/types/span.hpp"
-#include "asl/memory/memory.hpp"
 
 namespace asl
 {

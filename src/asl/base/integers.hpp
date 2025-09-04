@@ -5,24 +5,29 @@
 #pragma once
 
 #include "asl/base/config.hpp"
+#include "asl/base/meta.hpp"
+
+// [support.arith.types] [cstdint.syn]
 
 using int8_t  = signed char;
-using int16_t = signed short;
-using int32_t = signed int;
-#if defined(ASL_OS_WINDOWS)
-    using int64_t = signed long long;
-#elif defined(ASL_OS_LINUX)
-    using int64_t = signed long;
+using int16_t = signed short int;
+using int32_t = int;
+#ifdef ASL_OS_WINDOWS
+    using int64_t = signed long long int;
+#elifdef ASL_OS_LINUX
+    using int64_t = signed long int;
 #endif
 
 using uint8_t  = unsigned char;
-using uint16_t = unsigned short;
+using uint16_t = unsigned short int;
 using uint32_t = unsigned int;
-#if defined(ASL_OS_WINDOWS)
-    using uint64_t = unsigned long long;
-#elif defined(ASL_OS_LINUX)
-    using uint64_t = unsigned long;
+#ifdef ASL_OS_WINDOWS
+    using uint64_t = unsigned long long int;
+#elifdef ASL_OS_LINUX
+    using uint64_t = unsigned long int;
 #endif
+
+using uintptr_t = uint64_t;
 
 struct uint128_t
 {
@@ -30,15 +35,11 @@ struct uint128_t
     uint64_t low;
 };
 
-using size_t  = uint64_t;
-using isize_t = int64_t;
-
-using uintptr_t = size_t;
+template<>
+struct asl::has_unique_object_representations<uint128_t> : true_type {};
 
 namespace asl
 {
-
-enum class byte : uint8_t {};
 
 template<typename T> struct integer_traits {};
 
@@ -61,4 +62,5 @@ ASL_INTEGER_TRAITS(int64_t,  -0x8000'0000'0000'0000, 0x7fff'ffff'ffff'ffff);
 #undef ASL_INTEGER_TRAITS
 
 } // namespace asl
+
 

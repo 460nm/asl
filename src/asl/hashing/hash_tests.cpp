@@ -175,15 +175,15 @@ struct NonZero
     constexpr bool operator==(asl::niche_t) const { return value == 0; }
 };
 
-namespace asl { template<> struct is_uniquely_represented<NonZero> : true_type {}; }
+template<> struct asl::has_unique_object_representations<NonZero> : true_type {};
 static_assert(asl::has_niche<NonZero>);
-static_assert(asl::uniquely_represented<NonZero>);
+static_assert(asl::has_unique_object_representations_v<NonZero>);
 
 static_assert(asl::hashable<asl::option<int>>);
 static_assert(!asl::hashable<asl::option<int*>>);
 static_assert(asl::hashable<asl::option<asl::string_view>>);
 static_assert(asl::hashable<asl::option<NonZero>>);
-static_assert(asl::uniquely_represented<asl::option<NonZero>>);
+static_assert(asl::has_unique_object_representations_v<asl::option<NonZero>>);
 
 ASL_TEST(option)
 {

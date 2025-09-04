@@ -19,7 +19,7 @@ class StringBuilder
     buffer<char, Allocator> m_buffer;
 
 public:
-    constexpr StringBuilder() requires default_constructible<Allocator> = default;
+    constexpr StringBuilder() requires is_default_constructible<Allocator> = default;
     explicit constexpr StringBuilder(Allocator allocator) : m_buffer{std::move(allocator)} {}
 
     constexpr ~StringBuilder() = default;
@@ -27,7 +27,7 @@ public:
     constexpr StringBuilder(const StringBuilder&) requires copy_constructible<Allocator> = default;
     constexpr StringBuilder(StringBuilder&&) = default;
 
-    constexpr StringBuilder& operator=(const StringBuilder&) requires copy_assignable<Allocator> = default;
+    constexpr StringBuilder& operator=(const StringBuilder&) requires is_copy_assignable<Allocator> = default;
     constexpr StringBuilder& operator=(StringBuilder&&) = default;
 
     [[nodiscard]] constexpr string_view as_string_view() const
@@ -42,7 +42,7 @@ public:
     }
 
     auto push(this auto&& self, string_view sv) -> decltype(self)
-        requires (!is_const<un_ref_t<decltype(self)>>)
+        requires (!is_const<remove_ref_t<decltype(self)>>)
     {
         const isize_t old_size = self.m_buffer.size();
         self.m_buffer.resize_uninit(old_size + sv.size());
@@ -52,7 +52,7 @@ public:
     }
 
     auto push(this auto&& self, char c) -> decltype(self)
-        requires (!is_const<un_ref_t<decltype(self)>>)
+        requires (!is_const<remove_ref_t<decltype(self)>>)
     {
         self.m_buffer.push(c);
         return std::forward<decltype(self)>(self);
@@ -65,7 +65,7 @@ public:
 
     template<allocator StringAllocator = Allocator>
     string<StringAllocator> as_string() const
-        requires default_constructible<StringAllocator>
+        requires is_default_constructible<StringAllocator>
     {
         return string<StringAllocator>{as_string_view()};
     }
@@ -85,7 +85,7 @@ class StringWriter : public asl::Writer
     StringBuilder<Allocator> m_builder;
 
 public:
-    constexpr StringWriter() requires default_constructible<Allocator> = default;
+    constexpr StringWriter() requires is_default_constructible<Allocator> = default;
     explicit constexpr StringWriter(Allocator allocator) : m_builder{std::move(allocator)} {}
 
     constexpr ~StringWriter() override = default;
@@ -93,10 +93,10 @@ public:
     constexpr StringWriter(const StringWriter&) requires copy_constructible<Allocator> = default;
     constexpr StringWriter(StringWriter&&) = default;
 
-    constexpr StringWriter& operator=(const StringWriter&) requires copy_assignable<Allocator> = default;
+    constexpr StringWriter& operator=(const StringWriter&) requires is_copy_assignable<Allocator> = default;
     constexpr StringWriter& operator=(StringWriter&&) = default;
 
-    void write(span<const byte> str) override
+    void write(span<const std::byte> str) override
     {
         // NOLINTNEXTLINE(*-reinterpret-cast)
         m_builder.push(string_view{reinterpret_cast<const char*>(str.data()), str.size()});
@@ -114,7 +114,7 @@ public:
 
     template<allocator StringAllocator = Allocator>
     string<StringAllocator> as_string() const
-        requires default_constructible<StringAllocator>
+        requires is_default_constructible<StringAllocator>
     {
         return m_builder.as_string();
     }
@@ -130,7 +130,7 @@ StringWriter() -> StringWriter<>;
 
 template<allocator Allocator = DefaultAllocator>
 string<Allocator> format_to_string(string_view fmt, const formattable auto&... args)
-    requires default_constructible<Allocator>
+    requires is_default_constructible<Allocator>
 {
     StringWriter writer{};
     format(&writer, fmt, args...);

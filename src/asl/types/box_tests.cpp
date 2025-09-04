@@ -10,7 +10,7 @@
 
 static_assert(sizeof(asl::box<int>) == sizeof(int*));
 static_assert(!asl::copyable<asl::box<int>>);
-static_assert(asl::moveable<asl::box<int>>);
+static_assert(asl::movable<asl::box<int>>);
 static_assert(asl::has_niche<asl::box<int>>);
 static_assert(sizeof(asl::option<asl::box<int>>) == sizeof(int*));
 
@@ -104,3 +104,26 @@ ASL_TEST(derived)
     asl::box<Base> obj = asl::make_box<Derived>();
     ASL_TEST_ASSERT(obj->number() == 2);
 }
+
+static_assert(asl::derefs_as<asl::box<int>, int>);
+static_assert(asl::derefs_as<asl::box<Derived>, Base>);
+static_assert(asl::derefs_as<asl::box<Derived>, Derived>);
+static_assert(asl::derefs_as<asl::box<Base>, Base>);
+
+static void wants_int(int) {}
+static void wants_base(const Base&) {}
+static void wants_base_ptr(Base*) {}
+
+ASL_TEST(deref)
+{
+    auto b = asl::make_box<int>(5);
+
+    wants_int(asl::deref<int>(b));
+
+    auto d = asl::make_box<Derived>();
+
+    wants_base(asl::deref<Base>(d));
+    wants_base_ptr(&asl::deref<Base>(d));
+    wants_base(asl::deref<Base>(std::move(d)));
+}
+

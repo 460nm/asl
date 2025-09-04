@@ -2,18 +2,19 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
+#include "asl/base/integers.hpp"
 #include "asl/types/span.hpp"
 #include "asl/testing/testing.hpp"
 #include "asl/tests/types.hpp"
 
-static_assert(asl::trivially_destructible<asl::span<int>>);
-static_assert(asl::trivially_destructible<asl::span<WithDestructor>>);
+static_assert(asl::is_trivially_destructible<asl::span<int>>);
+static_assert(asl::is_trivially_destructible<asl::span<WithDestructor>>);
 
-static_assert(asl::trivially_copy_constructible<asl::span<int>>);
-static_assert(asl::trivially_copy_constructible<asl::span<Pinned>>);
+static_assert(asl::is_trivially_copy_constructible<asl::span<int>>);
+static_assert(asl::is_trivially_copy_constructible<asl::span<Pinned>>);
 
-static_assert(asl::size_of<asl::span<int>> == asl::size_of<void*> * 2);
-static_assert(asl::size_of<asl::span<int, 2>> == asl::size_of<void*>);
+static_assert(sizeof(asl::span<int>) == sizeof(void*) * 2);
+static_assert(sizeof(asl::span<int, 2>) == sizeof(void*));
 
 ASL_TEST(empty_dynamic)
 {
@@ -42,9 +43,9 @@ ASL_TEST(from_array_dynamic)
     ASL_TEST_EXPECT(span[2] == 3);
 }
 
-static_assert(asl::default_constructible<asl::span<int>>);
-static_assert(asl::default_constructible<asl::span<int, 0>>);
-static_assert(!asl::default_constructible<asl::span<int, 8>>);
+static_assert(asl::is_default_constructible<asl::span<int>>);
+static_assert(asl::is_default_constructible<asl::span<int, 0>>);
+static_assert(!asl::is_default_constructible<asl::span<int, 8>>);
 
 static_assert(asl::constructible_from<asl::span<int32_t>, int32_t(&)[8]>);
 static_assert(!asl::constructible_from<asl::span<int32_t>, const int32_t(&)[8]>);

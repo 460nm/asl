@@ -6,8 +6,7 @@
 
 #include "asl/base/meta.hpp"
 #include "asl/base/assert.hpp"
-#include "asl/base/annotations.hpp"
-#include "asl/memory/layout.hpp"
+#include "asl/base/byte.hpp"
 
 namespace asl
 {
@@ -33,7 +32,7 @@ public:
 
     constexpr contiguous_iterator operator++(int)
     {
-        return contiguous_iterator{ exchange(m_ptr, m_ptr + 1) };
+        return contiguous_iterator{ std::exchange(m_ptr, m_ptr + 1) };
     }
 
     constexpr T& operator*(this contiguous_iterator self) { return *self.m_ptr; }
@@ -54,7 +53,7 @@ class span
 
     static constexpr bool kIsDynamic = is_dynamic(kSize);
 
-    using SizeType = select_t<kIsDynamic, isize_t, empty>;
+    using SizeType = conditional_t<kIsDynamic, isize_t, empty>;
 
     T* m_data{};
     ASL_NO_UNIQUE_ADDRESS SizeType m_size{};
@@ -116,7 +115,7 @@ public:
         else { return kSize; }
     }
 
-    [[nodiscard]] constexpr isize_t size_bytes(this span self) { return self.size() * size_of<T>; }
+    [[nodiscard]] constexpr isize_t size_bytes(this span self) { return self.size() * isize_t{sizeof(T)}; }
 
     [[nodiscard]] constexpr bool is_empty(this span self) { return self.size() == 0; }
 
@@ -216,19 +215,19 @@ public:
 // NOLINTEND(*-convert-member-functions-to-static)
 
 template<is_object T, isize_t kSize>
-inline span<const byte> as_bytes(span<T, kSize> s)
+inline span<const std::byte> as_bytes(span<T, kSize> s)
 {
-    return span<const byte>(
-        reinterpret_cast<const byte*>(s.data()), // NOLINT(*-reinterpret-cast)
+    return span<const std::byte>(
+        reinterpret_cast<const std::byte*>(s.data()), // NOLINT(*-reinterpret-cast)
         s.size_bytes());
 }
 
 template<is_object T, isize_t kSize>
-inline span<byte> as_mutable_bytes(span<T, kSize> s)
+inline span<std::byte> as_mutable_bytes(span<T, kSize> s)
     requires (!is_const<T>)
 {
-    return span<byte>(
-        reinterpret_cast<byte*>(s.data()), // NOLINT(*-reinterpret-cast)
+    return span<std::byte>(
+        reinterpret_cast<std::byte*>(s.data()), // NOLINT(*-reinterpret-cast)
         s.size_bytes());
 }
 

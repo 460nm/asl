@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
+#include "asl/base/byte.hpp"
 #include "asl/types/span.hpp"
 
 namespace asl
@@ -18,7 +18,7 @@ public:
     ASL_DELETE_COPY_MOVE(Writer);
     virtual ~Writer() = default;
 
-    virtual void write(span<const byte>) = 0;
+    virtual void write(span<const std::byte>) = 0;
 };
 
 } // namespace asl

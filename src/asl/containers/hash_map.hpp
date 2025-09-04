@@ -4,16 +4,14 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/base/meta.hpp"
+#include "asl/base/memory.hpp"
 #include "asl/hashing/hash.hpp"
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 #include "asl/containers/hash_set.hpp"
 
-namespace asl
-{
-
-namespace hash_map_internal
+namespace asl::hash_map_internal
 {
 
 template<typename K, typename V>
@@ -50,7 +48,10 @@ struct SlotComparator : public KeyComparator
     }
 };
 
-} // namespace hash_map_internal
+} // namespace asl::hash_map_internal
+
+namespace asl
+{
 
 template<
     is_object K,
@@ -59,7 +60,7 @@ template<
     key_hasher<K> KeyHasher = default_key_hasher<K>,
     key_comparator<K> KeyComparator = default_key_comparator<K>
 >
-requires moveable<K> && moveable<V>
+requires movable<K> && movable<V>
 class hash_map : protected hash_set<
     hash_map_internal::Slot<K, V>,
     Allocator,
@@ -74,7 +75,7 @@ class hash_map : protected hash_set<
             hash_map_internal::SlotComparator<K, V, KeyComparator>>;
 
 public:
-    constexpr hash_map() requires default_constructible<Allocator> = default;
+    constexpr hash_map() requires is_default_constructible<Allocator> = default;
 
     explicit constexpr hash_map(Allocator allocator)
         : Base{std::move(allocator)}
@@ -147,7 +148,7 @@ public:
     auto get(this auto&& self, const U& value)
         requires key_hasher<KeyHasher, U> && key_comparator<KeyComparator, K, U>
     {
-        using return_type = copy_const_t<un_ref_t<decltype(self)>, V>*;
+        using return_type = copy_const_t<remove_ref_t<decltype(self)>, V>*;
         isize_t index = self.find_slot_lookup(value);
         if (index >= 0)
         {

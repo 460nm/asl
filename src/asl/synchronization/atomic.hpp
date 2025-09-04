@@ -25,30 +25,30 @@ inline void atomic_fence(memory_order order)
     __atomic_thread_fence(static_cast<int>(order));
 }
 
-template<is_integer T>
+template<is_integral T>
 inline void atomic_store(atomic<T>* a, T value, memory_order order = memory_order::relaxed)
 {
-    __atomic_store(&a->m_value, &value, static_cast<int>(order));
+    __atomic_store(&a->m_value, &value, static_cast<int>(order)); // NOLINT(*-vararg)
 }
 
-template<is_integer T>
+template<is_integral T>
 inline T atomic_load(atomic<T>* a, memory_order order = memory_order::relaxed)
 {
     T value;
-    __atomic_load(&a->m_value, &value, static_cast<int>(order));
+    __atomic_load(&a->m_value, &value, static_cast<int>(order)); // NOLINT(*-vararg)
     return value;
 }
 
 template<typename T>
 inline T atomic_fetch_increment(atomic<T>* a, memory_order order = memory_order::relaxed)
 {
-    return __atomic_fetch_add(&a->m_value, 1, static_cast<int>(order));
+    return __atomic_fetch_add(&a->m_value, 1, static_cast<int>(order)); // NOLINT(*-vararg)
 }
 
 template<typename T>
 inline T atomic_fetch_decrement(atomic<T>* a, memory_order order = memory_order::relaxed)
 {
-    return __atomic_fetch_sub(&a->m_value, 1, static_cast<int>(order));
+    return __atomic_fetch_sub(&a->m_value, 1, static_cast<int>(order)); // NOLINT(*-vararg)
 }
 
 } // namespace asl

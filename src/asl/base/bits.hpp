@@ -4,13 +4,29 @@
 
 #pragma once
 
-#include "asl/base/integers.hpp"
 #include "asl/base/meta.hpp"
+#include "asl/base/integers.hpp"
+
+namespace std
+{
+
+template<typename To, typename From>
+constexpr To bit_cast(const From& from) noexcept
+    requires (
+        sizeof(To) == sizeof(From) &&
+        asl::is_trivially_copyable<To> &&
+        asl::is_trivially_copyable<From>
+    )
+{
+    return __builtin_bit_cast(To, from);
+}
+
+} // namespace std
 
 namespace asl
 {
 
-constexpr bool has_single_bit(is_unsigned_integer auto x)
+constexpr bool has_single_bit(unsigned_integral auto x)
 {
     return x != 0 && ((x - 1) & x) == 0;
 }
@@ -81,35 +97,37 @@ constexpr uint64_t propagate_right_one(uint64_t v)
     return v;
 }
 
-constexpr int countr_zero(is_unsigned_integer auto v)
+constexpr int countr_zero(unsigned_integral auto v)
 {
     v = ~v & (v - 1);
     return popcount(v);
 }
 
-constexpr int countr_one(is_unsigned_integer auto v)
+constexpr int countr_one(unsigned_integral auto v)
 {
     v = v & (~v - 1);
     return popcount(v);
 }
 
-constexpr int countl_zero(is_unsigned_integer auto v)
+template<unsigned_integral T>
+constexpr int countl_zero(T v)
 {
-    v = ~propagate_right_one(v);
+    v = static_cast<T>(~propagate_right_one(v));
     return popcount(v);
 }
 
-constexpr int countl_one(is_unsigned_integer auto v)
+template<unsigned_integral T>
+constexpr int countl_one(T v)
 {
-    v = ~v;
-    v = ~propagate_right_one(v);
+    v = static_cast<T>(~v);
+    v = static_cast<T>(~propagate_right_one(v));
     return popcount(v);
 }
 
-template<is_unsigned_integer T>
+template<unsigned_integral T>
 constexpr T rotr(T v, int s);
 
-template<is_unsigned_integer T>
+template<unsigned_integral T>
 constexpr T rotl(T v, int s) // NOLINT(*-no-recursion)
 {
     static constexpr int N = sizeof(decltype(v)) * 8;
@@ -117,7 +135,7 @@ constexpr T rotl(T v, int s) // NOLINT(*-no-recursion)
     return (s >= 0) ? (v << s) | (v >> ((N - s) % N)) : rotr(v, -s);
 }
 
-template<is_unsigned_integer T>
+template<unsigned_integral T>
 constexpr T rotr(T v, int s) // NOLINT(*-no-recursion)
 {
     static constexpr int N = sizeof(decltype(v)) * 8;
@@ -141,7 +159,7 @@ constexpr uint64_t byteswap(uint64_t v)
         | uint64_t{byteswap(static_cast<uint32_t>(v >> 32))};
 }
 
-constexpr auto bit_ceil(is_unsigned_integer auto v)
+constexpr auto bit_ceil(unsigned_integral auto v)
 {
     v -= 1;
     v = propagate_right_one(v);
@@ -149,14 +167,14 @@ constexpr auto bit_ceil(is_unsigned_integer auto v)
     return v;
 }
 
-constexpr auto bit_floor(is_unsigned_integer auto v)
+constexpr auto bit_floor(unsigned_integral auto v)
 {
     v = propagate_right_one(v);
     v = v - (v >> 1);
     return v;
 }
 
-constexpr int bit_width(is_unsigned_integer auto v)
+constexpr int bit_width(unsigned_integral auto v)
 {
     static constexpr int N = sizeof(decltype(v)) * 8;
     return N - countl_zero(v);

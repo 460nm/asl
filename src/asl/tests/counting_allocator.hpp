@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#include "asl/memory/allocator.hpp"
+#include "asl/allocator/allocator.hpp"
 
 struct CountingAllocator
 {

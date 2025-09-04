@@ -4,7 +4,8 @@
 
 #pragma once
 
-#include "asl/base/utility.hpp"
+#include "asl/base/meta.hpp"
+#include "asl/base/assert.hpp"
 
 struct TrivialType
 {
@@ -70,14 +71,14 @@ struct DestructorObserver
     DestructorObserver& operator=(const DestructorObserver&) = delete;
 
     DestructorObserver(DestructorObserver&& other)
-        : destroyed{asl::exchange(other.destroyed, nullptr)}
+        : destroyed{std::exchange(other.destroyed, nullptr)}
     {}
 
     DestructorObserver& operator=(DestructorObserver&& other)
     {
         if (this != &other)
         {
-            asl::swap(destroyed, other.destroyed);
+            std::swap(destroyed, other.destroyed);
         }
         return *this;
     }

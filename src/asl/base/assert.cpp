@@ -4,8 +4,6 @@
 
 #include "asl/base/assert.hpp"
 
-#include "asl/base/meta.hpp"
-
 // NOLINTNEXTLINE(*-non-const-global-variables)
 static asl::AssertFailureHandler* s_handler = nullptr;
 
@@ -25,3 +23,4 @@ void asl::report_assert_failure(const char* msg, const source_location& sl)
         s_handler(msg, sl, s_user);
     }
 }
+

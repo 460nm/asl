@@ -6,7 +6,7 @@
 
 #include "asl/base/assert.hpp"
 #include "asl/base/meta.hpp"
-#include "asl/base/utility.hpp"
+#include "asl/base/support.hpp"
 #include "asl/io/print.hpp"
 
 namespace
@@ -35,7 +35,7 @@ void asl::testing::register_test(Test* test)
     else
     {
         g_state.tail->m_next = test;
-        test->m_prev = asl::exchange(g_state.tail, test);
+        test->m_prev = std::exchange(g_state.tail, test);
     }
 }
 
@@ -90,7 +90,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
             auto* this_test = it;
             it = it->m_next;
 
-            this_test->m_next = asl::exchange(failed_head, this_test);
+            this_test->m_next = std::exchange(failed_head, this_test);
         }
     }
 

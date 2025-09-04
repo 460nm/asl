@@ -29,8 +29,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
         "//src/asl/hashing",
     ],
     visibility = ["//visibility:public"],
@@ -44,7 +43,6 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
@@ -57,7 +55,6 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
@@ -91,7 +88,6 @@ cc_library(
         "//src/asl/strings:string",
         "//src/asl/strings:string_builder",
         "//src/asl/formatting",
-        "//src/asl/memory",
         "//src/asl/synchronization:atomic",
         "//src/asl/types:maybe_uninit",
         "//src/asl/hashing",
@@ -107,8 +103,7 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
-        "//src/asl/memory:allocator",
+        "//src/asl/allocator",
     ],
     visibility = ["//visibility:public"],
 )
@@ -121,7 +116,6 @@ cc_library(
     strip_include_prefix = "/src",
     deps = [
         "//src/asl/base",
-        "//src/asl/memory",
     ],
     visibility = ["//visibility:public"],
 )
