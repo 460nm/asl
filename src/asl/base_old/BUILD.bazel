@@ -11,14 +11,22 @@ package(
 cc_library(
     name = "base",
     hdrs = [
-        "byte.hpp",
-        "floats.hpp",
+        "annotations.hpp",
+        "assert.hpp",
+        "bit.hpp",
+        "config.hpp",
+        "defer.hpp",
+        "float.hpp",
+        "functional.hpp",
         "integers.hpp",
-        "memory.hpp",
         "meta.hpp",
-        "support.hpp",
+        "numeric.hpp",
+        "utility.hpp",
     ],
     strip_include_prefix = "/src",
+    srcs = [
+        "assert.cpp",
+    ],
     defines = select({
         "//src/asl:debug": ["ASL_DEBUG=1"],
         "//conditions:default": ["ASL_DEBUG=0"],
@@ -29,21 +37,24 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-[
-    cc_test(
-        name = "{}_test".format(name),
-        srcs = [
-            "{}_tests.cpp".format(name),
-        ],
-        deps = [
-            ":base",
-        ],
-    ) for name in [
-        "byte",
-        "floats",
-        "integers",
-        "memory",
-        "meta",
-        "support",
-    ]
-]
+[cc_test(
+    name = "%s_tests" % name,
+    srcs = [
+        "%s_tests.cpp" % name,
+    ],
+    deps = [
+        ":base",
+        "//src/asl/tests:utils",
+        "//src/asl/testing",
+        "//src/asl/types:box",
+    ],
+) for name in [
+    "bit",
+    "defer",
+    "float",
+    "functional",
+    "integers",
+    "meta",
+    "numeric",
+    "utility",
+]]

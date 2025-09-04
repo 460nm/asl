@@ -2,392 +2,318 @@
 //
 // SPDX-License-Identifier: BSD-3-Clause
 
-#pragma once
-
-#include "asl/base/integers.hpp"
-
-namespace asl {
-
-struct source_location
+namespace asl
 {
-    const char* file;
-    int         line;
 
-    explicit source_location(
-        const char* file_ = __builtin_FILE(),
-        int line_ = __builtin_LINE())
-        : file{file_}
-        , line{line_}
-    {}
+// [meta.help]
+
+template<typename T, T kValue>
+struct integral_constant
+{
+    static constexpr T value{kValue};
 };
 
-struct empty {};
-
-template<typename T> struct id { using type = T; };
-
-struct in_place_t {};
-static constexpr in_place_t in_place{};
-
-template<typename... Args> static constexpr isize_t types_count = sizeof...(Args);
-
-template<typename T, T kValue> struct integral_constant { static constexpr T value = kValue; };
-template<bool B> using bool_constant = integral_constant<bool, B>;
+template<bool kValue>
+struct bool_constant : integral_constant<bool, kValue> {};
 
 using true_type  = bool_constant<true>;
 using false_type = bool_constant<false>;
 
-template<bool kSelect, typename U, typename V> struct _select_helper             { using type = V; };
-template<typename U, typename V>               struct _select_helper<true, U, V> { using type = U; };
+template<typename T> struct type_identity { using type = T; };
 
-template<bool kSelect, typename U, typename V> using select_t = _select_helper<kSelect, U, V>::type;
+// [meta.trans.cv]
 
-template<typename U, typename V> struct _same_as_helper       : false_type {};
-template<typename T>             struct _same_as_helper<T, T> : true_type {};
-
-template<typename U, typename V> concept same_as = _same_as_helper<U, V>::value && _same_as_helper<V, U>::value;
-
-template<typename T> auto _as_lref_helper(int) -> id<T&>;
-template<typename T> auto _as_lref_helper(...) -> id<T>;
-
-template<typename T> auto _as_rref_helper(int) -> id<T&&>;
-template<typename T> auto _as_rref_helper(...) -> id<T>;
-
-template<typename T> using as_lref_t = decltype(_as_lref_helper<T>(0))::type;
-template<typename T> using as_rref_t = decltype(_as_rref_helper<T>(0))::type;
-
-template<typename T> consteval as_rref_t<T> declval() {}
-
-template<typename T> auto _as_ptr_helper(int) -> id<T*>;
-template<typename T> auto _as_ptr_helper(...) -> id<T>;
-
-template<typename T> using as_ptr_t = decltype(_as_ptr_helper<T>(0))::type;
-
-template<typename T> struct _un_ref_t      { using type = T; };
-template<typename T> struct _un_ref_t<T&>  { using type = T; };
-template<typename T> struct _un_ref_t<T&&> { using type = T; };
-
-template<typename T> using un_ref_t = _un_ref_t<T>::type;
-
-template<typename T, typename... Args> concept constructible_from = __is_constructible(T, Args...);
-
-template<typename T> concept default_constructible = constructible_from<T>;
-template<typename T> concept copy_constructible    = constructible_from<T, as_lref_t<const T>>;
-template<typename T> concept move_constructible    = constructible_from<T, as_rref_t<T>>;
-
-template<typename T, typename... Args> concept trivially_constructible_from = __is_trivially_constructible(T, Args...);
-
-template<typename T> concept trivially_default_constructible = trivially_constructible_from<T>;
-template<typename T> concept trivially_copy_constructible    = trivially_constructible_from<T, as_lref_t<const T>>;
-template<typename T> concept trivially_move_constructible    = trivially_constructible_from<T, as_rref_t<T>>;
-
-template<typename T, typename... Args> concept assignable_from = __is_assignable(T, Args...);
-
-template<typename T> concept copy_assignable = assignable_from<as_lref_t<T>, as_lref_t<const T>>;
-template<typename T> concept move_assignable = assignable_from<as_lref_t<T>, as_rref_t<T>>;
-
-template<typename T, typename... Args> concept trivially_assignable_from = __is_trivially_assignable(T, Args...);
-
-template<typename T> concept trivially_copy_assignable = trivially_assignable_from<as_lref_t<T>, as_lref_t<const T>>;
-template<typename T> concept trivially_move_assignable = trivially_assignable_from<as_lref_t<T>, as_rref_t<T>>;
-
-template<typename T> concept trivially_destructible = __is_trivially_destructible(T);
-
-template<typename T> concept copyable = copy_constructible<T> && copy_assignable<T>;
-template<typename T> concept moveable = move_constructible<T> && move_assignable<T>;
-
-using nullptr_t = decltype(nullptr);
-
-template<typename T> struct _un_const_helper          { using type = T; };
-template<typename T> struct _un_const_helper<const T> { using type = T; };
-
-template<typename T> using un_const_t = _un_const_helper<T>::type;
-
-template<typename T> using as_const_t = const T;
-
-template<typename T> struct _is_const_helper          : false_type {};
-template<typename T> struct _is_const_helper<const T> : true_type {};
-
-template<typename T> concept is_const = _is_const_helper<T>::value;
-
-template<typename T> struct _un_volatile_helper             { using type = T; };
-template<typename T> struct _un_volatile_helper<volatile T> { using type = T; };
-
-template<typename T> using un_volatile_t = _un_volatile_helper<T>::type;
-
-template<typename T> using un_cv_t = un_volatile_t<un_const_t<T>>;
-
-template<typename T> using un_cvref_t = un_cv_t<un_ref_t<T>>;
-
-template<typename T> concept is_void = same_as<void, un_cv_t<T>>;
-
-template<typename T> struct _is_ref_helper      { static constexpr bool l = false; static constexpr bool r = false; };
-template<typename T> struct _is_ref_helper<T&>  { static constexpr bool l = true;  static constexpr bool r = false; };
-template<typename T> struct _is_ref_helper<T&&> { static constexpr bool l = false; static constexpr bool r = true;  };
-
-template<typename T> concept is_ref = _is_ref_helper<T>::l || _is_ref_helper<T>::r;
-template<typename T> concept is_rref = _is_ref_helper<T>::r;
-template<typename T> concept is_lref = _is_ref_helper<T>::l;
-
-template<typename From, typename To, bool kLref = is_lref<From>, bool kRref = is_rref<From>>
-struct _copy_ref_helper { using type = To; };
-
-template<typename From, typename To>
-struct _copy_ref_helper<From, To, true, false> { using type = as_lref_t<To>; };
-
-template<typename From, typename To>
-struct _copy_ref_helper<From, To, false, true> { using type = as_rref_t<To>; };
-
-template<typename From, typename To, bool kIsConst = is_const<un_ref_t<From>>>
-struct _copy_const_helper { using type = To; };
-
-template<typename From, typename To>
-struct _copy_const_helper<From, To, true> { using type = const To; };
-
-template<typename From, typename To> using copy_cref_t =
-    _copy_ref_helper<From, typename _copy_const_helper<From, un_cvref_t<To>>::type>::type;
-
-template<typename From, typename To> using copy_const_t = _copy_const_helper<From, un_cvref_t<To>>::type;
-
-template<typename T> struct _is_ptr_helper     : false_type {};
-template<typename T> struct _is_ptr_helper<T*> : true_type {};
-
-template<typename T> concept is_ptr = _is_ptr_helper<un_cv_t<T>>::value;
-
-template<typename From, typename To>
-concept convertible_to = __is_convertible(From, To);
-
-template<typename Derived, typename Base>
-concept derived_from = __is_class(Derived) && __is_class(Base) && convertible_to<const volatile Derived*, const volatile Base*>;
-
-template<typename Derived, typename Base>
-concept same_or_derived_from = same_as<un_cvref_t<Derived>, Base> || derived_from<un_cvref_t<Derived>, Base>;
-
-template<typename T> struct _tame_helper { using type = T; };
-
-#define TAME_HELPER_IMPL(TRAILING)                                  \
-    template<typename R, typename... Args>                          \
-    struct _tame_helper<R(Args...) TRAILING> { using type = R(Args...); } // NOLINT(*-parentheses)
-
-TAME_HELPER_IMPL();
-TAME_HELPER_IMPL(&);
-TAME_HELPER_IMPL(&&);
-TAME_HELPER_IMPL(const);
-TAME_HELPER_IMPL(const &);
-TAME_HELPER_IMPL(const &&);
-TAME_HELPER_IMPL(volatile);
-TAME_HELPER_IMPL(volatile &);
-TAME_HELPER_IMPL(volatile &&);
-TAME_HELPER_IMPL(const volatile);
-TAME_HELPER_IMPL(const volatile &);
-TAME_HELPER_IMPL(const volatile &&);
-TAME_HELPER_IMPL(noexcept);
-TAME_HELPER_IMPL(& noexcept);
-TAME_HELPER_IMPL(&& noexcept);
-TAME_HELPER_IMPL(const noexcept);
-TAME_HELPER_IMPL(const & noexcept);
-TAME_HELPER_IMPL(const && noexcept);
-TAME_HELPER_IMPL(volatile noexcept);
-TAME_HELPER_IMPL(volatile & noexcept);
-TAME_HELPER_IMPL(volatile && noexcept);
-TAME_HELPER_IMPL(const volatile noexcept);
-TAME_HELPER_IMPL(const volatile & noexcept);
-TAME_HELPER_IMPL(const volatile && noexcept);
-
-#undef TAME_HELPER_IMPL
-
-template<typename T> using tame_t = _tame_helper<T>::type;
-
-template<typename T>                   struct _is_func_helper             : false_type {};
-template<typename R, typename... Args> struct _is_func_helper<R(Args...)> : true_type {};
-
-template<typename T> concept is_func = _is_func_helper<tame_t<T>>::value;
-
-template<typename T>             struct _is_member_ptr_helper         : false_type {};
-template<typename C, typename T> struct _is_member_ptr_helper<T C::*> : true_type
-{
-    static constexpr bool kIsFunc = is_func<T>;
-};
-
-template<typename T> concept is_member_ptr = _is_member_ptr_helper<un_cv_t<T>>::value;
-
-template<typename T> concept is_member_func_ptr = is_member_ptr<T> && _is_member_ptr_helper<un_cv_t<T>>::kIsFunc;
-template<typename T> concept is_member_data_ptr = is_member_ptr<T> && !_is_member_ptr_helper<un_cv_t<T>>::kIsFunc;
-
-template<typename T> concept is_object = !is_void<T> && !is_ref<T> && !is_func<T>;
-
-template<typename T>        struct _array_helper       : false_type { using type = T; };
-template<typename T>        struct _array_helper<T[]>  : true_type  { using type = T; };
-template<typename T, int N> struct _array_helper<T[N]> : true_type  { using type = T; };
-
-template<typename T> concept is_array = _array_helper<T>::value;
-
-template<typename T> using remove_extent_t = _array_helper<T>::type;
+template<typename T> struct _remove_const_impl : type_identity<T> {};
+template<typename T> struct _remove_const_impl<const T> : type_identity<T> {};
 
 template<typename T>
-using decay_t =
-    select_t<
-        is_array<un_ref_t<T>>,
-        as_ptr_t<remove_extent_t<un_ref_t<T>>>,
-        select_t<
-            is_func<un_ref_t<T>>,
-            as_ptr_t<un_ref_t<T>>,
-            un_cv_t<un_ref_t<T>>>>;
+using remove_const_t = _remove_const_impl<T>::type;
 
-template<typename T> struct _is_floating_point_helper         : false_type {};
-template<>           struct _is_floating_point_helper<float>  : true_type  {};
-template<>           struct _is_floating_point_helper<double> : true_type  {};
-
-template<typename T> concept is_floating_point = _is_floating_point_helper<un_cv_t<T>>::value;
-
-template<typename T> struct _integer_traits
-{
-    static constexpr bool kSigned = false;
-    static constexpr bool kUnsigned = false;
-};
-
-template<> struct _integer_traits<uint8_t>
-{
-    static constexpr bool kSigned = false;
-    static constexpr bool kUnsigned = true;
-    using as_signed   = int8_t;
-    using as_unsigned = uint8_t;
-};
-
-template<> struct _integer_traits<uint16_t>
-{
-    static constexpr bool kSigned = false;
-    static constexpr bool kUnsigned = true;
-    using as_signed   = int16_t;
-    using as_unsigned = uint16_t;
-};
-
-template<> struct _integer_traits<uint32_t>
-{
-    static constexpr bool kSigned = false;
-    static constexpr bool kUnsigned = true;
-    using as_signed   = int32_t;
-    using as_unsigned = uint32_t;
-};
-
-template<> struct _integer_traits<uint64_t>
-{
-    static constexpr bool kSigned = false;
-    static constexpr bool kUnsigned = true;
-    using as_signed   = int64_t;
-    using as_unsigned = uint64_t;
-};
-
-template<> struct _integer_traits<int8_t>
-{
-    static constexpr bool kSigned = true;
-    static constexpr bool kUnsigned = false;
-    using as_unsigned = uint8_t;
-    using as_signed   = int8_t;
-};
-
-template<> struct _integer_traits<int16_t>
-{
-    static constexpr bool kSigned = true;
-    static constexpr bool kUnsigned = false;
-    using as_unsigned = uint16_t;
-    using as_signed   = int16_t;
-};
-
-template<> struct _integer_traits<int32_t>
-{
-    static constexpr bool kSigned = true;
-    static constexpr bool kUnsigned = false;
-    using as_unsigned = uint32_t;
-    using as_signed   = int32_t;
-};
-
-template<> struct _integer_traits<int64_t>
-{
-    static constexpr bool kSigned = true;
-    static constexpr bool kUnsigned = false;
-    using as_unsigned = uint64_t;
-    using as_signed   = int64_t;
-};
-
-template<typename T> concept is_signed_integer   = _integer_traits<T>::kSigned;
-template<typename T> concept is_unsigned_integer = _integer_traits<T>::kUnsigned;
-
-template<typename T> concept is_integer = is_signed_integer<T> || is_unsigned_integer<T>;
-
-template<is_integer T> using as_unsigned_integer = _integer_traits<T>::as_unsigned;
-template<is_integer T> using as_signed_integer   = _integer_traits<T>::as_signed;
-
-template<int N>
-struct smallest_unsigned_integer_type_for_width_helper { using type = void; };
-
-template<int N> requires (N >= 1 and N <= 8)
-struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint8_t; };
-
-template<int N> requires (N >= 9 and N <= 16)
-struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint16_t; };
-
-template<int N> requires (N >= 17 and N <= 32)
-struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint32_t; };
-
-template<int N> requires (N >= 33 and N <= 64)
-struct smallest_unsigned_integer_type_for_width_helper<N> { using type = uint64_t; };
-
-template<int N> using smallest_unsigned_integer_type_for_width
-    = smallest_unsigned_integer_type_for_width_helper<N>::type;
-
-template<typename T> concept is_enum = __is_enum(T);
-
-template<is_enum T> using underlying_t = __underlying_type(T);
-
-template<typename T>     struct is_uniquely_represented            : false_type {};
-template<is_integer T>   struct is_uniquely_represented<T>         : true_type {};
-template<is_enum T>      struct is_uniquely_represented<T>         : true_type {};
-template<>               struct is_uniquely_represented<uint128_t> : true_type {};
-template<>               struct is_uniquely_represented<byte>      : true_type {};
-
-template<typename T> concept uniquely_represented = is_uniquely_represented<un_cv_t<T>>::value;
-
-template<typename T, typename U>
-concept equality_comparable_with = requires (const un_cvref_t<T>& a, const un_cvref_t<U>& b)
-{
-    { a == b } -> same_as<bool>;
-    { b == a } -> same_as<bool>;
-    { a != b } -> same_as<bool>;
-    { b != a } -> same_as<bool>;
-};
-
-template<typename T> concept equality_comparable = equality_comparable_with<T, T>;
-
-struct niche_t {};
+template<typename T> struct _remove_volatile_impl : type_identity<T> {};
+template<typename T> struct _remove_volatile_impl<volatile T> : type_identity<T> {};
 
 template<typename T>
-concept has_niche = constructible_from<T, niche_t> && equality_comparable_with<T, niche_t>;
+using remove_volatile_t = _remove_volatile_impl<T>::type;
 
 template<typename T>
-concept is_niche = same_as<un_cvref_t<T>, niche_t>;
+using remove_cv_t = remove_const_t<remove_volatile_t<T>>;
 
-template<typename From, typename To>
-concept _dereferenceable_as_convertible = requires(From& t)
-{
-    { *t } -> convertible_to<To&>;
-};
+// @Todo(base_remake) template<class T> struct add_const;
+// @Todo(base_remake) template<class T> struct add_volatile;
+// @Todo(base_remake) template<class T> struct add_cv;
 
-template<typename From, typename To>
-concept derefs_as = is_object<To> &&
-    (convertible_to<un_ref_t<From>&, To&> || _dereferenceable_as_convertible<un_ref_t<From>, To>);
+// [meta.rel]
 
-template<typename To, derefs_as<To> From>
-constexpr auto&& deref(From&& from) // NOLINT(*-missing-std-forward)
-{
-    if constexpr (_dereferenceable_as_convertible<From, To>)
-    {
-        using deref_type = decltype(*declval<From&&>());
-        return static_cast<copy_cref_t<deref_type, To>>(*static_cast<From&&>(from));
-    }
-    else
-    {
-        return static_cast<copy_cref_t<From&&, To>>(from);
-    }
-}
+template<typename U, typename V> struct _is_same_impl : false_type {};
+template<typename T> struct _is_same_impl<T, T> : true_type {};
+
+template<typename U, typename V>
+concept is_same = _is_same_impl<U, V>::value;
+
+// @Todo(base_remake) template<class Base, class Derived> struct is_base_of;
+// @Todo(base_remake) template<class From, class To> struct is_convertible;
+
+// @Todo(base_remake) template<class Fn, class... ArgTypes> struct is_invocable;
+// @Todo(base_remake) template<class R, class Fn, class... ArgTypes> struct is_invocable_r;
+
+// [meta.unary.cat]
+
+template<typename U, typename V>
+concept _is_cv_same_v = is_same<remove_cv_t<U>, remove_cv_t<V>>;
+
+template<typename T, typename... A>
+concept _is_cv_any_v = (_is_cv_same_v<T, A> || ...);
+
+template<typename T>
+concept is_void = _is_cv_same_v<T, void>;
+
+template<typename T>
+concept is_null_pointer = _is_cv_same_v<T, decltype(nullptr)>;
+
+template<typename T>
+concept is_integral = _is_cv_any_v<T,
+    bool,
+    char,
+    wchar_t,
+    char8_t,
+    char16_t,
+    char32_t,
+    signed char,
+    signed short int,
+    signed int,
+    signed long int,
+    signed long long int,
+    unsigned char,
+    unsigned short int,
+    unsigned int,
+    unsigned long int,
+    unsigned long long int>;
+
+template<typename T>
+concept is_floating_point = _is_cv_any_v<T, float, double, long double>;
+
+template<typename T> struct _is_array_impl : false_type {};
+template<typename T> struct _is_array_impl<T[]> : true_type {};
+template<typename T, is_integral auto N> struct _is_array_impl<T[N]> : true_type {};
+
+template<typename T>
+concept is_array = _is_array_impl<T>::value;
+
+template<typename T> struct _is_pointer_impl : false_type {};
+template<typename T> struct _is_pointer_impl<T*> : true_type {};
+
+template<typename T>
+concept is_pointer = _is_pointer_impl<remove_cv_t<T>>::value;
+
+template<typename T> struct _is_lvalue_reference_impl : false_type {};
+template<typename T> struct _is_lvalue_reference_impl<T&> : true_type {};
+
+template<typename T>
+concept is_lvalue_reference = _is_lvalue_reference_impl<T>::value;
+
+template<typename T> struct _is_rvalue_reference_impl : false_type {};
+template<typename T> struct _is_rvalue_reference_impl<T&&> : true_type {};
+
+template<typename T>
+concept is_rvalue_reference = _is_rvalue_reference_impl<T>::value;
+
+template<typename T>
+concept is_enum = __is_enum(T);
+
+template<typename T>
+concept is_class = __is_class(T);
+
+template<typename T>
+concept is_union = __is_union(T);
+
+template<typename T> struct _is_function_impl : false_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...)> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) &> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) &&> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const &> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const &&> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile &> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile &&> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile &> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile &&> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) & noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) && noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const & noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const && noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile & noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) volatile && noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile & noexcept> : true_type {};
+template<typename R, typename... Args> struct _is_function_impl<R (Args...) const volatile && noexcept> : true_type {};
+
+template<typename T>
+concept is_function = _is_function_impl<T>::value;
+
+template<typename T> struct _is_member_function_pointer_impl : false_type {};
+template<is_function T, typename C> struct _is_member_function_pointer_impl<T C::*> : true_type {};
+
+template<typename T>
+concept is_member_function_pointer = _is_member_function_pointer_impl<remove_cv_t<T>>::value;
+
+template<typename T> struct _is_member_pointer_impl : false_type {};
+template<typename T, typename C> struct _is_member_pointer_impl<T C::*> : true_type {};
+
+template<typename T>
+concept is_member_object_pointer = _is_member_pointer_impl<remove_cv_t<T>>::value && !is_member_function_pointer<T>;
+
+// [meta.unary.comp]
+
+template<typename T>
+concept is_reference = is_lvalue_reference<T> || is_rvalue_reference<T>;
+
+template<typename T>
+concept is_arithmetic = is_integral<T> || is_floating_point<T>;
+
+template<typename T>
+concept is_fundamental = is_arithmetic<T> || is_null_pointer<T> || is_void<T>;
+
+template<typename T>
+concept is_object = !is_void<T> && !is_reference<T> && !is_function<T>;
+
+template<typename T>
+concept is_member_pointer = is_member_function_pointer<T> || is_member_object_pointer<T>;
+
+template<typename T>
+concept is_scalar = is_arithmetic<T> || is_enum<T> || is_pointer<T> || is_member_pointer<T> || is_null_pointer<T>;
+
+template<typename T>
+concept is_compound = is_array<T> || is_function<T> || is_pointer<T> || is_reference<T> || is_class<T> || is_union<T> || is_member_pointer<T> || is_enum<T>;
+
+
+// [meta.trans.arr]
+
+template<typename T> struct _remove_extent_impl : type_identity<T> {};
+template<typename T> struct _remove_extent_impl<T[]> : type_identity<T> {};
+template<typename T, is_integral auto N> struct _remove_extent_impl<T[N]> : type_identity<T> {};
+
+template<typename T>
+using remove_extent_t = _remove_extent_impl<T>::type;
+
+template<typename T> struct _remove_all_extents_impl : type_identity<T> {};
+template<typename T> struct _remove_all_extents_impl<T[]> : _remove_all_extents_impl<T> {};
+template<typename T, is_integral auto N> struct _remove_all_extents_impl<T[N]> : _remove_all_extents_impl<T> {};
+
+template<typename T>
+using remove_all_extents_t = _remove_all_extents_impl<T>::type;
+
+// [meta.unary.prop]
+
+template<typename T> struct _is_const_impl : false_type {};
+template<typename T> struct _is_const_impl<const T> : true_type {};
+
+template<typename T>
+concept is_const = _is_const_impl<T>::value;
+
+template<typename T> struct _is_volatile_impl : false_type {};
+template<typename T> struct _is_volatile_impl<volatile T> : true_type {};
+
+template<typename T>
+concept is_volatile = _is_volatile_impl<T>::value;
+
+template<typename T>
+concept is_signed = is_arithmetic<T> && (T{-1} < T{0});
+
+template<typename T>
+concept is_unsigned = is_arithmetic<T> && !is_signed<T>;
+
+template<typename T> struct _is_bounded_array_impl : false_type {};
+template<typename T, is_integral auto N> struct _is_bounded_array_impl<T[N]> : true_type {};
+
+template<typename T>
+concept is_bounded_array = _is_bounded_array_impl<T>::value;
+
+template<typename T>
+concept is_unbounded_array = is_array<T> && !is_bounded_array<T>;
+
+template<typename T>
+concept is_scoped_enum = __is_scoped_enum(T);
+
+template<typename T, typename... Args>
+concept is_constructible = __is_constructible(T, Args...);
+
+template<typename T>
+concept is_default_constructible = is_constructible<T>;
+
+template<typename T>
+concept is_copy_constructible = is_constructible<T, const T&>;
+
+template<typename T>
+concept is_move_constructible = is_constructible<T, T&&>;
+
+template<typename T, typename... Args>
+concept is_assignable = __is_assignable(T&, Args...);
+
+template<typename T>
+concept is_copy_assignable = is_assignable<T, const T&>;
+
+template<typename T>
+concept is_move_assignable = is_assignable<T, T&&>;
+
+template<typename T>
+concept is_destructible = __is_destructible(T);
+
+template<typename T, typename... Args>
+concept is_trivially_constructible = __is_trivially_constructible(T, Args...);
+
+template<typename T>
+concept is_trivially_default_constructible = is_trivially_constructible<T>;
+
+template<typename T>
+concept is_trivially_copy_constructible = is_trivially_constructible<T, const T&>;
+
+template<typename T>
+concept is_trivially_move_constructible = is_trivially_constructible<T, T&&>;
+
+template<typename T, typename... Args>
+concept is_trivially_assignable = __is_trivially_assignable(T&, Args...);
+
+template<typename T>
+concept is_trivially_copy_assignable = is_trivially_assignable<T, const T&>;
+
+template<typename T>
+concept is_trivially_move_assignable = is_trivially_assignable<T, T&&>;
+
+template<typename T>
+concept is_trivially_destructible = __is_trivially_destructible(T);
+
+template<typename T>
+concept _is_trivially_copyable_class =
+    (
+        (
+            is_copy_constructible<T> ||
+            is_move_constructible<T> ||
+            is_copy_assignable<T> ||
+            is_move_assignable<T>
+        ) &&
+        (
+            (!is_copy_constructible<T> || is_trivially_copy_constructible<T>) &&
+            (!is_move_constructible<T> || is_trivially_move_constructible<T>) &&
+            (!is_copy_assignable<T> || is_trivially_copy_assignable<T>) &&
+            (!is_move_assignable<T> || is_trivially_move_assignable<T>)
+        ) && is_trivially_destructible<T>
+    );
+
+template<typename T>
+concept is_trivially_copyable =
+    is_scalar<remove_all_extents_t<T>> ||
+    _is_trivially_copyable_class<remove_all_extents_t<T>>;
+
+// @Todo(base_remake) template<class T> struct has_unique_object_representations;
+
+// @Todo(base_remake) [meta.unary.prop.query]
+// @Todo(base_remake) [meta.trans.ref]
+// @Todo(base_remake) [meta.trans.sign]
+// @Todo(base_remake) [meta.trans.ptr]
 
 } // namespace asl
