@@ -2,4 +2,7 @@ constexpr cast from void* +cpp26 https://www.open-std.org/jtc1/sc22/wg21/docs/pa
 expose fix_line_endings
 archive_param_file feature not working +rules_cc
 compiler_param_file is a feature instead of a variable for now +rules_cc
+shorten_virtual_includes? +rules_cc
+redact __TIME__ & co macros +clang_toolchain
+import rules_cc everywhere +rules_cc
 

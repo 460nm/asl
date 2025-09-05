@@ -1,0 +1,18 @@
+# Copyright 2025 Steven Le Rouzic
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
+load("@rules_python//python:py_binary.bzl", "py_binary")
+
+package(
+    default_applicable_licenses = ["//:license"],
+)
+
+py_binary(
+    name = "generate_clangd_compilation_database",
+    srcs = [
+        "generate_clangd_compilation_database.py",
+    ],
+    visibility = ["//visibility:public"],
+)
+
