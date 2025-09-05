@@ -112,6 +112,10 @@ cc_args(
         "-c",
         "-no-canonical-prefixes",
         "-fcolor-diagnostics",
+        "-Wno-builtin-macro-redefined",
+        "-D__TIME__=\"redacted\"",
+        "-D__TIMESTAMP__=\"redacted\"",
+        "-D__DATE__=\"redacted\"",
     ],
     allowlist_absolute_include_directories = SYSTEM_INCLUDE_DIRS,
 )
