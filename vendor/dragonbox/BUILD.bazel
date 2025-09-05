@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 load("@rules_license//rules:license.bzl", "license")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 license(
     name = "license",
