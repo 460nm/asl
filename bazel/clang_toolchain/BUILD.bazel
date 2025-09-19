@@ -15,6 +15,11 @@ cc_feature(
     feature_name = "no_legacy_features",
 )
 
+cc_feature(
+    name = "copy_dynamic_libraries_to_binary",
+    feature_name = "copy_dynamic_libraries_to_binary",
+)
+
 cc_tool_map(
     name = "clang_tool_map",
     tools = {
@@ -88,6 +93,7 @@ cc_toolchain(
     ],
     enabled_features = [
         ":no_legacy_features",
+        ":copy_dynamic_libraries_to_binary",
         "//bazel/clang_toolchain/args/compile:enabled_features",
         "//bazel/clang_toolchain/args/archive:enabled_features",
     ],
