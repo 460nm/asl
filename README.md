@@ -27,7 +27,32 @@ from it and even adds higher level features such as logging and testing.
 
 ## Code structure & features
 
-Soon...
+- `allocator`
+  - Memory allocator concept, utilities, and a base implementation.
+- `base`
+  - `std` replacement, metaprogramming utilities, language support, etc.
+- `containers`
+  - Containers and data structures.
+- `formatting`
+  - String formatting.
+- `handle_pool`
+  - Unique, generation-counted handles generators, and associated object pools.
+- `hashing`
+  - Hashing framework.
+- `io`
+  - Library for console & file IO.
+- `logging`
+  - A simple logging library.
+- `strings`
+  - String buffers, string views, and numbers parsing.
+- `synchronization`
+  - Atomic, mutexes, and other synchronization primitives.
+- `testing`
+  - A simple testing library.
+- `tests`
+  - Testing utilities, mainly for internal use.
+- `types`
+  - A bunch of non-container types, such as `option`, `status`, `function`, etc.
 
 ## License
 
