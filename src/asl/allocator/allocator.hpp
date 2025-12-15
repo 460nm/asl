@@ -58,7 +58,7 @@ T* alloc_uninit_unsafe(allocator auto& a)
 template<typename T>
 void alloc_delete(allocator auto& a, T* ptr)
 {
-    destroy(ptr);
+    destroy_at(ptr);
     a.dealloc(ptr, layout::of<T>());
 }
 

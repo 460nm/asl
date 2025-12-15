@@ -20,16 +20,12 @@ namespace function_detail
 
 static constexpr isize_t kStorageSize = sizeof(void*) * 2;
 
-struct Storage
+union Storage
 {
-    alignas(alignof(void*)) std::byte raw[kStorageSize];
+    Storage() {} // NOLINT(*-member-init)
 
-    [[nodiscard]]
-    void* get_ptr() const
-    {
-        // NOLINTNEXTLINE(*-const-cast)
-        return const_cast<void*>(static_cast<const void*>(raw));
-    }
+    alignas(void*) std::byte inline_raw[kStorageSize];
+    void* functor;
 };
 
 template<typename T>
@@ -37,116 +33,98 @@ concept can_be_stored_inline =
     sizeof(T) <= sizeof(Storage) &&
     alignof(Storage) % alignof(T) == 0;
 
-enum class FunctionOp : uint8_t
+template<typename R, typename... Args>
+struct FunctionInterface
 {
-    kDestroyThis,
-    kCopyFromOtherToThisUninit,
-    kMoveFromOtherToThisUninit,
+    FunctionInterface() = default;
+    ASL_DELETE_COPY_MOVE(FunctionInterface);
+    virtual ~FunctionInterface() = default;
+
+    virtual void copy_to_uninit(const Storage& from, Storage& to) const = 0;
+    virtual void move_to_uninit(Storage& from, Storage& to) const = 0;
+    virtual void destroy(Storage&) const = 0;
+    virtual R invoke(Args... args, const Storage& storage) const = 0;
 };
 
-template<typename Functor, bool kStoreInline = can_be_stored_inline<Functor>>
-struct FunctionImplBase
+template<typename Functor, bool kStoreInline, typename R, typename... Args>
+struct FunctionImpl final : public FunctionInterface<R, Args...>
 {
     using Allocator = DefaultAllocator;
 
     template<typename T>
-    static void create(Storage* storage, T&& t)
+    static void create(Storage& storage, T&& t)
     {
         Allocator allocator{};
-        auto* ptr = alloc_new<Functor>(allocator, std::forward<T>(t));
-        asl::memcpy(storage->get_ptr(), static_cast<void*>(&ptr), sizeof(void*));
+        storage.functor = alloc_new<Functor>(allocator, std::forward<T>(t));
     }
 
-    static Functor** get_functor_ptr(const Storage* storage)
+    void copy_to_uninit(const Storage& from, Storage& to) const final
     {
-        // NOLINTNEXTLINE(*-reinterpret-cast)
-        return std::launder(reinterpret_cast<Functor**>(storage->get_ptr()));
+        create(to, *static_cast<const Functor*>(from.functor));
     }
 
-    static Functor* get_functor(const Storage* storage)
+    void move_to_uninit(Storage& from, Storage& to) const final
     {
-        return *get_functor_ptr(storage);
+        to.functor = std::exchange(from.functor, nullptr);
     }
 
-    static void op(Storage* this_storage, Storage* other_storage, FunctionOp op)
+    void destroy(Storage& storage) const final
     {
-        switch (op)
-        {
-            using enum FunctionOp;
-            case kDestroyThis:
-            {
-                Allocator allocator{};
-                alloc_delete(allocator, get_functor(this_storage));
-                break;
-            }
-            case kCopyFromOtherToThisUninit:
-            {
-                create(this_storage, *static_cast<const Functor*>(get_functor(other_storage)));
-                break;
-            }
-            case kMoveFromOtherToThisUninit:
-            {
-                auto* ptr = std::exchange(*get_functor_ptr(other_storage), nullptr);
-                asl::memcpy(this_storage->get_ptr(), static_cast<void*>(&ptr), sizeof(void*));
-                break;
-            }
-            default: break;
-        }
-    }
-};
-
-template<typename Functor>
-struct FunctionImplBase<Functor, true>
-{
-    template<typename T>
-    static void create(Storage* storage, T&& t)
-    {
-        new (storage->get_ptr()) Functor(std::forward<T>(t));
+        Allocator allocator{};
+        alloc_delete(allocator, static_cast<Functor*>(storage.functor));
     }
 
-    static Functor* get_functor(const Storage* storage)
+    R invoke(Args... args, const Storage& storage) const final
     {
-        // NOLINTNEXTLINE(*-reinterpret-cast)
-        return std::launder(reinterpret_cast<Functor*>(storage->get_ptr()));
-    }
-
-    static void op(Storage* this_storage, Storage* other_storage, FunctionOp op)
-    {
-        switch (op)
-        {
-            using enum FunctionOp;
-            case kDestroyThis:
-            {
-                destroy(get_functor(this_storage));
-                break;
-            }
-            case kCopyFromOtherToThisUninit:
-            {
-                create(this_storage, *static_cast<const Functor*>(get_functor(other_storage)));
-                break;
-            }
-            case kMoveFromOtherToThisUninit:
-            {
-                auto* other_functor = get_functor(other_storage);
-                create(this_storage, std::move(*static_cast<const Functor*>(other_functor)));
-                destroy(other_functor);
-                break;
-            }
-            default: break;
-        }
+        return asl::invoke(
+            *static_cast<Functor*>(storage.functor),
+            std::forward<Args>(args)...);
     }
 };
 
 template<typename Functor, typename R, typename... Args>
-struct FunctionImpl : FunctionImplBase<Functor>
+struct FunctionImpl<Functor, true, R, Args...> final : public FunctionInterface<R, Args...>
 {
-    static R invoke(Args... args, const Storage& storage)
+    template<typename T>
+    static void create(Storage& storage, T&& t)
     {
-        auto* functor = FunctionImplBase<Functor>::get_functor(&storage);
+        construct_at<Functor>(&storage.inline_raw, std::forward<T>(t));
+    }
+
+    static const Functor& get_functor(const Storage& storage)
+    {
+        // NOLINTNEXTLINE(*-reinterpret-cast)
+        return *std::launder(reinterpret_cast<const Functor*>(&storage.inline_raw));
+    }
+
+    static Functor& get_functor(Storage& storage)
+    {
+        // NOLINTNEXTLINE(*-reinterpret-cast)
+        return *std::launder(reinterpret_cast<Functor*>(&storage.inline_raw));
+    }
+
+    void copy_to_uninit(const Storage& from, Storage& to) const final
+    {
+        create(to, get_functor(from));
+    }
+
+    void move_to_uninit(Storage& from, Storage& to) const final
+    {
+        create(to, get_functor(from));
+        destroy(from);
+    }
+
+    void destroy(Storage& storage) const final
+    {
+        destroy_at(&get_functor(storage));
+    }
+
+    R invoke(Args... args, const Storage& storage) const final
+    {
+        auto* functor = const_cast<Functor*>(&get_functor(storage));
         return asl::invoke(*functor, std::forward<Args>(args)...);
     }
 };
-
 
 template<typename T, typename R, typename... Args>
 concept valid_functor =
@@ -155,26 +133,31 @@ concept valid_functor =
     && invocable<T, Args...>
     && same_as<R, invoke_result_t<T, Args...>>;
 
+template<typename Functor, typename R, typename... Args>
+const FunctionInterface<R, Args...>* make_function_impl(valid_functor<R, Args...> auto&& f, Storage& storage)
+{
+    using Impl = FunctionImpl<Functor, can_be_stored_inline<Functor>, R, Args...>;
+    static const Impl impl{};
+    Impl::create(storage, std::forward<Functor>(f));
+    return &impl;
+}
+
 }  // namespace function_detail
 
 template<typename T>
 class function;
 
 template<typename R, typename... Args>
-class function<R(Args...)> // NOLINT(*-member-init)
+class function<R(Args...)>
 {
-    using InvokeFn = R (*)(Args..., const function_detail::Storage&);
-    using OpFn = void (*)(function_detail::Storage*, function_detail::Storage*, function_detail::FunctionOp);
-
     function_detail::Storage m_storage;
-    InvokeFn                 m_invoke{};
-    OpFn                     m_op{};
+    const function_detail::FunctionInterface<R, Args...>* m_impl{};
 
     void destroy()
     {
-        if (m_op != nullptr)
+        if (m_impl != nullptr)
         {
-            (*m_op)(&m_storage, nullptr, function_detail::FunctionOp::kDestroyThis);
+            m_impl->destroy(m_storage);
         }
     }
 
@@ -182,43 +165,32 @@ public:
     function() = default;
 
     template<typename T>
-    function(T&& func) // NOLINT(*explicit*,*-member-init)
+    function(T&& func) // NOLINT(*explicit*)
         requires (
             !same_as<function, remove_cvref_t<T>>
             && function_detail::valid_functor<T, R, Args...>
         )
+        : m_impl{
+            function_detail::make_function_impl<decay_t<T>, R, Args...>(
+                std::forward<T>(func), m_storage)}
     {
-        using Functor = decay_t<T>;
-        using Impl = function_detail::FunctionImpl<Functor, R, Args...>;
-
-        Impl::create(&m_storage, std::forward<T>(func));
-        m_invoke = &Impl::invoke; // NOLINT(*-member-initializer)
-        m_op = &Impl::op; // NOLINT(*-member-initializer)
     }
 
-    function(const function& other) // NOLINT(*-member-init)
-        : m_invoke{other.m_invoke}
-        , m_op{other.m_op}
+    function(const function& other)
+        : m_impl{other.m_impl}
     {
-        if (m_op != nullptr)
+        if (m_impl != nullptr)
         {
-            m_op(
-                &m_storage,
-                const_cast<function_detail::Storage*>(&other.m_storage), // NOLINT(*-const-cast)
-                function_detail::FunctionOp::kCopyFromOtherToThisUninit);
+            m_impl->copy_to_uninit(other.m_storage, m_storage);
         }
     }
 
-    function(function&& other) // NOLINT(*-member-init)
-        : m_invoke{std::exchange(other.m_invoke, nullptr)}
-        , m_op{std::exchange(other.m_op, nullptr)}
+    function(function&& other)
+        : m_impl{std::exchange(other.m_impl, nullptr)}
     {
-        if (m_op != nullptr)
+        if (m_impl != nullptr)
         {
-            m_op(
-                &m_storage,
-                &other.m_storage,
-                function_detail::FunctionOp::kMoveFromOtherToThisUninit);
+            m_impl->move_to_uninit(other.m_storage, m_storage);
         }
     }
 
@@ -233,13 +205,11 @@ public:
         {
             destroy();
 
-            m_invoke = other.m_invoke;
-            m_op = other.m_op;
-
-            m_op(
-                &m_storage,
-                const_cast<function_detail::Storage*>(&other.m_storage), // NOLINT(*-const-cast)
-                function_detail::FunctionOp::kCopyFromOtherToThisUninit);
+            m_impl = other.m_impl;
+            if (m_impl)
+            {
+                m_impl->copy_to_uninit(other.m_storage, m_storage);
+            }
         }
         return *this;
     }
@@ -250,13 +220,11 @@ public:
         {
             destroy();
 
-            m_invoke = std::exchange(other.m_invoke, nullptr);
-            m_op = std::exchange(other.m_op, nullptr);
-
-            m_op(
-                &m_storage,
-                &other.m_storage,
-                function_detail::FunctionOp::kMoveFromOtherToThisUninit);
+            m_impl = std::exchange(other.m_impl, nullptr);
+            if (m_impl)
+            {
+                m_impl->move_to_uninit(other.m_storage, m_storage);
+            }
         }
         return *this;
     }
@@ -270,20 +238,16 @@ public:
     {
         destroy();
 
-        using Functor = decay_t<T>;
-        using Impl = function_detail::FunctionImpl<Functor, R, Args...>;
-
-        Impl::create(&m_storage, std::forward<T>(func));
-        m_invoke = &Impl::invoke;
-        m_op = &Impl::op;
+        m_impl = function_detail::make_function_impl<decay_t<T>, R, Args...>(
+            std::forward<T>(func), m_storage);
 
         return *this;
     }
 
     constexpr R operator()(Args... args) const
     {
-        ASL_ASSERT(m_invoke);
-        return m_invoke(args..., m_storage);
+        ASL_ASSERT(m_impl);
+        return m_impl->invoke(std::forward<Args>(args)..., m_storage);
     }
 };
 

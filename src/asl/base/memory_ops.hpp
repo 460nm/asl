@@ -38,7 +38,7 @@ constexpr T* construct_at(void* ptr, Args&&... args)
 }
 
 template<typename T>
-constexpr void destroy(T* data)
+constexpr void destroy_at(T* data)
 {
     if constexpr (!is_trivially_destructible<T>)
     {
@@ -53,7 +53,7 @@ constexpr void destroy_n(T* data, isize_t n)
     {
         for (isize_t i = 0; i < n; ++i)
         {
-            destroy(data + i);
+            destroy_at(data + i);
         }
     }
 }

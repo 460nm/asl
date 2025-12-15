@@ -57,7 +57,7 @@ public:
     // @Safety Value must have been initialized
     constexpr void destroy_unsafe()
     {
-        destroy(&m_value);
+        destroy_at(&m_value);
     }
 
     // @Safety Value must have been initialized
