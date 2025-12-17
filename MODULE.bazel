@@ -2,12 +2,12 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-module(name = "asl", version = "0.6.0")
+module(name = "asl", version = "0.7.0.snapshot")
 
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_license", version = "1.0.0")
 
-bazel_dep(name = "rules_cc", version = "0.2.9")
+bazel_dep(name = "rules_cc", version = "0.2.15")
 
 bazel_dep(name = "rules_python", version = "1.6.3")
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")

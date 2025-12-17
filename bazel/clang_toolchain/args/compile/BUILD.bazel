@@ -11,7 +11,7 @@ load("@clang_info//:info.bzl", "SYSTEM_INCLUDE_DIRS")
 
 alias(
     name = "actions",
-    actual = "@rules_cc//cc/toolchains/actions:compile_actions",
+    actual = "@rules_cc//cc/toolchains/actions:source_compile_actions",
 )
 
 cc_args(
