@@ -63,6 +63,8 @@ cc_library(
         "//src/asl/base",
         "//src/asl/types:status",
         ":string_view",
+    ],
+    implementation_deps = [
         "//vendor/fast_float",
     ],
     visibility = ["//visibility:public"],

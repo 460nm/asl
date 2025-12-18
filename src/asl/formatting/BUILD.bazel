@@ -23,6 +23,8 @@ cc_library(
         "//src/asl/strings:string_view",
         "//src/asl/types:span",
         "//src/asl/io:writer",
+    ],
+    implementation_deps = [
         "//vendor/dragonbox",
     ],
     visibility = ["//visibility:public"],
