@@ -23,6 +23,7 @@ build --cxxopt=-Wno-covered-switch-default
 build --cxxopt=-Wno-unused-command-line-argument
 build --cxxopt=-Wno-padded
 build --cxxopt=-Wno-weak-vtables
+build --cxxopt=-Wno-missing-include-dirs
 
 build:sanitizers --features=asan
 build:sanitizers --features=ubsan

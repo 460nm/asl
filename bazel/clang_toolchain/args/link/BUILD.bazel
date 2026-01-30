@@ -8,7 +8,6 @@ load("@rules_cc//cc/toolchains:mutually_exclusive_category.bzl", "cc_mutually_ex
 load("@rules_cc//cc/toolchains:args.bzl", "cc_args")
 load("@rules_cc//cc/toolchains:nested_args.bzl", "cc_nested_args")
 load("@rules_cc//cc/toolchains:args_list.bzl", "cc_args_list")
-load("@clang_info//:info.bzl", "SYSTEM_INCLUDE_DIRS")
 
 alias(
     name = "actions",
@@ -23,7 +22,6 @@ cc_args(
         "-no-canonical-prefixes",
         "-fcolor-diagnostics",
     ],
-    allowlist_absolute_include_directories = SYSTEM_INCLUDE_DIRS,
 )
 
 cc_args(
