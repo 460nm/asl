@@ -24,6 +24,7 @@ build --cxxopt=-Wno-unused-command-line-argument
 build --cxxopt=-Wno-padded
 build --cxxopt=-Wno-weak-vtables
 build --cxxopt=-Wno-missing-include-dirs
+build --cxxopt=-Wno-c2y-extensions
 
 build:sanitizers --features=asan
 build:sanitizers --features=ubsan
